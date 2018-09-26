@@ -23,6 +23,8 @@ namespace shared_model {
 
     const std::string FieldValidator::account_name_pattern_ =
         R"#([a-z_0-9]{1,32})#";
+    const std::string FieldValidator::amount_pattern_ =
+        "[1-9][0-9]*(\\.[0-9]+)?|0\\.[0-9]*[1-9]";
     const std::string FieldValidator::asset_name_pattern_ =
         R"#([a-z_0-9]{1,32})#";
     const std::string FieldValidator::domain_pattern_ =
@@ -52,6 +54,7 @@ namespace shared_model {
     const size_t FieldValidator::description_size = 64;
 
     const std::regex FieldValidator::account_name_regex_(account_name_pattern_);
+    const std::regex FieldValidator::amount_regex_(amount_pattern_);
     const std::regex FieldValidator::asset_name_regex_(asset_name_pattern_);
     const std::regex FieldValidator::domain_regex_(domain_pattern_);
     const std::regex FieldValidator::ip_v4_regex_(ip_v4_pattern_);
@@ -98,11 +101,13 @@ namespace shared_model {
 
     void FieldValidator::validateAmount(ReasonsGroupType &reason,
                                         const interface::Amount &amount) const {
-      if (amount.intValue() <= 0) {
-        auto message =
-            (boost::format("Amount must be greater than 0, passed value: %d")
-             % amount.intValue())
-                .str();
+      auto amount_str = amount.toStringRepr();
+      std::smatch match;
+      if (not std::regex_match(amount_str, match, amount_regex_)) {
+        auto message = (boost::format("Wrongly formed amount, passed value: "
+                                      "'%s'. Field should match regex '%s'")
+                        % amount_str % amount_pattern_)
+                           .str();
         reason.second.push_back(message);
       }
     }

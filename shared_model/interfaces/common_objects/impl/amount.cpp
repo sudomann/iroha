@@ -5,6 +5,7 @@
 
 #include "interfaces/common_objects/amount.hpp"
 
+#include <algorithm>
 #include <regex>
 
 #include "utils/string_builder.hpp"
@@ -16,23 +17,23 @@ namespace shared_model {
         : amount_(std::move(amount)),
           precision_(0),
           multiprecision_repr_([this] {
-            static const std::regex r("([0-9]+)(\\.([0-9]+))?");
+            static const std::regex r(
+                "[1-9][0-9]*(\\.([0-9]+))?|0\\.([0-9]*[1-9])");
             // 123.456 will have the following groups:
-            //   [0] -> 123.456, [1] -> 123
-            //   [2] -> .456,    [3] -> 456
+            //   [0] -> 123.456  [1] -> .456  [2] -> 456  [3] ->
+            //
+            // With leading zero, e.g 0.789 will have the following groups:
+            //   [0] -> 0.789    [1] ->       [2] ->      [3] -> 789
             std::smatch match;
             if (std::regex_match(this->amount_, match, r)
                 && match.size() == 4) {
-              this->precision_ = match[3].length();
+              this->precision_ = std::max(match[2].length(), match[3].length());
               auto str = match[0].str();
-              size_t pos = match[1].length();
               // remove dot if it exist
-              if (pos < str.size()) {
+              auto pos = str.find('.');
+              if (pos != std::string::npos) {
                 str.erase(str.begin() + pos);
               }
-              // remove leading zeroes
-              str.erase(0,
-                        std::min(str.find_first_not_of('0'), str.size() - 1));
               return boost::multiprecision::uint256_t(str);
             }
             return std::numeric_limits<boost::multiprecision::uint256_t>::min();

@@ -256,6 +256,16 @@ class FieldValidatorTest : public ValidatorsTest {
 
   std::vector<FieldTestCase> amount_test_cases{
       {"valid_amount", [&] { amount = "100"; }, true, ""},
+      {"valid_amount_precision", [&] { amount = "100.0"; }, true, ""},
+      {"leading_zero_with_decimal", [&] { amount = "0.001"; }, true, ""},
+      {"leading_zero_with_zero_end_decimal",
+       [&] { amount = "0.10"; },
+       false,
+       "Wrongly formed amount, should end with zero"},
+      {"leading_zero",
+       [&] { amount = "01"; },
+       false,
+       "Wrongly formed amount, should not start with zero"},
       {"zero_amount",
        [&] { amount = "0"; },
        false,
