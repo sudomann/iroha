@@ -24,7 +24,7 @@ namespace shared_model {
     const std::string FieldValidator::account_name_pattern_ =
         R"#([a-z_0-9]{1,32})#";
     const std::string FieldValidator::amount_pattern_ =
-        "[1-9][0-9]*(\\.[0-9]+)?|0\\.[0-9]*[1-9]";
+        "[1-9][0-9]*(\\.([0-9]*[1-9]|0))?|0\\.[0-9]*[1-9]";
     const std::string FieldValidator::asset_name_pattern_ =
         R"#([a-z_0-9]{1,32})#";
     const std::string FieldValidator::domain_pattern_ =

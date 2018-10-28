@@ -18,7 +18,7 @@ namespace shared_model {
           precision_(0),
           multiprecision_repr_([this] {
             static const std::regex r(
-                "[1-9][0-9]*(\\.([0-9]+))?|0\\.([0-9]*[1-9])");
+                "[1-9][0-9]*(\\.([0-9]*[1-9]|0))?|0\\.([0-9]*[1-9])");
             // 123.456 will have the following groups:
             //   [0] -> 123.456  [1] -> .456  [2] -> 456  [3] ->
             //
@@ -33,6 +33,11 @@ namespace shared_model {
               auto pos = str.find('.');
               if (pos != std::string::npos) {
                 str.erase(str.begin() + pos);
+              }
+              // remove leading zeroes, if possible
+              pos = str.find_first_not_of("0");
+              if (pos != std::string::npos && str.size() != 1) {
+                str.erase(str.begin(), str.begin() + pos);
               }
               return boost::multiprecision::uint256_t(str);
             }
