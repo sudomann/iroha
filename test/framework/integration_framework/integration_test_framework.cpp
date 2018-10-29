@@ -37,6 +37,8 @@
 #include "module/shared_model/validators/always_valid_validators.hpp"
 #include "multi_sig_transactions/transport/mst_transport_grpc.hpp"
 #include "network/impl/async_grpc_client.hpp"
+#include "ordering/impl/ordering_gate_transport_grpc.hpp"
+#include "ordering/impl/ordering_service_transport_grpc.hpp"
 #include "synchronizer/synchronizer_common.hpp"
 
 using namespace shared_model::crypto;
@@ -107,6 +109,13 @@ namespace integration_framework {
                 shared_model::interface::TransactionBatchFactoryImpl>()),
         yac_transport_(
             std::make_shared<iroha::consensus::yac::NetworkImpl>(async_call_)),
+        os_transport_(
+            std::make_shared<iroha::ordering::OrderingServiceTransportGrpc>(
+                transaction_batch_factory_, async_call_)),
+        og_transport_(
+            std::make_shared<iroha::ordering::OrderingGateTransportGrpc>(
+                kLocalHost + ":" + std::to_string(internal_port_),
+                async_call_)),
         cleanup_on_exit_(cleanup_on_exit) {}
 
   IntegrationTestFramework::~IntegrationTestFramework() {
@@ -510,6 +519,19 @@ namespace integration_framework {
   IntegrationTestFramework &IntegrationTestFramework::sendQuery(
       const shared_model::proto::Query &qry) {
     sendQuery(qry, [](const auto &) {});
+    return *this;
+  }
+
+  IntegrationTestFramework &IntegrationTestFramework::sendProposal(
+      std::unique_ptr<shared_model::interface::Proposal> proposal) {
+    os_transport_->publishProposal(std::move(proposal),
+                                   {this_peer_->address()});
+    return *this;
+  }
+
+  IntegrationTestFramework &IntegrationTestFramework::sendBatch(
+      const std::shared_ptr<shared_model::interface::TransactionBatch> &batch) {
+    og_transport_->propagateBatch(batch);
     return *this;
   }
 

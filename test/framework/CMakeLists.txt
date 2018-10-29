@@ -37,6 +37,7 @@ target_link_libraries(integration_framework
     shared_model_cryptography_model
     server_runner
     mst_transport
+    ordering_service
     )
 
 target_include_directories(integration_framework PUBLIC ${PROJECT_SOURCE_DIR}/test)
