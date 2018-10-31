@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "framework/integration_framework/fake_peer/ordering_service_network_notifier.hpp"
+#include "framework/integration_framework/fake_peer/network/ordering_service_network_notifier.hpp"
 
 #include "interfaces/iroha_internal/transaction_batch.hpp"
 
