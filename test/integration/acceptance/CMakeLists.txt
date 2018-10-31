@@ -176,9 +176,9 @@ target_link_libraries(replay_test
     acceptance_fixture
     )
 
-addtest(basic_mst_state_propagation_test
-    basic_mst_state_propagation.cpp
+addtest(fake_peer_usage_example
+    fake_peer_usage_example.cpp
     )
-target_link_libraries(basic_mst_state_propagation_test
+target_link_libraries(fake_peer_usage_example
     acceptance_fixture
     )
