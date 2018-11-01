@@ -100,8 +100,7 @@ namespace integration_framework {
         std::shared_ptr<shared_model::interface::TransactionBatchParser>
             batch_parser,
         std::shared_ptr<shared_model::interface::TransactionBatchFactory>
-            transaction_batch_factory,
-        bool agree_all_proposals = true);
+            transaction_batch_factory);
 
     /// Start the fake peer.
     void run();
@@ -112,13 +111,6 @@ namespace integration_framework {
     /// Get the keypair of this peer.
     const shared_model::crypto::Keypair &getKeypair() const;
 
-    /// Make this peer agree all proposals.
-    void enableAgreeAllProposals();
-
-    /// Stop this peer from agreeing all proposals.
-    void disableAgreeAllProposals();
-
-    /// Get the observable of MST states received by this peer.
     rxcpp::observable<MstMessagePtr> get_mst_states_observable();
 
     /// Get the observable of YAC states received by this peer.
@@ -194,8 +186,6 @@ namespace integration_framework {
     std::unique_ptr<ServerRunner> internal_server_;
 
     std::shared_ptr<iroha::consensus::yac::YacCryptoProvider> yac_crypto_;
-
-    rxcpp::subscription proposal_agreer_subscription_;
 
     logger::Logger log_;
   };

@@ -67,8 +67,7 @@ namespace integration_framework {
       std::shared_ptr<shared_model::interface::TransactionBatchParser>
           batch_parser,
       std::shared_ptr<shared_model::interface::TransactionBatchFactory>
-          transaction_batch_factory,
-      bool agree_all_proposals)
+          transaction_batch_factory)
       : common_objects_factory_(common_objects_factory),
         listen_ip_(listen_ip),
         internal_port_(internal_port),
@@ -102,9 +101,6 @@ namespace integration_framework {
         "IntegrationTestFramework "
         "(fake peer at "
         + getAddress() + ")");
-    if (agree_all_proposals) {
-      enableAgreeAllProposals();
-    }
   }
 
   void FakePeer::run() {
@@ -153,19 +149,6 @@ namespace integration_framework {
 
   rxcpp::observable<FakePeer::OgProposalPtr> FakePeer::get_og_proposals_observable() {
     return og_network_notifier_->get_observable();
-  }
-
-  void FakePeer::enableAgreeAllProposals() {
-    if (!proposal_agreer_subscription_.is_subscribed()) {
-      proposal_agreer_subscription_ = get_yac_states_observable().subscribe(
-          [this](auto &&message) { this->voteForTheSame(message); });
-    };
-  }
-
-  void FakePeer::disableAgreeAllProposals() {
-    if (proposal_agreer_subscription_.is_subscribed()) {
-      proposal_agreer_subscription_.unsubscribe();
-    };
   }
 
   std::shared_ptr<shared_model::interface::Signature> FakePeer::makeSignature(
