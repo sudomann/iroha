@@ -14,19 +14,21 @@
 #include "logger/logger.hpp"
 
 namespace integration_framework {
+  namespace fake_peer {
 
-  class EmptyFakePeerBehaviour : public FakePeerBehaviour {
-   public:
-    virtual ~EmptyFakePeerBehaviour() = default;
+    class EmptyBehaviour : public Behaviour {
+     public:
+      virtual ~EmptyBehaviour() = default;
 
-    void processMstMessage(const FakePeer::MstMessagePtr &message) override;
-    void processYacMessage(const FakePeer::YacMessagePtr &message) override;
-    void processOsBatch(const FakePeer::OsBatchPtr &batch) override;
-    void processOgProposal(const FakePeer::OgProposalPtr &proposal) override;
+      void processMstMessage(const FakePeer::MstMessagePtr &message) override;
+      void processYacMessage(const FakePeer::YacMessagePtr &message) override;
+      void processOsBatch(const FakePeer::OsBatchPtr &batch) override;
+      void processOgProposal(const FakePeer::OgProposalPtr &proposal) override;
 
-    virtual std::string getName();
-  };
+      virtual std::string getName();
+    };
 
+  }  // namespace fake_peer
 }  // namespace integration_framework
 
 #endif /* INTEGRATION_FRAMEWORK_FAKE_PEER_BEHAVIOUR_EMPTY_HPP_ */

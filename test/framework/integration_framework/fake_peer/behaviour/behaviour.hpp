@@ -13,33 +13,38 @@
 #include "logger/logger.hpp"
 
 namespace integration_framework {
+  namespace fake_peer {
 
-  class FakePeerBehaviour {
-   public:
-    virtual ~FakePeerBehaviour();
+    class Behaviour {
+     public:
+      virtual ~Behaviour();
 
-    /// Enable the behaviour for the given peer
-    void adopt(const std::shared_ptr<FakePeer> &fake_peer);
+      /// Enable the behaviour for the given peer
+      void adopt(const std::shared_ptr<FakePeer> &fake_peer);
 
-    /// Disable the behaviour
-    void absolve();
+      /// Disable the behaviour
+      void absolve();
 
-    virtual void processMstMessage(const FakePeer::MstMessagePtr &message) = 0;
-    virtual void processYacMessage(const FakePeer::YacMessagePtr &message) = 0;
-    virtual void processOsBatch(const FakePeer::OsBatchPtr &batch) = 0;
-    virtual void processOgProposal(const FakePeer::OgProposalPtr &proposal) = 0;
+      virtual void processMstMessage(
+          const FakePeer::MstMessagePtr &message) = 0;
+      virtual void processYacMessage(
+          const FakePeer::YacMessagePtr &message) = 0;
+      virtual void processOsBatch(const FakePeer::OsBatchPtr &batch) = 0;
+      virtual void processOgProposal(
+          const FakePeer::OgProposalPtr &proposal) = 0;
 
-    virtual std::string getName() = 0;
+      virtual std::string getName() = 0;
 
-   protected:
-    FakePeer &getFakePeer();
+     protected:
+      FakePeer &getFakePeer();
 
-   private:
-    std::weak_ptr<FakePeer> fake_peer_wptr_;
-    std::vector<rxcpp::subscription> subscriptions_;
-    logger::Logger log_;
-  };
+     private:
+      std::weak_ptr<FakePeer> fake_peer_wptr_;
+      std::vector<rxcpp::subscription> subscriptions_;
+      logger::Logger log_;
+    };
 
+  }  // namespace fake_peer
 }  // namespace integration_framework
 
 #endif /* INTEGRATION_FRAMEWORK_FAKE_PEER_BEHAVIOUR_HPP_ */

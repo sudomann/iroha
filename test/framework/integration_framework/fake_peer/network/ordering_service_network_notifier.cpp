@@ -8,15 +8,17 @@
 #include "interfaces/iroha_internal/transaction_batch.hpp"
 
 namespace integration_framework {
+  namespace fake_peer {
 
-  void OsNetworkNotifier::onBatch(std::unique_ptr<TransactionBatch> batch) {
-    auto batch_ptr = std::shared_ptr<TransactionBatch>(batch.release());
-    batches_subject_.get_subscriber().on_next(std::move(batch_ptr));
-  }
+    void OsNetworkNotifier::onBatch(std::unique_ptr<TransactionBatch> batch) {
+      auto batch_ptr = std::shared_ptr<TransactionBatch>(batch.release());
+      batches_subject_.get_subscriber().on_next(std::move(batch_ptr));
+    }
 
-  rxcpp::observable<OsNetworkNotifier::TransactionBatchPtr>
-  OsNetworkNotifier::get_observable() {
-    return batches_subject_.get_observable();
-  }
+    rxcpp::observable<OsNetworkNotifier::TransactionBatchPtr>
+    OsNetworkNotifier::get_observable() {
+      return batches_subject_.get_observable();
+    }
 
+  }  // namespace fake_peer
 }  // namespace integration_framework

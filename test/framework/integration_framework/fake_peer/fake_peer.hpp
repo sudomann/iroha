@@ -49,154 +49,158 @@ namespace iroha {
   namespace ordering {
     class OrderingGateTransportGrpc;
     class OrderingServiceTransportGrpc;
-  }
+  }  // namespace ordering
 }  // namespace iroha
 class ServerRunner;
 
 namespace integration_framework {
-  class MstNetworkNotifier;
-  class OsNetworkNotifier;
-  class OgNetworkNotifier;
-  class YacNetworkNotifier;
-  class FakePeerBehaviour;
-
-  /**
-   * A lightweight implementation of iroha peer network interface for inter-peer
-   * communications testing.
-   */
-  class FakePeer final : public boost::noncopyable,
-                         public std::enable_shared_from_this<FakePeer> {
-   public:
-    using TransportFactoryType =
-        shared_model::interface::AbstractTransportFactory<
-            shared_model::interface::Transaction,
-            iroha::protocol::Transaction>;
-    using MstMessagePtr = std::shared_ptr<MstMessage>;
-    using YacMessagePtr =
-        std::shared_ptr<const std::vector<iroha::consensus::yac::VoteMessage>>;
-    using OgProposalPtr = std::shared_ptr<shared_model::interface::Proposal>;
-    using OsBatchPtr =
-        std::shared_ptr<shared_model::interface::TransactionBatch>;
+  namespace fake_peer {
+    class MstNetworkNotifier;
+    class OsNetworkNotifier;
+    class OgNetworkNotifier;
+    class YacNetworkNotifier;
+    class Behaviour;
 
     /**
-     * Constructor.
-     *
-     * @param listen_ip - IP on which this fake peer should listen
-     * @param internal_port - the port for internal commulications
-     * @param key - the keypair of this peer
-     * @param real_peer - the main tested peer managed by ITF
-     * @param common_objects_factory - common_objects_factory
-     * @param transaction_factory - transaction_factory
-     * @param batch_parser - batch_parser
-     * @param transaction_batch_factory - transaction_batch_factory
-     * @param gree_all_proposals - whether this peer should agree all proposals
+     * A lightweight implementation of iroha peer network interface for
+     * inter-peer communications testing.
      */
-    FakePeer(
-        const std::string &listen_ip,
-        size_t internal_port,
-        const boost::optional<shared_model::crypto::Keypair> &key,
-        const std::shared_ptr<shared_model::interface::Peer> &real_peer,
-        const std::shared_ptr<shared_model::interface::CommonObjectsFactory>
-            &common_objects_factory,
-        std::shared_ptr<TransportFactoryType> transaction_factory,
-        std::shared_ptr<shared_model::interface::TransactionBatchParser>
-            batch_parser,
-        std::shared_ptr<shared_model::interface::TransactionBatchFactory>
-            transaction_batch_factory);
+    class FakePeer final : public boost::noncopyable,
+                           public std::enable_shared_from_this<FakePeer> {
+     public:
+      using TransportFactoryType =
+          shared_model::interface::AbstractTransportFactory<
+              shared_model::interface::Transaction,
+              iroha::protocol::Transaction>;
+      using MstMessagePtr = std::shared_ptr<MstMessage>;
+      using YacMessagePtr = std::shared_ptr<
+          const std::vector<iroha::consensus::yac::VoteMessage>>;
+      using OgProposalPtr = std::shared_ptr<shared_model::interface::Proposal>;
+      using OsBatchPtr =
+          std::shared_ptr<shared_model::interface::TransactionBatch>;
 
-    /// Assign the given behaviour to this fake peer.
-    FakePeer &setBehaviour(const std::shared_ptr<FakePeerBehaviour> &behaviour);
+      /**
+       * Constructor.
+       *
+       * @param listen_ip - IP on which this fake peer should listen
+       * @param internal_port - the port for internal commulications
+       * @param key - the keypair of this peer
+       * @param real_peer - the main tested peer managed by ITF
+       * @param common_objects_factory - common_objects_factory
+       * @param transaction_factory - transaction_factory
+       * @param batch_parser - batch_parser
+       * @param transaction_batch_factory - transaction_batch_factory
+       * @param gree_all_proposals - whether this peer should agree all
+       * proposals
+       */
+      FakePeer(
+          const std::string &listen_ip,
+          size_t internal_port,
+          const boost::optional<shared_model::crypto::Keypair> &key,
+          const std::shared_ptr<shared_model::interface::Peer> &real_peer,
+          const std::shared_ptr<shared_model::interface::CommonObjectsFactory>
+              &common_objects_factory,
+          std::shared_ptr<TransportFactoryType> transaction_factory,
+          std::shared_ptr<shared_model::interface::TransactionBatchParser>
+              batch_parser,
+          std::shared_ptr<shared_model::interface::TransactionBatchFactory>
+              transaction_batch_factory);
 
-    /// Start the fake peer.
-    void run();
+      /// Assign the given behaviour to this fake peer.
+      FakePeer &setBehaviour(const std::shared_ptr<Behaviour> &behaviour);
 
-    /// Get the address:port string of this peer.
-    std::string getAddress() const;
+      /// Start the fake peer.
+      void run();
 
-    /// Get the keypair of this peer.
-    const shared_model::crypto::Keypair &getKeypair() const;
+      /// Get the address:port string of this peer.
+      std::string getAddress() const;
 
-    rxcpp::observable<MstMessagePtr> get_mst_states_observable();
+      /// Get the keypair of this peer.
+      const shared_model::crypto::Keypair &getKeypair() const;
 
-    /// Get the observable of YAC states received by this peer.
-    rxcpp::observable<YacMessagePtr> get_yac_states_observable();
+      rxcpp::observable<MstMessagePtr> get_mst_states_observable();
 
-    /// Get the observable of OS batches received by this peer.
-    rxcpp::observable<OsBatchPtr> get_os_batches_observable();
+      /// Get the observable of YAC states received by this peer.
+      rxcpp::observable<YacMessagePtr> get_yac_states_observable();
 
-    /// Get the observable of OG proposals received by this peer.
-    rxcpp::observable<OgProposalPtr> get_og_proposals_observable();
+      /// Get the observable of OS batches received by this peer.
+      rxcpp::observable<OsBatchPtr> get_os_batches_observable();
 
-    /**
-     * Send the real peer votes from this peer analogous to the provided ones.
-     *
-     * @param incoming_votes - the votes to take as the base.
-     */
-    void voteForTheSame(const YacMessagePtr &incoming_votes);
+      /// Get the observable of OG proposals received by this peer.
+      rxcpp::observable<OgProposalPtr> get_og_proposals_observable();
 
-    /**
-     * Make a signature of the provided hash.
-     *
-     * @param hash - the hash to sign
-     */
-    std::shared_ptr<shared_model::interface::Signature> makeSignature(
-        const shared_model::crypto::Blob &hash) const;
+      /**
+       * Send the real peer votes from this peer analogous to the provided ones.
+       *
+       * @param incoming_votes - the votes to take as the base.
+       */
+      void voteForTheSame(const YacMessagePtr &incoming_votes);
 
-    /// Make a vote from this peer for the provided YAC hash.
-    iroha::consensus::yac::VoteMessage makeVote(
-        const iroha::consensus::yac::YacHash &yac_hash);
+      /**
+       * Make a signature of the provided hash.
+       *
+       * @param hash - the hash to sign
+       */
+      std::shared_ptr<shared_model::interface::Signature> makeSignature(
+          const shared_model::crypto::Blob &hash) const;
 
-    /// Send the main peer the given YAC state.
-    void sendYacState(
-        const std::vector<iroha::consensus::yac::VoteMessage> &state);
+      /// Make a vote from this peer for the provided YAC hash.
+      iroha::consensus::yac::VoteMessage makeVote(
+          const iroha::consensus::yac::YacHash &yac_hash);
 
-    void sendProposal(
-        std::unique_ptr<shared_model::interface::Proposal> proposal);
+      /// Send the main peer the given YAC state.
+      void sendYacState(
+          const std::vector<iroha::consensus::yac::VoteMessage> &state);
 
-    void sendBatch(
-        const std::shared_ptr<shared_model::interface::TransactionBatch>
-            &batch);
+      void sendProposal(
+          std::unique_ptr<shared_model::interface::Proposal> proposal);
 
-   private:
-    using MstTransport = iroha::network::MstTransportGrpc;
-    using YacTransport = iroha::consensus::yac::NetworkImpl;
-    using OsTransport = iroha::ordering::OrderingServiceTransportGrpc;
-    using OgTransport = iroha::ordering::OrderingGateTransportGrpc;
-    using AsyncCall = iroha::network::AsyncGrpcClient<google::protobuf::Empty>;
+      void sendBatch(
+          const std::shared_ptr<shared_model::interface::TransactionBatch>
+              &batch);
 
-    std::shared_ptr<shared_model::interface::CommonObjectsFactory>
-        common_objects_factory_;
+     private:
+      using MstTransport = iroha::network::MstTransportGrpc;
+      using YacTransport = iroha::consensus::yac::NetworkImpl;
+      using OsTransport = iroha::ordering::OrderingServiceTransportGrpc;
+      using OgTransport = iroha::ordering::OrderingGateTransportGrpc;
+      using AsyncCall =
+          iroha::network::AsyncGrpcClient<google::protobuf::Empty>;
 
-    const std::string listen_ip_;
-    size_t internal_port_;
-    std::unique_ptr<shared_model::crypto::Keypair> keypair_;
+      std::shared_ptr<shared_model::interface::CommonObjectsFactory>
+          common_objects_factory_;
 
-    std::shared_ptr<shared_model::interface::Peer>
-        this_peer_;  ///< this fake instance
-    std::shared_ptr<shared_model::interface::Peer>
-        real_peer_;  ///< the real instance
+      const std::string listen_ip_;
+      size_t internal_port_;
+      std::unique_ptr<shared_model::crypto::Keypair> keypair_;
 
-    std::shared_ptr<AsyncCall> async_call_;
+      std::shared_ptr<shared_model::interface::Peer>
+          this_peer_;  ///< this fake instance
+      std::shared_ptr<shared_model::interface::Peer>
+          real_peer_;  ///< the real instance
 
-    std::shared_ptr<MstTransport> mst_transport_;
-    std::shared_ptr<YacTransport> yac_transport_;
-    std::shared_ptr<OsTransport> os_transport_;
-    std::shared_ptr<OgTransport> og_transport_;
+      std::shared_ptr<AsyncCall> async_call_;
 
-    std::shared_ptr<MstNetworkNotifier> mst_network_notifier_;
-    std::shared_ptr<YacNetworkNotifier> yac_network_notifier_;
-    std::shared_ptr<OsNetworkNotifier> os_network_notifier_;
-    std::shared_ptr<OgNetworkNotifier> og_network_notifier_;
+      std::shared_ptr<MstTransport> mst_transport_;
+      std::shared_ptr<YacTransport> yac_transport_;
+      std::shared_ptr<OsTransport> os_transport_;
+      std::shared_ptr<OgTransport> og_transport_;
 
-    std::unique_ptr<ServerRunner> internal_server_;
+      std::shared_ptr<MstNetworkNotifier> mst_network_notifier_;
+      std::shared_ptr<YacNetworkNotifier> yac_network_notifier_;
+      std::shared_ptr<OsNetworkNotifier> os_network_notifier_;
+      std::shared_ptr<OgNetworkNotifier> og_network_notifier_;
 
-    std::shared_ptr<iroha::consensus::yac::YacCryptoProvider> yac_crypto_;
+      std::unique_ptr<ServerRunner> internal_server_;
 
-    std::shared_ptr<FakePeerBehaviour> behaviour_;
+      std::shared_ptr<iroha::consensus::yac::YacCryptoProvider> yac_crypto_;
 
-    logger::Logger log_;
-  };
+      std::shared_ptr<Behaviour> behaviour_;
 
+      logger::Logger log_;
+    };
+
+  }  // namespace fake_peer
 }  // namespace integration_framework
 
 #endif /* INTEGRATION_FRAMEWORK_FAKE_PEER_HPP_ */

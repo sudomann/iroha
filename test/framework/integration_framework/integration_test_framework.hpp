@@ -63,9 +63,11 @@ namespace iroha {
 
 namespace integration_framework {
 
-  using std::chrono::milliseconds;
+  namespace fake_peer {
+    class FakePeer;
+  }
 
-  class FakePeer;
+  using std::chrono::milliseconds;
 
   class IntegrationTestFramework {
    private:
@@ -103,7 +105,7 @@ namespace integration_framework {
 
     ~IntegrationTestFramework();
 
-    std::future<std::shared_ptr<FakePeer>> addInitailPeer(
+    std::future<std::shared_ptr<fake_peer::FakePeer>> addInitailPeer(
         const boost::optional<shared_model::crypto::Keypair> &key);
 
     /**
@@ -440,10 +442,10 @@ namespace integration_framework {
     std::mutex queue_mu;
     std::condition_variable queue_cond;
     bool cleanup_on_exit_;
-    std::vector<std::pair<std::promise<std::shared_ptr<FakePeer>>,
+    std::vector<std::pair<std::promise<std::shared_ptr<fake_peer::FakePeer>>,
                           boost::optional<shared_model::crypto::Keypair>>>
         fake_peers_promises_;
-    std::vector<std::shared_ptr<FakePeer>> fake_peers_;
+    std::vector<std::shared_ptr<fake_peer::FakePeer>> fake_peers_;
   };
 
   template <typename Queue, typename ObjectType, typename WaitTime>

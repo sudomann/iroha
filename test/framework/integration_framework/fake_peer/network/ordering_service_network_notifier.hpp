@@ -18,21 +18,23 @@ namespace shared_model {
 }  // namespace shared_model
 
 namespace integration_framework {
+  namespace fake_peer {
 
-  class OsNetworkNotifier final
-      : public iroha::network::OrderingServiceNotification {
-   public:
-    using TransactionBatch = shared_model::interface::TransactionBatch;
-    using TransactionBatchPtr = std::shared_ptr<TransactionBatch>;
+    class OsNetworkNotifier final
+        : public iroha::network::OrderingServiceNotification {
+     public:
+      using TransactionBatch = shared_model::interface::TransactionBatch;
+      using TransactionBatchPtr = std::shared_ptr<TransactionBatch>;
 
-    void onBatch(std::unique_ptr<TransactionBatch> batch) override;
+      void onBatch(std::unique_ptr<TransactionBatch> batch) override;
 
-    rxcpp::observable<TransactionBatchPtr> get_observable();
+      rxcpp::observable<TransactionBatchPtr> get_observable();
 
-   private:
-    rxcpp::subjects::subject<TransactionBatchPtr> batches_subject_;
-  };
+     private:
+      rxcpp::subjects::subject<TransactionBatchPtr> batches_subject_;
+    };
 
+  }  // namespace fake_peer
 }  // namespace integration_framework
 
 #endif /* FAKE_PEER_OS_NETWORK_NOTIFIER_HPP_ */

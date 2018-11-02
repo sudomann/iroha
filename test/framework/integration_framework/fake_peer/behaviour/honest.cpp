@@ -6,14 +6,16 @@
 #include "framework/integration_framework/fake_peer/behaviour/honest.hpp"
 
 namespace integration_framework {
+  namespace fake_peer {
 
-  void HonestFakePeerBehaviour::processYacMessage(
-      const FakePeer::YacMessagePtr &message) {
-    getFakePeer().voteForTheSame(message);
-  }
+    void HonestBehaviour::processYacMessage(
+        const FakePeer::YacMessagePtr &message) {
+      getFakePeer().voteForTheSame(message);
+    }
 
-  std::string HonestFakePeerBehaviour::getName() {
-    return "honest behaviour";
-  }
+    std::string HonestBehaviour::getName() {
+      return "honest behaviour";
+    }
 
+  }  // namespace fake_peer
 }  // namespace integration_framework

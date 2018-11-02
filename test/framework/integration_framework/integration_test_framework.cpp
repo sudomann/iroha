@@ -57,6 +57,7 @@ using AbstractTransactionValidator =
 using AlwaysValidTransactionValidator =
     shared_model::validation::AlwaysValidModelValidator<
         shared_model::interface::Transaction>;
+using FakePeer = integration_framework::fake_peer::FakePeer;
 
 namespace {
   std::string kLocalHost = "127.0.0.1";

@@ -9,16 +9,18 @@
 #include "framework/integration_framework/fake_peer/behaviour/empty.hpp"
 
 namespace integration_framework {
+  namespace fake_peer {
 
-  class HonestFakePeerBehaviour : public EmptyFakePeerBehaviour {
-   public:
-    virtual ~HonestFakePeerBehaviour() = default;
+    class HonestBehaviour : public EmptyBehaviour {
+     public:
+      virtual ~HonestBehaviour() = default;
 
-    void processYacMessage(const FakePeer::YacMessagePtr &message) override;
+      void processYacMessage(const FakePeer::YacMessagePtr &message) override;
 
-    std::string getName() override;
-  };
+      std::string getName() override;
+    };
 
+  }  // namespace fake_peer
 }  // namespace integration_framework
 
 #endif /* INTEGRATION_FRAMEWORK_FAKE_PEER_BEHAVIOUR_HONEST_HPP_ */

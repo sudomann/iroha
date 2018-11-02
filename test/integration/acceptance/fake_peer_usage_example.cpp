@@ -21,6 +21,8 @@ static constexpr std::chrono::seconds kMstStateWaitingTime(10);
 
 class FakePeerExampleFixture : public AcceptanceFixture {
  public:
+  using FakePeerPtr = std::shared_ptr<fake_peer::FakePeer>;
+
   std::unique_ptr<IntegrationTestFramework> itf_;
 
   /**
@@ -34,7 +36,6 @@ class FakePeerExampleFixture : public AcceptanceFixture {
    */
   IntegrationTestFramework &prepareState(size_t num_fake_peers) {
     // request the fake peers construction
-    using FakePeerPtr = std::shared_ptr<integration_framework::FakePeer>;
     std::vector<std::future<FakePeerPtr>>
         fake_peers_futures;
     std::generate_n(std::back_inserter(fake_peers_futures),
@@ -50,7 +51,7 @@ class FakePeerExampleFixture : public AcceptanceFixture {
     for (auto &fake_peer_future : fake_peers_futures) {
       assert(fake_peer_future.valid() && "fake peer must be ready");
       FakePeerPtr fake_peer = fake_peer_future.get();
-      fake_peer->setBehaviour(std::make_shared<HonestFakePeerBehaviour>());
+      fake_peer->setBehaviour(std::make_shared<fake_peer::HonestBehaviour>());
       fake_peers_.emplace_back(std::move(fake_peer));
     }
 
@@ -73,7 +74,7 @@ class FakePeerExampleFixture : public AcceptanceFixture {
         1, boost::none, true, true);
   }
 
-  std::vector<std::shared_ptr<integration_framework::FakePeer>> fake_peers_;
+  std::vector<FakePeerPtr> fake_peers_;
 };
 
 /**
