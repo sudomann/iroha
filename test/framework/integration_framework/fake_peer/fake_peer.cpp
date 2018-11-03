@@ -14,6 +14,7 @@
 #include "cryptography/default_hash_provider.hpp"
 #include "cryptography/keypair.hpp"
 #include "framework/integration_framework/fake_peer/behaviour/behaviour.hpp"
+#include "framework/integration_framework/fake_peer/block_storage.hpp"
 #include "framework/integration_framework/fake_peer/network/mst_network_notifier.hpp"
 #include "framework/integration_framework/fake_peer/network/ordering_gate_network_notifier.hpp"
 #include "framework/integration_framework/fake_peer/network/ordering_service_network_notifier.hpp"
@@ -109,6 +110,28 @@ namespace integration_framework {
       behaviour_ = behaviour;
       behaviour_->adopt(shared_from_this());
       return *this;
+    }
+
+    FakePeer &FakePeer::setBlockStorage(
+        const std::shared_ptr<BlockStorage> &block_storage) {
+      if (block_storage_) {
+        block_storage_->claimNotUsingPeer(shared_from_this());
+      }
+      block_storage_ = block_storage;
+      block_storage_->claimUsingPeer(shared_from_this());
+      return *this;
+    }
+
+    FakePeer &FakePeer::removeBlockStorage() {
+      if (block_storage_) {
+        block_storage_->claimNotUsingPeer(shared_from_this());
+      }
+      block_storage_.reset();
+      return *this;
+    }
+
+    boost::optional<const BlockStorage&> FakePeer::getBlockStorage() const {
+      return {block_storage_ != nullptr, *block_storage_};
     }
 
     void FakePeer::run() {
