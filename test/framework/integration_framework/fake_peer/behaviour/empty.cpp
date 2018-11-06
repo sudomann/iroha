@@ -10,6 +10,16 @@ namespace integration_framework {
     void EmptyBehaviour::processOsBatch(const FakePeer::OsBatchPtr &batch) {}
     void EmptyBehaviour::processOgProposal(
         const FakePeer::OgProposalPtr &proposal) {}
+    EmptyBehaviour::LoaderBlockRequestResult
+    EmptyBehaviour::processLoaderBlockRequest(
+        const FakePeer::LoaderBlockRequest &request) {
+      return {};
+    }
+    EmptyBehaviour::LoaderBlocksRequestResult
+    EmptyBehaviour::processLoaderBlocksRequest(
+        const FakePeer::LoaderBlocksRequest &request) {
+      return {};
+    }
 
     std::string EmptyBehaviour::getName() {
       return "empty behaviour";

@@ -24,6 +24,10 @@ namespace integration_framework {
       void processYacMessage(const FakePeer::YacMessagePtr &message) override;
       void processOsBatch(const FakePeer::OsBatchPtr &batch) override;
       void processOgProposal(const FakePeer::OgProposalPtr &proposal) override;
+      LoaderBlockRequestResult processLoaderBlockRequest(
+          const FakePeer::LoaderBlockRequest &request) override;
+      LoaderBlocksRequestResult processLoaderBlocksRequest(
+          const FakePeer::LoaderBlocksRequest &request) override;
 
       std::string getName() override;
 

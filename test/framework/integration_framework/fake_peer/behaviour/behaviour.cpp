@@ -49,5 +49,9 @@ namespace integration_framework {
       return *fake_peer;
     }
 
+    logger::Logger &Behaviour::getLogger() {
+      return log_;
+    }
+
   }  // namespace fake_peer
 }  // namespace integration_framework

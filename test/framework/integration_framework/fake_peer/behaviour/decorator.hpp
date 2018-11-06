@@ -24,6 +24,10 @@ namespace integration_framework {
       void processOsBatch(const FakePeer::OsBatchPtr &batch) override = 0;
       void processOgProposal(const FakePeer::OgProposalPtr &proposal) override =
           0;
+      LoaderBlockRequestResult processLoaderBlockRequest(
+          const FakePeer::LoaderBlockRequest &request) override = 0;
+      LoaderBlocksRequestResult processLoaderBlocksRequest(
+          const FakePeer::LoaderBlocksRequest &request) override = 0;
 
       std::string getName() override = 0;
 

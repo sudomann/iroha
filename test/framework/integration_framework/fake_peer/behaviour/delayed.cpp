@@ -30,6 +30,20 @@ namespace integration_framework {
       base_behaviour_.processOgProposal(proposal);
     }
 
+    DelayedBehaviour::LoaderBlockRequestResult
+    DelayedBehaviour::processLoaderBlockRequest(
+        const FakePeer::LoaderBlockRequest &request) {
+      std::this_thread::sleep_for(delay_);
+      return base_behaviour_.processLoaderBlockRequest(request);
+    }
+
+    DelayedBehaviour::LoaderBlocksRequestResult
+    DelayedBehaviour::processLoaderBlocksRequest(
+        const FakePeer::LoaderBlocksRequest &request) {
+      std::this_thread::sleep_for(delay_);
+      return base_behaviour_.processLoaderBlocksRequest(request);
+    }
+
     std::string DelayedBehaviour::getName() {
       return "delayed " + base_behaviour_.getName();
     }
