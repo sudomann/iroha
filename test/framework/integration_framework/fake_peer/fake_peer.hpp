@@ -138,6 +138,10 @@ namespace integration_framework {
 
       /// Get the observable of OG proposals received by this peer.
       rxcpp::observable<OgProposalPtr> get_og_proposals_observable();
+      rxcpp::observable<LoaderBlockRequest>
+      get_loader_block_request_observable();
+      rxcpp::observable<LoaderBlocksRequest>
+      get_loader_blocks_request_observable();
 
       /**
        * Send the real peer votes from this peer analogous to the provided ones.
@@ -168,6 +172,10 @@ namespace integration_framework {
       void sendBatch(
           const std::shared_ptr<shared_model::interface::TransactionBatch>
               &batch);
+
+      void sendBlockRequest(const LoaderBlockRequest &request);
+
+      void sendBlocksRequest(const LoaderBlocksRequest &request);
 
      private:
       using MstTransport = iroha::network::MstTransportGrpc;
