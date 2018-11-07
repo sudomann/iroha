@@ -15,11 +15,11 @@ namespace integration_framework {
      public:
       virtual ~HonestBehaviour() = default;
 
-      void processYacMessage(const FakePeer::YacMessagePtr &message) override;
+      void processYacMessage(const YacMessagePtr &message) override;
       LoaderBlockRequestResult processLoaderBlockRequest(
-          const FakePeer::LoaderBlockRequest &request) override;
+          const LoaderBlockRequest &request) override;
       LoaderBlocksRequestResult processLoaderBlocksRequest(
-          const FakePeer::LoaderBlocksRequest &request) override;
+          const LoaderBlocksRequest &request) override;
 
       std::string getName() override;
     };

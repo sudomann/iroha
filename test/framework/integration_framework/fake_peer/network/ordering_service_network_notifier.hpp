@@ -9,13 +9,8 @@
 #include <rxcpp/rx.hpp>
 
 #include "consensus/yac/transport/yac_network_interface.hpp"
+#include "framework/integration_framework/fake_peer/types.hpp"
 #include "network/ordering_service_transport.hpp"
-
-namespace shared_model {
-  namespace interface {
-    class TransactionBatch;
-  }
-}  // namespace shared_model
 
 namespace integration_framework {
   namespace fake_peer {
@@ -23,15 +18,13 @@ namespace integration_framework {
     class OsNetworkNotifier final
         : public iroha::network::OrderingServiceNotification {
      public:
-      using TransactionBatch = shared_model::interface::TransactionBatch;
-      using TransactionBatchPtr = std::shared_ptr<TransactionBatch>;
+      void onBatch(std::unique_ptr<shared_model::interface::TransactionBatch>
+                       batch) override;
 
-      void onBatch(std::unique_ptr<TransactionBatch> batch) override;
-
-      rxcpp::observable<TransactionBatchPtr> get_observable();
+      rxcpp::observable<OsBatchPtr> get_observable();
 
      private:
-      rxcpp::subjects::subject<TransactionBatchPtr> batches_subject_;
+      rxcpp::subjects::subject<OsBatchPtr> batches_subject_;
     };
 
   }  // namespace fake_peer

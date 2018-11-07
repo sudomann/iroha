@@ -130,7 +130,7 @@ namespace integration_framework {
       return *this;
     }
 
-    boost::optional<const BlockStorage&> FakePeer::getBlockStorage() const {
+    boost::optional<const BlockStorage &> FakePeer::getBlockStorage() const {
       return {block_storage_ != nullptr, *block_storage_};
     }
 
@@ -167,23 +167,19 @@ namespace integration_framework {
       return *keypair_;
     }
 
-    rxcpp::observable<FakePeer::MstMessagePtr>
-    FakePeer::get_mst_states_observable() {
+    rxcpp::observable<MstMessagePtr> FakePeer::get_mst_states_observable() {
       return mst_network_notifier_->get_observable();
     }
 
-    rxcpp::observable<FakePeer::YacMessagePtr>
-    FakePeer::get_yac_states_observable() {
+    rxcpp::observable<YacMessagePtr> FakePeer::get_yac_states_observable() {
       return yac_network_notifier_->get_observable();
     }
 
-    rxcpp::observable<FakePeer::OsBatchPtr>
-    FakePeer::get_os_batches_observable() {
+    rxcpp::observable<OsBatchPtr> FakePeer::get_os_batches_observable() {
       return os_network_notifier_->get_observable();
     }
 
-    rxcpp::observable<FakePeer::OgProposalPtr>
-    FakePeer::get_og_proposals_observable() {
+    rxcpp::observable<OgProposalPtr> FakePeer::get_og_proposals_observable() {
       return og_network_notifier_->get_observable();
     }
 
@@ -219,8 +215,7 @@ namespace integration_framework {
       yac_transport_->sendState(*real_peer_, state);
     }
 
-    void FakePeer::voteForTheSame(
-        const FakePeer::YacMessagePtr &incoming_votes) {
+    void FakePeer::voteForTheSame(const YacMessagePtr &incoming_votes) {
       using iroha::consensus::yac::VoteMessage;
       log_->debug("Got a YAC state message with {} votes.",
                   incoming_votes->size());

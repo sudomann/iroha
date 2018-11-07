@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "framework/integration_framework/fake_peer/fake_peer.hpp"
+#include "framework/integration_framework/fake_peer/types.hpp"
 #include "logger/logger.hpp"
 
 namespace shared_model {
@@ -24,10 +25,6 @@ namespace integration_framework {
 
     class Behaviour {
      public:
-      using LoaderBlockRequestResult =
-          boost::optional<const shared_model::proto::Block &>;
-      using LoaderBlocksRequestResult =
-          std::vector<std::reference_wrapper<const shared_model::proto::Block>>;
 
       virtual ~Behaviour();
 
@@ -37,17 +34,14 @@ namespace integration_framework {
       /// Disable the behaviour
       void absolve();
 
-      virtual void processMstMessage(
-          const FakePeer::MstMessagePtr &message) = 0;
-      virtual void processYacMessage(
-          const FakePeer::YacMessagePtr &message) = 0;
-      virtual void processOsBatch(const FakePeer::OsBatchPtr &batch) = 0;
-      virtual void processOgProposal(
-          const FakePeer::OgProposalPtr &proposal) = 0;
+      virtual void processMstMessage(const MstMessagePtr &message) = 0;
+      virtual void processYacMessage(const YacMessagePtr &message) = 0;
+      virtual void processOsBatch(const OsBatchPtr &batch) = 0;
+      virtual void processOgProposal(const OgProposalPtr &proposal) = 0;
       virtual LoaderBlockRequestResult processLoaderBlockRequest(
-          const FakePeer::LoaderBlockRequest &request) = 0;
+          const LoaderBlockRequest &request) = 0;
       virtual LoaderBlocksRequestResult processLoaderBlocksRequest(
-          const FakePeer::LoaderBlocksRequest &request) = 0;
+          const LoaderBlocksRequest &request) = 0;
 
       virtual std::string getName() = 0;
 

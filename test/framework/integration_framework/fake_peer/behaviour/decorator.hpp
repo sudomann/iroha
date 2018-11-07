@@ -17,17 +17,14 @@ namespace integration_framework {
 
       ~BehaviourDecorator() = default;
 
-      void processMstMessage(const FakePeer::MstMessagePtr &message) override =
-          0;
-      void processYacMessage(const FakePeer::YacMessagePtr &message) override =
-          0;
-      void processOsBatch(const FakePeer::OsBatchPtr &batch) override = 0;
-      void processOgProposal(const FakePeer::OgProposalPtr &proposal) override =
-          0;
+      void processMstMessage(const MstMessagePtr &message) override = 0;
+      void processYacMessage(const YacMessagePtr &message) override = 0;
+      void processOsBatch(const OsBatchPtr &batch) override = 0;
+      void processOgProposal(const OgProposalPtr &proposal) override = 0;
       LoaderBlockRequestResult processLoaderBlockRequest(
-          const FakePeer::LoaderBlockRequest &request) override = 0;
+          const LoaderBlockRequest &request) override = 0;
       LoaderBlocksRequestResult processLoaderBlocksRequest(
-          const FakePeer::LoaderBlocksRequest &request) override = 0;
+          const LoaderBlocksRequest &request) override = 0;
 
       std::string getName() override = 0;
 

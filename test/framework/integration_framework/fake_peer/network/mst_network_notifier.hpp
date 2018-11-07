@@ -9,6 +9,7 @@
 #include <rxcpp/rx.hpp>
 
 #include "framework/integration_framework/fake_peer/network/mst_message.hpp"
+#include "framework/integration_framework/fake_peer/types.hpp"
 #include "network/mst_transport.hpp"
 
 namespace integration_framework {
@@ -17,8 +18,6 @@ namespace integration_framework {
     class MstNetworkNotifier final
         : public iroha::network::MstTransportNotification {
      public:
-      using MstMessagePtr = std::shared_ptr<MstMessage>;
-
       void onNewState(const shared_model::crypto::PublicKey &from,
                       const iroha::MstState &new_state) override;
 

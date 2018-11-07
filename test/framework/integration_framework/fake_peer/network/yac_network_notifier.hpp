@@ -9,14 +9,7 @@
 #include <rxcpp/rx.hpp>
 
 #include "consensus/yac/transport/yac_network_interface.hpp"
-
-namespace iroha {
-  namespace consensus {
-    namespace yac {
-      struct VoteMessage;
-    }  // namespace yac
-  }    // namespace consensus
-}  // namespace iroha
+#include "framework/integration_framework/fake_peer/types.hpp"
 
 namespace integration_framework {
   namespace fake_peer {
@@ -25,14 +18,13 @@ namespace integration_framework {
         : public iroha::consensus::yac::YacNetworkNotifications {
      public:
       using StateMessage = std::vector<iroha::consensus::yac::VoteMessage>;
-      using StateMessagePtr = std::shared_ptr<const StateMessage>;
 
       void onState(StateMessage state) override;
 
-      rxcpp::observable<StateMessagePtr> get_observable();
+      rxcpp::observable<YacMessagePtr> get_observable();
 
      private:
-      rxcpp::subjects::subject<StateMessagePtr> votes_subject_;
+      rxcpp::subjects::subject<YacMessagePtr> votes_subject_;
     };
 
   }  // namespace fake_peer

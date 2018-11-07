@@ -12,55 +12,15 @@
 #include <boost/core/noncopyable.hpp>
 #include <rxcpp/rx.hpp>
 #include "framework/integration_framework/fake_peer/network/mst_message.hpp"
+#include "framework/integration_framework/fake_peer/types.hpp"
 #include "interfaces/iroha_internal/abstract_transport_factory.hpp"
 #include "logger/logger.hpp"
 #include "network/impl/async_grpc_client.hpp"
 
-namespace shared_model {
-  namespace crypto {
-    class Keypair;
-  }
-  namespace interface {
-    class CommonObjectsFactory;
-    class Proposal;
-    class Transaction;
-    class TransactionBatch;
-    class TransactionBatchParser;
-    class TransactionBatchFactory;
-  }  // namespace interface
-}  // namespace shared_model
-
-namespace iroha {
-  namespace protocol {
-    class Transaction;
-  }
-  namespace network {
-    class MstTransportGrpc;
-    class MstTransportNotification;
-  }  // namespace network
-  namespace consensus {
-    namespace yac {
-      class NetworkImpl;
-      class VoteMessage;
-      class YacCryptoProvider;
-      class YacHash;
-    }  // namespace yac
-  }    // namespace consensus
-  namespace ordering {
-    class OrderingGateTransportGrpc;
-    class OrderingServiceTransportGrpc;
-  }  // namespace ordering
-}  // namespace iroha
 class ServerRunner;
 
 namespace integration_framework {
   namespace fake_peer {
-    class MstNetworkNotifier;
-    class OsNetworkNotifier;
-    class OgNetworkNotifier;
-    class YacNetworkNotifier;
-    class Behaviour;
-    class BlockStorage;
 
     /**
      * A lightweight implementation of iroha peer network interface for
@@ -73,14 +33,6 @@ namespace integration_framework {
           shared_model::interface::AbstractTransportFactory<
               shared_model::interface::Transaction,
               iroha::protocol::Transaction>;
-      using MstMessagePtr = std::shared_ptr<MstMessage>;
-      using YacMessagePtr = std::shared_ptr<
-          const std::vector<iroha::consensus::yac::VoteMessage>>;
-      using OgProposalPtr = std::shared_ptr<shared_model::interface::Proposal>;
-      using OsBatchPtr =
-          std::shared_ptr<shared_model::interface::TransactionBatch>;
-      using LoaderBlockRequest = std::shared_ptr<shared_model::crypto::Hash>;
-      using LoaderBlocksRequest = shared_model::interface::types::HeightType;
 
       /**
        * Constructor.
