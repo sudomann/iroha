@@ -112,6 +112,10 @@ namespace integration_framework {
       return *this;
     }
 
+    const std::shared_ptr<Behaviour> &FakePeer::getBehaviour() const {
+      return behaviour_;
+    }
+
     FakePeer &FakePeer::setBlockStorage(
         const std::shared_ptr<BlockStorage> &block_storage) {
       if (block_storage_) {

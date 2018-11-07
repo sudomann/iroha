@@ -31,6 +31,7 @@ add_library(integration_framework
     integration_framework/fake_peer/behaviour/decorator.cpp
     integration_framework/fake_peer/behaviour/delayed.cpp
     integration_framework/fake_peer/behaviour/honest.cpp
+    integration_framework/fake_peer/network/loader_grpc.cpp
     integration_framework/fake_peer/network/mst_network_notifier.cpp
     integration_framework/fake_peer/network/ordering_service_network_notifier.cpp
     integration_framework/fake_peer/network/ordering_gate_network_notifier.cpp

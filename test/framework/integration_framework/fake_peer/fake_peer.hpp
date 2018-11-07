@@ -64,6 +64,8 @@ namespace integration_framework {
       /// Assign the given behaviour to this fake peer.
       FakePeer &setBehaviour(const std::shared_ptr<Behaviour> &behaviour);
 
+      const std::shared_ptr<Behaviour> &getBehaviour() const;
+
       FakePeer &setBlockStorage(
           const std::shared_ptr<BlockStorage> &block_storage);
 
