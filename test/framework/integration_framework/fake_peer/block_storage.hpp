@@ -33,6 +33,7 @@ namespace integration_framework {
 
       BlockPtr getBlockByHeight(HeightType height) const;
       BlockPtr getBlockByHash(const HashType &hash) const;
+      BlockPtr getTopBlock() const;
 
       // Claim that a fake peer uses this storage. Used for logging.
       void claimUsingPeer(const std::shared_ptr<FakePeer> &peer);

@@ -6,6 +6,8 @@
 #include "framework/integration_framework/fake_peer/block_storage.hpp"
 
 #include <boost/algorithm/string/join.hpp>
+#include <boost/range/adaptor/map.hpp>
+#include <boost/range/algorithm/max_element.hpp>
 #include "framework/integration_framework/fake_peer/fake_peer.hpp"
 #include "interfaces/iroha_internal/block.hpp"
 
@@ -60,6 +62,16 @@ namespace integration_framework {
         return {};
       }
       return found->second;
+    }
+
+    BlockStorage::BlockPtr BlockStorage::getTopBlock() const {
+      if (blocks_by_height_.empty()) {
+        getLogger()->info(
+            "Requested top block, but the block storage is empty.");
+        return {};
+      }
+      return blocks_by_height_.at(*boost::range::max_element(
+          blocks_by_height_ | boost::adaptors::map_keys));
     }
 
     void BlockStorage::claimUsingPeer(const std::shared_ptr<FakePeer> &peer) {
