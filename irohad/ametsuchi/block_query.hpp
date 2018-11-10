@@ -40,6 +40,9 @@ namespace iroha {
 
      public:
       virtual ~BlockQuery() = default;
+
+      // TODO mboldyrev 09.11.2018 IR-1861 Fix the return type in docstrings
+
       /**
        * Get all transactions of an account.
        * @param account_id - account_id (accountName@domainName)
