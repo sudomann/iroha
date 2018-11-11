@@ -127,9 +127,9 @@ namespace integration_framework {
           const std::shared_ptr<shared_model::interface::TransactionBatch>
               &batch);
 
-      void sendBlockRequest(const LoaderBlockRequest &request);
+      bool sendBlockRequest(const LoaderBlockRequest &request);
 
-      void sendBlocksRequest(const LoaderBlocksRequest &request);
+      size_t sendBlocksRequest(const LoaderBlocksRequest &request);
 
      private:
       using MstTransport = iroha::network::MstTransportGrpc;
@@ -157,6 +157,7 @@ namespace integration_framework {
       std::shared_ptr<YacTransport> yac_transport_;
       std::shared_ptr<OsTransport> os_transport_;
       std::shared_ptr<OgTransport> og_transport_;
+      std::shared_ptr<LoaderGrpc> synchronizer_transport_;
 
       std::shared_ptr<MstNetworkNotifier> mst_network_notifier_;
       std::shared_ptr<YacNetworkNotifier> yac_network_notifier_;

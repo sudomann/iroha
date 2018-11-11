@@ -58,6 +58,7 @@ namespace integration_framework {
     class Behaviour;
     class BlockStorage;
     class FakePeer;
+    class LoaderGrpc;
     class MstNetworkNotifier;
     class OgNetworkNotifier;
     class OsNetworkNotifier;

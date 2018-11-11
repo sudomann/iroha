@@ -27,8 +27,15 @@ namespace integration_framework {
           const iroha::network::proto::BlockRequest *request,
           iroha::protocol::Block *response) override;
 
+      bool sendBlockRequest(const std::string &dest_address,
+                            const LoaderBlockRequest &request);
+
+      size_t sendBlocksRequest(const std::string &dest_address,
+                               const LoaderBlocksRequest &request);
+
      private:
       std::weak_ptr<FakePeer> fake_peer_wptr_;
+      logger::Logger log_;
     };
   }
 }

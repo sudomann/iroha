@@ -15,6 +15,7 @@
 #include "cryptography/keypair.hpp"
 #include "framework/integration_framework/fake_peer/behaviour/behaviour.hpp"
 #include "framework/integration_framework/fake_peer/block_storage.hpp"
+#include "framework/integration_framework/fake_peer/network/loader_grpc.hpp"
 #include "framework/integration_framework/fake_peer/network/mst_network_notifier.hpp"
 #include "framework/integration_framework/fake_peer/network/ordering_gate_network_notifier.hpp"
 #include "framework/integration_framework/fake_peer/network/ordering_service_network_notifier.hpp"
@@ -140,12 +141,15 @@ namespace integration_framework {
 
     void FakePeer::run() {
       // start instance
+      synchronizer_transport_ =
+          std::make_shared<LoaderGrpc>(shared_from_this());
       log_->info("starting listening server");
       internal_server_ = std::make_unique<ServerRunner>(getAddress());
       internal_server_->append(yac_transport_)
           .append(mst_transport_)
           .append(os_transport_)
           .append(og_transport_)
+          .append(synchronizer_transport_)
           .run()
           .match(
               [this](const iroha::expected::Result<int, std::string>::ValueType
@@ -260,6 +264,16 @@ namespace integration_framework {
         const std::shared_ptr<shared_model::interface::TransactionBatch>
             &batch) {
       og_transport_->propagateBatch(batch);
+    }
+
+    bool FakePeer::sendBlockRequest(const LoaderBlockRequest &request) {
+      return synchronizer_transport_->sendBlockRequest(real_peer_->address(),
+                                                       request);
+    }
+
+    size_t FakePeer::sendBlocksRequest(const LoaderBlocksRequest &request) {
+      return synchronizer_transport_->sendBlocksRequest(real_peer_->address(),
+                                                        request);
     }
 
   }  // namespace fake_peer
