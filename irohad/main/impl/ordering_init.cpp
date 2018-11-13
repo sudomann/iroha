@@ -5,6 +5,7 @@
 
 #include "main/impl/ordering_init.hpp"
 #include "ametsuchi/os_persistent_state_factory.hpp"
+#include "common/bind.hpp"
 #include "interfaces/common_objects/peer.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/iroha_internal/block.hpp"
@@ -62,6 +63,8 @@ namespace iroha {
         std::chrono::milliseconds delay_milliseconds,
         std::shared_ptr<ametsuchi::OsPersistentStateFactory> persistent_state,
         std::shared_ptr<ametsuchi::BlockQueryFactory> block_query_factory,
+        std::shared_ptr<shared_model::interface::TransactionBatchFactory>
+            transaction_batch_factory,
         std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>
             async_call) {
       auto query = peer_query_factory->createPeerQuery();
@@ -81,7 +84,7 @@ namespace iroha {
 
       ordering_service_transport =
           std::make_shared<ordering::OrderingServiceTransportGrpc>(
-              std::move(async_call));
+              std::move(transaction_batch_factory), std::move(async_call));
       ordering_service = createService(peer_query_factory,
                                        max_size,
                                        delay_milliseconds,

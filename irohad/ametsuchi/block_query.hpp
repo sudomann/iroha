@@ -20,10 +20,9 @@
 
 #include <boost/optional.hpp>
 #include <cmath>
-#include <rxcpp/rx-observable.hpp>
+#include <rxcpp/rx.hpp>
 
 #include "common/result.hpp"
-#include "common/types.hpp"
 #include "interfaces/iroha_internal/block.hpp"
 #include "interfaces/transaction.hpp"
 

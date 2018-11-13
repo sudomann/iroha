@@ -7,8 +7,10 @@
 
 #include <boost/format.hpp>
 
+#include "builders/default_builders.hpp"
 #include "interfaces/iroha_internal/block.hpp"
 #include "interfaces/iroha_internal/proposal.hpp"
+#include "interfaces/iroha_internal/transaction_batch.hpp"
 #include "interfaces/iroha_internal/transaction_sequence.hpp"
 #include "validation/stateful_validator_common.hpp"
 
@@ -19,20 +21,20 @@ namespace iroha {
 
     namespace {
       std::string composeErrorMessage(
-          const validation::TransactionError &tx_error) {
-        if (not tx_error.first.tx_passed_initial_validation) {
+          const validation::TransactionError &tx_hash_and_error) {
+        const auto tx_hash = tx_hash_and_error.first.hex();
+        const auto &cmd_error = tx_hash_and_error.second;
+        if (not cmd_error.tx_passed_initial_validation) {
           return (boost::format("Stateful validation error: transaction %s "
                                 "did not pass initial verification: "
                                 "checking '%s', error message '%s'")
-                  % tx_error.second.hex() % tx_error.first.name
-                  % tx_error.first.error)
+                  % tx_hash % cmd_error.name % cmd_error.error)
               .str();
         }
         return (boost::format("Stateful validation error in transaction %s: "
                               "command '%s' with index '%d' did not pass "
                               "verification with error '%s'")
-                % tx_error.second.hex() % tx_error.first.name
-                % tx_error.first.index % tx_error.first.error)
+                % tx_hash % cmd_error.name % cmd_error.index % cmd_error.error)
             .str();
       }
     }  // namespace
@@ -50,17 +52,17 @@ namespace iroha {
           [this](std::shared_ptr<validation::VerifiedProposalAndErrors>
                      proposal_and_errors) {
             // notify about failed txs
-            const auto &errors = proposal_and_errors->second;
+            const auto &errors = proposal_and_errors->rejected_transactions;
             std::lock_guard<std::mutex> lock(notifier_mutex_);
             for (const auto &tx_error : errors) {
               auto error_msg = composeErrorMessage(tx_error);
               log_->info(error_msg);
               this->publishStatus(
-                  TxStatusType::kStatefulFailed, tx_error.second, error_msg);
+                  TxStatusType::kStatefulFailed, tx_error.first, error_msg);
             }
             // notify about success txs
             for (const auto &successful_tx :
-                 proposal_and_errors->first->transactions()) {
+                 proposal_and_errors->verified_proposal->transactions()) {
               log_->info("on stateful validation success: {}",
                          successful_tx.hash().hex());
               this->publishStatus(TxStatusType::kStatefulValid,
@@ -96,6 +98,14 @@ namespace iroha {
                 });
           });
 
+      mst_processor_->onStateUpdate().subscribe([this](auto &&state) {
+        log_->info("MST state updated");
+        for (auto &&batch : state->getBatches()) {
+          for (auto &&tx : batch->transactions()) {
+            this->publishStatus(TxStatusType::kMstPending, tx->hash());
+          }
+        }
+      });
       mst_processor_->onPreparedBatches().subscribe([this](auto &&batch) {
         log_->info("MST batch prepared");
         this->publishEnoughSignaturesStatus(batch->transactions());
@@ -118,9 +128,6 @@ namespace iroha {
         this->publishEnoughSignaturesStatus(transaction_batch->transactions());
         pcs_->propagate_batch(transaction_batch);
       } else {
-        for (const auto &tx : transaction_batch->transactions()) {
-          this->publishStatus(TxStatusType::kMstPending, tx->hash());
-        }
         log_->info("propagating batch to MST");
         mst_processor_->propagateBatch(transaction_batch);
       }

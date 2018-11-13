@@ -1,18 +1,6 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
- * http://soramitsu.co.jp
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <utility>
@@ -99,7 +87,7 @@ namespace iroha {
   // -------------------| MstTransportNotification override |-------------------
 
   void FairMstProcessor::onNewState(
-      const std::shared_ptr<shared_model::interface::Peer> &from,
+      const shared_model::crypto::PublicKey &from,
       ConstRefState new_state) {
     log_->info("Applying new state");
     auto current_time = time_provider_->getCurrentTime();
@@ -126,11 +114,12 @@ namespace iroha {
     auto size = data.size();
     std::for_each(data.begin(),
                   data.end(),
-                  [this, &current_time, size](const auto &peer) {
-                    auto diff = storage_->getDiffState(peer, current_time);
+                  [this, &current_time, size](const auto &dst_peer) {
+                    auto diff = storage_->getDiffState(dst_peer->pubkey(),
+                                                       current_time);
                     if (not diff.isEmpty()) {
                       log_->info("Propagate new data[{}]", size);
-                      transport_->sendState(*peer, diff);
+                      transport_->sendState(*dst_peer, diff);
                     }
                   });
   }

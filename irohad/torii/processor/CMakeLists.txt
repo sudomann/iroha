@@ -9,6 +9,6 @@ target_link_libraries(processors PUBLIC
     endpoint
     mst_processor
     shared_model_proto_builders
-    query_execution
     status_bus
+    common
     )

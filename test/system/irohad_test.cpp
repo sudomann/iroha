@@ -14,8 +14,8 @@
 #include <boost/process.hpp>
 
 #include "backend/protobuf/query_responses/proto_query_response.hpp"
+#include "common/bind.hpp"
 #include "common/files.hpp"
-#include "common/types.hpp"
 #include "crypto/keys_manager_impl.hpp"
 #include "framework/specified_visitor.hpp"
 #include "integration/acceptance/acceptance_fixture.hpp"
@@ -32,6 +32,7 @@
 using namespace boost::process;
 using namespace boost::filesystem;
 using namespace std::chrono_literals;
+using namespace common_constants;
 using iroha::operator|;
 
 class IrohadTest : public AcceptanceFixture {
@@ -68,7 +69,16 @@ class IrohadTest : public AcceptanceFixture {
 
   void launchIroha(const std::string &parameters) {
     iroha_process_.emplace(irohad_executable.string() + parameters);
-    std::this_thread::sleep_for(kTimeout);
+    auto channel = grpc::CreateChannel(kAddress + ":" + std::to_string(kPort),
+                                       grpc::InsecureChannelCredentials());
+    auto state = channel->GetState(true);
+    auto deadline = std::chrono::system_clock::now() + kTimeout;
+    while (state != grpc_connectivity_state::GRPC_CHANNEL_READY
+           and deadline > std::chrono::system_clock::now()) {
+      channel->WaitForStateChange(state, deadline);
+      state = channel->GetState(true);
+    }
+    ASSERT_EQ(state, grpc_connectivity_state::GRPC_CHANNEL_READY);
     ASSERT_TRUE(iroha_process_->running());
   }
 
@@ -98,7 +108,7 @@ class IrohadTest : public AcceptanceFixture {
       iroha_process_->terminate();
     }
 
-    iroha::remove_dir_contents(blockstore_path_);
+    boost::filesystem::remove_all(blockstore_path_);
     dropPostgres();
     boost::filesystem::remove(config_copy_);
   }
@@ -132,8 +142,8 @@ class IrohadTest : public AcceptanceFixture {
     iroha::protocol::TxStatusRequest tx_request;
     iroha::protocol::ToriiResponse torii_response;
 
-    auto tx = complete(baseTx(kAdminId).setAccountQuorum(kAdminId, 1),
-                       key_pair);
+    auto tx =
+        complete(baseTx(kAdminId).setAccountQuorum(kAdminId, 1), key_pair);
     tx_request.set_tx_hash(shared_model::crypto::toBinaryString(tx.hash()));
 
     auto client = torii::CommandSyncClient(kAddress, kPort);
@@ -157,8 +167,7 @@ class IrohadTest : public AcceptanceFixture {
    * OR until limit of attempts is exceeded.
    * @param key_pair Key pair for signing transaction
    */
-  void sendDefaultTxAndCheck(
-      const shared_model::crypto::Keypair &key_pair) {
+  void sendDefaultTxAndCheck(const shared_model::crypto::Keypair &key_pair) {
     iroha::protocol::ToriiResponse torii_response;
     torii_response = sendDefaultTx(key_pair);
     ASSERT_EQ(torii_response.tx_status(), iroha::protocol::TxStatus::COMMITTED);
@@ -168,10 +177,10 @@ class IrohadTest : public AcceptanceFixture {
   void setPaths() {
     path_irohad_ = boost::filesystem::path(PATHIROHAD);
     irohad_executable = path_irohad_ / "irohad";
-    path_example_ = boost::filesystem::path(PATHEXAMPLE);
-    path_config_ = path_example_ / "config.sample";
-    path_genesis_ = path_example_ / "genesis.block";
-    path_keypair_ = path_example_ / "node0";
+    test_data_path_ = boost::filesystem::path(PATHTESTDATA);
+    path_config_ = test_data_path_ / "config.sample";
+    path_genesis_ = test_data_path_ / "genesis.block";
+    path_keypair_ = test_data_path_ / "node0";
     config_copy_ = path_config_.string() + std::string(".copy");
   }
 
@@ -200,7 +209,7 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
 
  public:
   boost::filesystem::path irohad_executable;
-  const std::chrono::milliseconds kTimeout = std::chrono::seconds(1);
+  const std::chrono::milliseconds kTimeout = 30s;
   const std::string kAddress;
   const uint16_t kPort;
 
@@ -221,7 +230,7 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
 
  protected:
   boost::filesystem::path path_irohad_;
-  boost::filesystem::path path_example_;
+  boost::filesystem::path test_data_path_;
   boost::filesystem::path path_config_;
   boost::filesystem::path path_genesis_;
   boost::filesystem::path path_keypair_;
@@ -249,7 +258,7 @@ TEST_F(IrohadTest, RunIrohad) {
 TEST_F(IrohadTest, SendTx) {
   launchIroha();
 
-  auto key_manager = iroha::KeysManagerImpl(kAdminId, path_example_);
+  auto key_manager = iroha::KeysManagerImpl(kAdminId, test_data_path_);
   auto key_pair = key_manager.loadKeys();
   ASSERT_TRUE(key_pair);
 
@@ -265,7 +274,7 @@ TEST_F(IrohadTest, SendTx) {
  */
 TEST_F(IrohadTest, SendQuery) {
   launchIroha();
-  auto key_manager = iroha::KeysManagerImpl(kAdminId, path_example_);
+  auto key_manager = iroha::KeysManagerImpl(kAdminId, test_data_path_);
   auto key_pair = key_manager.loadKeys();
   ASSERT_TRUE(key_pair);
 
@@ -295,7 +304,7 @@ TEST_F(IrohadTest, SendQuery) {
 TEST_F(IrohadTest, RestartWithOverwriteLedger) {
   launchIroha();
 
-  auto key_manager = iroha::KeysManagerImpl(kAdminId, path_example_);
+  auto key_manager = iroha::KeysManagerImpl(kAdminId, test_data_path_);
   auto key_pair = key_manager.loadKeys();
   ASSERT_TRUE(key_pair);
 
@@ -327,7 +336,7 @@ TEST_F(IrohadTest, RestartWithOverwriteLedger) {
 TEST_F(IrohadTest, RestartWithoutResetting) {
   launchIroha();
 
-  auto key_manager = iroha::KeysManagerImpl(kAdminId, path_example_);
+  auto key_manager = iroha::KeysManagerImpl(kAdminId, test_data_path_);
   auto key_pair = key_manager.loadKeys();
   ASSERT_TRUE(key_pair);
 

@@ -21,7 +21,10 @@
 #include <memory>
 #include <string>
 
+#include "consensus/round.hpp"
+#include "consensus/yac/storage/yac_common.hpp"
 #include "interfaces/common_objects/types.hpp"
+#include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -36,21 +39,40 @@ namespace iroha {
 
       class YacHash {
        public:
-        YacHash(std::string proposal, std::string block)
-            : proposal_hash(std::move(proposal)),
-              block_hash(std::move(block)) {}
+        YacHash(Round round, ProposalHash proposal, BlockHash block)
+            : vote_round{round},
+              vote_hashes{std::move(proposal), std::move(block)} {}
 
         YacHash() = default;
 
         /**
-         * Hash computed from proposal
+         * Round, in which peer voted
          */
-        std::string proposal_hash;
+        Round vote_round;
 
         /**
-         * Hash computed from block;
+         * Contains hashes of proposal and block, for which peer voted
          */
-        std::string block_hash;
+        struct VoteHashes {
+          /**
+           * Hash computed from proposal
+           */
+          ProposalHash proposal_hash;
+
+          /**
+           * Hash computed from block;
+           */
+          BlockHash block_hash;
+
+          std::string toString() const {
+            return shared_model::detail::PrettyStringBuilder()
+                .init("VoteHashes")
+                .append("proposal", proposal_hash)
+                .append("block", block_hash)
+                .finalize();
+          }
+        };
+        VoteHashes vote_hashes;
 
         /**
          * Peer signature of block
@@ -58,13 +80,22 @@ namespace iroha {
         std::shared_ptr<shared_model::interface::Signature> block_signature;
 
         bool operator==(const YacHash &obj) const {
-          return proposal_hash == obj.proposal_hash
-              and block_hash == obj.block_hash;
+          return vote_round == obj.vote_round
+              and vote_hashes.proposal_hash == obj.vote_hashes.proposal_hash
+              and vote_hashes.block_hash == obj.vote_hashes.block_hash;
         };
 
         bool operator!=(const YacHash &obj) const {
           return not(*this == obj);
         };
+
+        std::string toString() const {
+          return shared_model::detail::PrettyStringBuilder()
+              .init("YacHash")
+              .append("round", vote_round.toString())
+              .append("hashes", vote_hashes.toString())
+              .finalize();
+        }
       };
 
       /**

@@ -18,7 +18,7 @@
 #ifndef IROHA_ORDERING_SERVICE_HPP
 #define IROHA_ORDERING_SERVICE_HPP
 
-#include <rxcpp/rx-observable.hpp>
+#include <rxcpp/rx.hpp>
 
 #include "network/peer_communication_service.hpp"
 
@@ -42,8 +42,7 @@ namespace iroha {
        * @param batch
        */
       virtual void propagateBatch(
-          std::shared_ptr<shared_model::interface::TransactionBatch> batch)
-          const = 0;
+          std::shared_ptr<shared_model::interface::TransactionBatch> batch) = 0;
 
       /**
        * Return observable of all proposals in the consensus

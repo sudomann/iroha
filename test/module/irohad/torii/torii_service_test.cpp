@@ -3,9 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "backend/protobuf/proto_transport_factory.hpp"
 #include "backend/protobuf/proto_tx_status_factory.hpp"
 #include "builders/protobuf/transaction.hpp"
 #include "endpoint.pb.h"
+#include "interfaces/iroha_internal/transaction_batch_factory_impl.hpp"
+#include "interfaces/iroha_internal/transaction_batch_parser_impl.hpp"
 #include "main/server_runner.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/multi_sig_transactions/mst_mocks.hpp"
@@ -14,7 +17,6 @@
 #include "module/shared_model/builders/protobuf/proposal.hpp"
 #include "module/shared_model/builders/protobuf/test_block_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
-#include "module/shared_model/builders/protobuf/test_query_response_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 #include "torii/command_client.hpp"
 #include "torii/impl/command_service_impl.hpp"
@@ -103,6 +105,8 @@ class ToriiServiceTest : public testing::Test {
     block_query = std::make_shared<MockBlockQuery>();
     storage = std::make_shared<MockStorage>();
 
+    EXPECT_CALL(*mst, onStateUpdateImpl())
+        .WillRepeatedly(Return(mst_update_notifier.get_observable()));
     EXPECT_CALL(*mst, onPreparedBatchesImpl())
         .WillRepeatedly(Return(mst_prepared_notifier.get_observable()));
     EXPECT_CALL(*mst, onExpiredBatchesImpl())
@@ -120,6 +124,19 @@ class ToriiServiceTest : public testing::Test {
     //----------- Server run ----------------
     auto status_factory =
         std::make_shared<shared_model::proto::ProtoTxStatusFactory>();
+    std::unique_ptr<shared_model::validation::AbstractValidator<
+        shared_model::interface::Transaction>>
+        transaction_validator = std::make_unique<
+            shared_model::validation::DefaultUnsignedTransactionValidator>();
+    auto transaction_factory =
+        std::make_shared<shared_model::proto::ProtoTransportFactory<
+            shared_model::interface::Transaction,
+            shared_model::proto::Transaction>>(
+            std::move(transaction_validator));
+    auto batch_parser =
+        std::make_shared<shared_model::interface::TransactionBatchParserImpl>();
+    auto batch_factory = std::make_shared<
+        shared_model::interface::TransactionBatchFactoryImpl>();
     runner
         ->append(std::make_unique<torii::CommandServiceTransportGrpc>(
             std::make_shared<torii::CommandServiceImpl>(
@@ -127,7 +144,10 @@ class ToriiServiceTest : public testing::Test {
             status_bus,
             initial_timeout,
             nonfinal_timeout,
-            status_factory))
+            status_factory,
+            transaction_factory,
+            batch_parser,
+            batch_factory))
         .run()
         .match(
             [this](iroha::expected::Value<int> port) {
@@ -152,6 +172,8 @@ class ToriiServiceTest : public testing::Test {
   rxcpp::subjects::subject<
       std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>>
       verified_prop_notifier_;
+  rxcpp::subjects::subject<std::shared_ptr<iroha::MstState>>
+      mst_update_notifier;
   rxcpp::subjects::subject<iroha::DataType> mst_prepared_notifier;
   rxcpp::subjects::subject<iroha::DataType> mst_expired_notifier;
 
@@ -297,24 +319,25 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
 
   // notify the verified proposal event about txs, which passed stateful
   // validation
-  auto verified_proposal = std::make_shared<shared_model::proto::Proposal>(
+  auto validation_result =
+      std::make_shared<iroha::validation::VerifiedProposalAndErrors>();
+  validation_result->verified_proposal =
+      std::make_unique<shared_model::proto::Proposal>(
       TestProposalBuilder()
           .height(1)
           .createdTime(iroha::time::now())
           .transactions(txs)
           .build());
-  auto errors = iroha::validation::TransactionsErrors{std::make_pair(
+  validation_result->rejected_transactions.emplace(
+      failed_tx_hash,
       iroha::validation::CommandError{
-          "FailedCommand", "stateful validation failed", true, 2},
-      failed_tx_hash)};
+          "FailedCommand", "stateful validation failed", true, 2});
   auto stringified_error = "Stateful validation error in transaction "
                            + failed_tx_hash.hex() + ": "
                            "command 'FailedCommand' with index '2' "
                            "did not pass verification with error 'stateful "
                            "validation failed'";
-  verified_prop_notifier_.get_subscriber().on_next(
-      std::make_shared<iroha::validation::VerifiedProposalAndErrors>(
-          std::make_pair(verified_proposal, errors)));
+  verified_prop_notifier_.get_subscriber().on_next(validation_result);
 
   // create commit from block notifier's observable
   rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Block>>
@@ -452,9 +475,15 @@ TEST_F(ToriiServiceTest, StreamingFullPipelineTest) {
                                             .height(1)
                                             .build());
   prop_notifier_.get_subscriber().on_next(proposal);
-  verified_prop_notifier_.get_subscriber().on_next(
-      std::make_shared<iroha::validation::VerifiedProposalAndErrors>(
-          std::make_pair(proposal, iroha::validation::TransactionsErrors{})));
+
+  auto validation_result =
+      std::make_shared<iroha::validation::VerifiedProposalAndErrors>();
+  // a dirty hack: now the proposal object is kept also by unique_ptr.
+  // both shared and unique ptrs will live till the end of this function,
+  // and there the unique_ptr is released.
+  validation_result->verified_proposal =
+      std::unique_ptr<shared_model::proto::Proposal>(proposal.get());
+  verified_prop_notifier_.get_subscriber().on_next(validation_result);
 
   auto block = clone(proto::BlockBuilder()
                          .height(1)
@@ -482,6 +511,8 @@ TEST_F(ToriiServiceTest, StreamingFullPipelineTest) {
   // it can be only one or to follow by some non-final
   ASSERT_EQ(torii_response.back().tx_status(),
             iroha::protocol::TxStatus::COMMITTED);
+
+  validation_result->verified_proposal.release();  // see initialization above
 }
 
 /**
@@ -610,8 +641,6 @@ TEST_F(ToriiServiceTest, FailedListOfTxs) {
         ASSERT_EQ(toriiResponse.tx_status(),
                   iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED);
         auto msg = toriiResponse.error_message();
-        ASSERT_THAT(toriiResponse.error_message(),
-                    HasSubstr("bad timestamp: sent from future"));
-        ASSERT_NE(msg.find(hash.hex()), std::string::npos);
+        ASSERT_THAT(msg, HasSubstr("bad timestamp: sent from future"));
       });
 }

@@ -6,11 +6,6 @@
 #ifndef IROHA_HASH_HPP
 #define IROHA_HASH_HPP
 
-#include <functional>
-#include <string>
-
-#include "cryptography/public_key.hpp"
-#include "interfaces/common_objects/peer.hpp"
 #include "multi_sig_transactions/mst_types.hpp"
 
 namespace iroha {
@@ -18,29 +13,17 @@ namespace iroha {
     /**
      * Hash calculation factory for batch
      */
-    template <typename BatchType>
     class PointerBatchHasher {
      public:
-      size_t operator()(const BatchType &batch) const {
-        return string_hasher(batch->reducedHash().hex());
-      }
-
-     private:
-      std::hash<std::string> string_hasher;
+      size_t operator()(const DataType &batch) const;
     };
 
     /**
-     * Hasing of peer object
+     * Hashing of Blob object
      */
-    class PeerHasher {
+    class BlobHasher {
      public:
-      std::size_t operator()(
-          const std::shared_ptr<shared_model::interface::Peer> &obj) const {
-        return hasher(obj->address() + obj->pubkey().hex());
-      }
-
-     private:
-      std::hash<std::string> hasher;
+      std::size_t operator()(const shared_model::crypto::Blob &blob) const;
     };
   }  // namespace model
 }  // namespace iroha
