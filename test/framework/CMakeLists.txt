@@ -29,6 +29,7 @@ add_library(integration_framework
     integration_framework/fake_peer/network/ordering_service_network_notifier.cpp
     integration_framework/fake_peer/network/ordering_gate_network_notifier.cpp
     integration_framework/fake_peer/network/yac_network_notifier.cpp
+    integration_framework/port_guard.cpp
     common_constants.cpp
     )
 target_link_libraries(integration_framework
