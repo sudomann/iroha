@@ -176,9 +176,9 @@ target_link_libraries(replay_test
     acceptance_fixture
     )
 
-addtest(fake_peer_usage_example
-    fake_peer_usage_example.cpp
+addtest(fake_peer_example_test
+    fake_peer_example_test.cpp
     )
-target_link_libraries(fake_peer_usage_example
+target_link_libraries(fake_peer_example_test
     acceptance_fixture
     )

@@ -67,6 +67,8 @@ namespace integration_framework {
     class FakePeer;
   }
 
+  class PortGuard;
+
   using std::chrono::milliseconds;
 
   class IntegrationTestFramework {
@@ -393,6 +395,7 @@ namespace integration_framework {
     std::map<std::string, tbb::concurrent_queue<TxResponseType>>
         responses_queues_;
 
+    std::unique_ptr<PortGuard> port_guard_;
     size_t torii_port_;
     size_t internal_port_;
     std::shared_ptr<IrohaInstance> iroha_instance_;
