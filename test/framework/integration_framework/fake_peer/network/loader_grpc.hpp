@@ -15,7 +15,7 @@ namespace integration_framework {
 
     class LoaderGrpc : public iroha::network::proto::Loader::Service {
      public:
-      LoaderGrpc(const std::shared_ptr<FakePeer> &fake_peer);
+      explicit LoaderGrpc(const std::shared_ptr<FakePeer> &fake_peer);
 
       grpc::Status retrieveBlocks(
           ::grpc::ServerContext *context,
