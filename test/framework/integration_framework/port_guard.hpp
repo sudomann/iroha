@@ -21,6 +21,9 @@ namespace integration_framework {
 
     static constexpr PortType kMaxPort = 65535;
 
+    PortGuard();
+    PortGuard(PortGuard &&other);
+
     ~PortGuard();
 
     /// Request a port in given boundaries, including them.

@@ -9,6 +9,13 @@
 
 namespace integration_framework {
 
+  PortGuard::PortGuard() = default;
+
+  PortGuard::PortGuard(PortGuard &&other)
+      : instance_used_ports_(std::move(other.instance_used_ports_)) {
+    other.instance_used_ports_.reset();
+  }
+
   constexpr PortGuard::PortType PortGuard::kMaxPort;
   PortGuard::UsedPorts PortGuard::all_used_ports_ = {};
   std::mutex PortGuard::all_used_ports_mutex_ = {};
