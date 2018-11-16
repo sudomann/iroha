@@ -28,6 +28,7 @@ namespace shared_model {
   }  // namespace interface
   namespace proto {
     class Block;
+    class Proposal;
   }
 }  // namespace shared_model
 
@@ -46,6 +47,7 @@ namespace iroha {
       class YacHash;
       struct VoteMessage;
     }  // namespace yac
+    struct Round;
   }    // namespace consensus
   namespace ordering {
     class OrderingGateTransportGrpc;
@@ -77,6 +79,9 @@ namespace integration_framework {
         boost::optional<const shared_model::proto::Block &>;
     using LoaderBlocksRequestResult =
         std::vector<std::reference_wrapper<const shared_model::proto::Block>>;
+    using OrderingProposalRequest = iroha::consensus::Round;
+    using OrderingProposalRequestResult =
+        boost::optional<shared_model::proto::Proposal &>;
 
   }  // namespace fake_peer
 }  // namespace integration_framework
