@@ -25,7 +25,7 @@ TEST(PortGuardTest, AllPortsGetUsedAndNoOverlaps) {
           used_ports(std::move(other.used_ports)){};
 
     PortGuard port_guard;
-    std::bitset<PortGuard::kMaxPort> used_ports;
+    std::bitset<PortGuard::kMaxPort + 1> used_ports;
   };
 
   std::vector<Client> clients;
@@ -63,7 +63,7 @@ TEST(PortGuardTest, AllPortsGetUsedAndNoOverlaps) {
 
   // check that all the ports in the interval are taken and none intersect
   auto check = [&clients] {
-    std::bitset<PortGuard::kMaxPort> all_used_ports;
+    std::bitset<PortGuard::kMaxPort + 1> all_used_ports;
     for (auto &client : clients) {
       ASSERT_TRUE((all_used_ports & client.used_ports).none())
           << "Some ports were used by more than one client!";

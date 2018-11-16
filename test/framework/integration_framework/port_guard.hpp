@@ -35,7 +35,7 @@ namespace integration_framework {
                                          const PortType &max_value = kMaxPort);
 
    private:
-    using UsedPorts = std::bitset<kMaxPort>;
+    using UsedPorts = std::bitset<kMaxPort + 1>;
 
     static UsedPorts all_used_ports_;
     static std::mutex all_used_ports_mutex_;

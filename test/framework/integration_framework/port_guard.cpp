@@ -9,6 +9,10 @@
 
 namespace integration_framework {
 
+  constexpr PortGuard::PortType PortGuard::kMaxPort;
+  PortGuard::UsedPorts PortGuard::all_used_ports_ = {};
+  std::mutex PortGuard::all_used_ports_mutex_ = {};
+
   PortGuard::PortGuard() = default;
 
   PortGuard::PortGuard(PortGuard &&other)
@@ -16,17 +20,13 @@ namespace integration_framework {
     other.instance_used_ports_.reset();
   }
 
-  constexpr PortGuard::PortType PortGuard::kMaxPort;
-  PortGuard::UsedPorts PortGuard::all_used_ports_ = {};
-  std::mutex PortGuard::all_used_ports_mutex_ = {};
-
   PortGuard::~PortGuard() {
     std::lock_guard<std::mutex> lock(all_used_ports_mutex_);
     BOOST_ASSERT_MSG(
         ((all_used_ports_ | instance_used_ports_) ^ all_used_ports_).none(),
         "Some ports used by this PortGuard instance are not set in ports "
         "used by all instances!");
-    all_used_ports_ ^= instance_used_ports_;
+    all_used_ports_ &= ~instance_used_ports_;
   }
 
   boost::optional<PortGuard::PortType> PortGuard::tryGetPort(
