@@ -50,7 +50,7 @@ namespace integration_framework {
       LoaderBlocksRequestResult blocks;
       while ((block = block_storage->getBlockByHeight(current_height++))
              != nullptr) {
-        blocks.emplace_back(*std::static_pointer_cast<shared_model::proto::Block>(block));
+        blocks.emplace_back(*block);
       }
       return blocks;
     }

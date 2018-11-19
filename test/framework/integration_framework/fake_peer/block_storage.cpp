@@ -8,8 +8,8 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/max_element.hpp>
+#include "backend/protobuf/block.hpp"
 #include "framework/integration_framework/fake_peer/fake_peer.hpp"
-#include "interfaces/iroha_internal/block.hpp"
 
 /// Emplace to a map.
 /// @return true if overwritten.

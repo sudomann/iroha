@@ -152,7 +152,8 @@ TEST_F(FakePeerExampleFixture,
                                ->getStorage()
                                ->getBlockQuery()
                                ->getBlocksFrom(1)) {
-    valid_block_storage->storeBlock(block);
+    valid_block_storage->storeBlock(
+        std::static_pointer_cast<shared_model::proto::Block>(block));
   }
 
   // From now the itf peer is considered unreachable from the rest network. //

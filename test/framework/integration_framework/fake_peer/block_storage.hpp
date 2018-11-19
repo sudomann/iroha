@@ -14,7 +14,7 @@
 #include "logger/logger.hpp"
 
 namespace shared_model {
-  namespace interface {
+  namespace proto {
     class Block;
   }
 }  // namespace shared_model
@@ -25,7 +25,7 @@ namespace integration_framework {
 
     class BlockStorage final {
      public:
-      using BlockPtr = std::shared_ptr<shared_model::interface::Block>;
+      using BlockPtr = std::shared_ptr<shared_model::proto::Block>;
       using HeightType = shared_model::interface::types::HeightType;
       using HashType = shared_model::crypto::Hash;
 
