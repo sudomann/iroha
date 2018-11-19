@@ -350,7 +350,7 @@ namespace integration_framework {
 
     rxcpp::observable<iroha::BatchPtr> getMstExpiredBatchesObservable();
 
-    rxcpp::observable<iroha::network::Commit> getYacOnCommitObservable();
+    rxcpp::observable<iroha::consensus::GateObject> getYacOnOutcomeObservable();
 
     /**
      * Request next status of the transaction

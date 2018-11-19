@@ -120,7 +120,8 @@ namespace integration_framework {
     }
     // the code below should be executed anyway in order to prevent app hang
     if (iroha_instance_ and iroha_instance_->getIrohaInstance()) {
-      iroha_instance_->getIrohaInstance()->terminate();
+      iroha_instance_->getIrohaInstance()->terminate(
+          std::chrono::system_clock::now());
     }
   }
 
@@ -251,26 +252,39 @@ namespace integration_framework {
 
     iroha_instance_->initPipeline(keypair, maximum_proposal_size_);
     log_->info("created pipeline");
-    iroha_instance_->getIrohaInstance()->resetOrderingService();
-
     makeFakePeers();
   }
 
   void IntegrationTestFramework::subscribeQueuesAndRun() {
     // subscribing for components
 
-    iroha_instance_->getIrohaInstance()
-        ->getPeerCommunicationService()
-        ->on_proposal()
+    auto proposals = iroha_instance_->getIrohaInstance()
+                         ->getPeerCommunicationService()
+                         ->on_proposal();
+
+    proposals
+        .filter([](auto proposal) {
+          return boost::size(proposal->transactions()) != 0;
+        })
         .subscribe([this](auto proposal) {
           proposal_queue_.push(proposal);
           log_->info("proposal");
           queue_cond.notify_all();
         });
 
+    auto proposal_flat_map =
+        [](auto t) -> rxcpp::observable<std::tuple_element_t<0, decltype(t)>> {
+      if (boost::size(std::get<1>(t)->transactions()) != 0) {
+        return rxcpp::observable<>::just(std::get<0>(t));
+      }
+      return rxcpp::observable<>::empty<std::tuple_element_t<0, decltype(t)>>();
+    };
+
     iroha_instance_->getIrohaInstance()
         ->getPeerCommunicationService()
         ->on_verified_proposal()
+        .zip(proposals)
+        .flat_map(proposal_flat_map)
         .subscribe([this](auto verified_proposal_and_errors) {
           verified_proposal_queue_.push(
               verified_proposal_and_errors);
@@ -281,6 +295,8 @@ namespace integration_framework {
     iroha_instance_->getIrohaInstance()
         ->getPeerCommunicationService()
         ->on_commit()
+        .zip(proposals)
+        .flat_map(proposal_flat_map)
         .subscribe([this](auto commit_event) {
           commit_event.synced_blocks.subscribe([this](auto committed_block) {
             block_queue_.push(committed_block);
@@ -330,9 +346,9 @@ namespace integration_framework {
         ->onExpiredBatches();
   }
 
-  rxcpp::observable<iroha::network::Commit>
-  IntegrationTestFramework::getYacOnCommitObservable() {
-    return iroha_instance_->getIrohaInstance()->getConsensusGate()->on_commit();
+  rxcpp::observable<iroha::consensus::GateObject>
+  IntegrationTestFramework::getYacOnOutcomeObservable() {
+    return iroha_instance_->getIrohaInstance()->getConsensusGate()->onOutcome();
   }
 
   IntegrationTestFramework &IntegrationTestFramework::getTxStatus(

@@ -16,7 +16,7 @@
 #include "logger/logger.hpp"
 #include "main/impl/block_loader_init.hpp"
 #include "main/impl/consensus_init.hpp"
-#include "main/impl/ordering_init.hpp"
+#include "main/impl/on_demand_ordering_init.hpp"
 #include "main/server_runner.hpp"
 #include "multi_sig_transactions/gossip_propagation_strategy_params.hpp"
 #include "multi_sig_transactions/mst_processor.hpp"
@@ -86,11 +86,6 @@ class Irohad {
    * Initialization of whole objects in system
    */
   virtual void init();
-
-  /**
-   * Reset oredering service storage state to default
-   */
-  void resetOrderingService();
 
   /**
    * Restore World State View
@@ -247,7 +242,7 @@ class Irohad {
   std::unique_ptr<ServerRunner> internal_server;
 
   // initialization objects
-  iroha::network::OrderingInit ordering_init;
+  iroha::network::OnDemandOrderingInit ordering_init;
   iroha::consensus::yac::YacInit yac_init;
   iroha::network::BlockLoaderInit loader_init;
 
