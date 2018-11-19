@@ -71,7 +71,13 @@ namespace integration_framework {
             "proposal storage!");
         return {};
       }
-      return proposal_storage->getProposal(request);
+      auto proposal = proposal_storage->getProposal(request);
+      getLogger()->debug(
+          "Got an OnDemandOrderingService.GetProposal call for round {}, "
+          "{} returning a proposal.",
+          request.toString(),
+          proposal ? "" : "NOT");
+      return proposal;
     }
 
     void HonestBehaviour::processOrderingBatches(
