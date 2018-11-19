@@ -61,7 +61,6 @@ namespace {
   std::string kLocalHost = "127.0.0.1";
   constexpr size_t kDefaultToriiPort = 11501;
   constexpr size_t kDefaultInternalPort = 50541;
-  constexpr size_t kMaxPort = 65535;
 }  // namespace
 
 namespace integration_framework {
