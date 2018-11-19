@@ -63,6 +63,7 @@ namespace logger {
     if (logger == nullptr) {
       logger = createLogger(tag);
     }
+    logger->set_level(spdlog::level::debug);
     return logger;
   }
 
