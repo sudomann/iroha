@@ -103,6 +103,11 @@ namespace iroha {
       }
 
       boost::optional<Answer> YacProposalStorage::getState() const {
+        log_->info(
+            "YacProposalStorage::getState(): initialized: {}, variant: "
+            "{}.",
+            current_state_ ? "yes" : "no",
+            current_state_ ? std::to_string(current_state_->which()) : "n/a");
         return current_state_;
       }
 
