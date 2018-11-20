@@ -117,12 +117,16 @@ namespace iroha {
 
         matchEvent(latest_commit, on_blocks, on_nothing);
 
-        auto peer = [this](auto round, auto pos) {
-          auto &permutation = permutations_[round];
+        const auto current_block_round = latest_commit.round.block_round + 1;
+        auto peer = [this, &current_block_round](auto round_advance, auto reject_round) {
+          auto &permutation = permutations_[round_advance];
           // since reject round can be greater than number of peers, wrap it
           // with number of peers
-          auto &peer = current_peers_[permutation[pos % permutation.size()]];
-          log_->debug("Using peer: {}", peer->toString());
+          auto &peer = current_peers_[permutation[reject_round % permutation.size()]];
+          log_->debug("For round [block={}, reject={}, ], using peer: {}",
+                      current_block_round + round_advance,
+                      reject_round,
+                      peer->toString());
           return peer;
         };
 
