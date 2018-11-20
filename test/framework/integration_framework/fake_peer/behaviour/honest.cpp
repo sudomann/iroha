@@ -68,9 +68,10 @@ namespace integration_framework {
       const auto proposal_storage = getFakePeer().getProposalStorage();
       if (!proposal_storage) {
         getLogger()->debug(
-            "Got an OnDemandOrderingService.GetProposal call, but have no "
-            "proposal storage!");
-        return {};
+            "Got an OnDemandOrderingService.GetProposal call for round {}, "
+            "but have no proposal storage! NOT returning a proposal.",
+            request.toString());
+        return boost::none;
       }
       auto proposal = proposal_storage->getProposal(request);
       getLogger()->debug(
