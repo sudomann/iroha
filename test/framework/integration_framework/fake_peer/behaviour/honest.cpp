@@ -18,6 +18,7 @@ namespace integration_framework {
   namespace fake_peer {
 
     void HonestBehaviour::processYacMessage(const YacMessagePtr &message) {
+      getLogger()->debug("Got a YAC state message.");
       getFakePeer().voteForTheSame(message);
     }
 

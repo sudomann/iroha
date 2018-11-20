@@ -32,6 +32,7 @@ namespace iroha {
 
   auto FairMstProcessor::propagateBatchImpl(const iroha::DataType &batch)
       -> decltype(propagateBatch(batch)) {
+    log_->info("propagateBatch: updateOwnState <<<<<");
     auto state_update = storage_->updateOwnState(batch);
     completedBatchesNotify(*state_update.completed_state_);
     updatedBatchesNotify(*state_update.updated_state_);
@@ -118,8 +119,10 @@ namespace iroha {
                     auto diff = storage_->getDiffState(dst_peer->pubkey(),
                                                        current_time);
                     if (not diff.isEmpty()) {
-                      log_->info("Propagate new data[{}]", size);
+                      log_->info("onPropagate: Propagate new data[{}] <<<<<", size);
                       transport_->sendState(*dst_peer, diff);
+                    } else {
+                      log_->info("onPropagate: empty diff <<<<<");
                     }
                   });
   }
