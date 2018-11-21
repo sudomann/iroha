@@ -81,8 +81,14 @@ OnDemandOrderingServiceImpl::onRequestProposal(consensus::Round round) {
   std::shared_lock<std::shared_timed_mutex> guard(lock_);
   auto proposal = proposal_map_.find(round);
   if (proposal != proposal_map_.end()) {
+    log_->debug("onRequestProposal, round[{}, {}], returning proposal.",
+                round.block_round,
+                round.reject_round);
     return clone(*proposal->second);
   } else {
+    log_->debug("onRequestProposal, round[{}, {}], NOT returning proposal.",
+                round.block_round,
+                round.reject_round);
     return boost::none;
   }
 }
