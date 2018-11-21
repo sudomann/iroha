@@ -7,9 +7,9 @@
 
 #include <unordered_set>
 
-#include <boost/range/adaptor/indirected.hpp>
-#include <boost/range/adaptor/transformed.hpp>
-#include <boost/range/algorithm/for_each.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/range/adaptors.hpp>
+#include <boost/range/algorithm.hpp>
 #include "datetime/time.hpp"
 #include "interfaces/iroha_internal/proposal.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
@@ -171,6 +171,16 @@ void OnDemandOrderingServiceImpl::packNextProposals(
   // new reject round
   open_round(
       {round.block_round, currentRejectRoundConsumer(round.reject_round)});
+
+  log_->debug("So all the open rounds are: ["
+              + boost::algorithm::join(
+                    current_proposals_ | boost::adaptors::map_keys
+                        | boost::adaptors::transformed([](const auto &round) {
+                            return std::to_string(round.block_round) + ", "
+                                + std::to_string(round.reject_round);
+                          }),
+                    "], [")
+              + "].");
 }
 
 OnDemandOrderingServiceImpl::ProposalType
