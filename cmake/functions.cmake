@@ -73,9 +73,9 @@ function(compile_proto_to_cpp PROTO)
   add_custom_command(
       OUTPUT ${SCHEMA_OUT_DIR}/${GEN_PB_HEADER} ${SCHEMA_OUT_DIR}/${GEN_PB}
       COMMAND ${GEN_COMMAND}
-      ARGS -I${GEN_ARGS} -I${CMAKE_CURRENT_SOURCE_DIR} ${ARGN} --cpp_out=${SCHEMA_OUT_DIR} ${PROTO}
+      ARGS -I${GEN_ARGS} -I. ${ARGN} --cpp_out=${SCHEMA_OUT_DIR} ${PROTO}
       DEPENDS protoc ${SCHEMA_PATH}/${PROTO}
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       )
 endfunction()
 
@@ -91,9 +91,9 @@ function(compile_proto_only_grpc_to_cpp PROTO)
   add_custom_command(
       OUTPUT ${SCHEMA_OUT_DIR}/${GEN_GRPC_PB_HEADER} ${SCHEMA_OUT_DIR}/${GEN_GRPC_PB} ${TEST_OUTPUT}
       COMMAND ${CMAKE_COMMAND} -E env LD_LIBRARY_PATH=${protobuf_LIBRARY_DIR}:$ENV{LD_LIBRARY_PATH} "${protoc_EXECUTABLE}"
-      ARGS -I${protobuf_INCLUDE_DIR} -I${CMAKE_CURRENT_SOURCE_DIR} ${ARGN} --grpc_out=${GENERATE_MOCKS}${SCHEMA_OUT_DIR} --plugin=protoc-gen-grpc="${grpc_CPP_PLUGIN}" ${PROTO}
+      ARGS -I${protobuf_INCLUDE_DIR} -I. ${ARGN} --grpc_out=${GENERATE_MOCKS}${SCHEMA_OUT_DIR} --plugin=protoc-gen-grpc="${grpc_CPP_PLUGIN}" ${PROTO}
       DEPENDS grpc_cpp_plugin ${SCHEMA_PATH}/${PROTO}
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       )
 endfunction()
 
