@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "common/bind.hpp"
 #include "consensus/yac/storage/yac_proposal_storage.hpp"
 
 namespace iroha {
@@ -36,25 +37,56 @@ namespace iroha {
                             });
       }
 
-      auto YacVoteStorage::findProposalStorage(const VoteMessage &msg,
-                                               PeersNumberType peers_in_round) {
-        auto val = getProposalStorage(msg.hash.vote_round);
+      boost::optional<std::vector<YacProposalStorage>::iterator>
+      YacVoteStorage::findProposalStorage(const VoteMessage &msg,
+                                          PeersNumberType peers_in_round) {
+        const auto &round = msg.hash.vote_round;
+        auto val = getProposalStorage(round);
         if (val != proposal_storages_.end()) {
           return val;
         }
-        return proposal_storages_.emplace(
-            proposal_storages_.end(),
-            msg.hash.vote_round,
-            peers_in_round,
-            std::make_shared<SupermajorityCheckerImpl>());
+        if (strategy_->shouldCreateRound(round)) {
+          return proposal_storages_.emplace(
+              proposal_storages_.end(),
+              msg.hash.vote_round,
+              peers_in_round,
+              std::make_shared<SupermajorityCheckerImpl>());
+        } else {
+          return boost::none;
+        }
+      }
+
+      void YacVoteStorage::removeByRound(const iroha::consensus::Round &round) {
+        auto val = getProposalStorage(round);
+        if (val != proposal_storages_.end()) {
+          //          processing_state_.erase(val);
+        }
       }
 
       // --------| public api |--------
 
+      YacVoteStorage::YacVoteStorage(
+          std::shared_ptr<CleanupStrategy> cleanup_strategy)
+          : strategy_(std::move(cleanup_strategy)) {}
+
       boost::optional<Answer> YacVoteStorage::store(
           std::vector<VoteMessage> state, PeersNumberType peers_in_round) {
-        auto storage = findProposalStorage(state.at(0), peers_in_round);
-        return storage->insert(state);
+        Round r;
+        return findProposalStorage(state.at(0), peers_in_round) |
+                   [&state, &r](auto &&storage) {
+                     r = storage->getStorageKey();
+                     return storage->insert(state);
+                   }
+                   | [this,
+                      &r](auto &&insert_outcome) -> boost::optional<Answer> {
+          this->strategy_->finalize(r, insert_outcome) | [this](auto &&remove) {
+            std::for_each(
+                remove.begin(), remove.end(), [this](const auto &round) {
+                  this->removeByRound(round);
+                });
+          };
+          return insert_outcome;
+        };
       }
 
       bool YacVoteStorage::isCommitted(const Round &round) {
