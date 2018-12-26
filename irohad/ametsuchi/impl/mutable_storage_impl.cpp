@@ -21,6 +21,7 @@ namespace iroha {
         std::shared_ptr<PostgresCommandExecutor> cmd_executor,
         std::unique_ptr<soci::session> sql,
         std::shared_ptr<shared_model::interface::CommonObjectsFactory> factory,
+        std::shared_ptr<BlockStorage> block_storage,
         logger::Logger log)
         : top_hash_(top_hash),
           sql_(std::move(sql)),
@@ -28,6 +29,7 @@ namespace iroha {
               std::make_shared<PostgresWsvQuery>(*sql_, std::move(factory)))),
           block_index_(std::make_unique<PostgresBlockIndex>(*sql_)),
           command_executor_(std::move(cmd_executor)),
+          block_storage_(std::move(block_storage)),
           committed(false),
           log_(std::move(log)) {
       *sql_ << "BEGIN";
@@ -65,7 +67,7 @@ namespace iroha {
                           block.transactions().end(),
                           execute_transaction);
       if (block_applied) {
-        block_store_.insert(std::make_pair(block.height(), clone(block)));
+        block_storage_->insert(block.height(), block);
         block_index_->index(block);
 
         top_hash_ = block.hash();

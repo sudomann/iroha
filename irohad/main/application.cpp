@@ -5,6 +5,7 @@
 
 #include "main/application.hpp"
 
+#include "ametsuchi/impl/in_memory_block_storage_factory.hpp"
 #include "ametsuchi/impl/tx_presence_cache_impl.hpp"
 #include "ametsuchi/impl/wsv_restorer_impl.hpp"
 #include "backend/protobuf/common_objects/proto_common_objects_factory.hpp"
@@ -126,11 +127,13 @@ void Irohad::initStorage() {
       std::make_shared<shared_model::proto::ProtoPermissionToString>();
   auto block_converter =
       std::make_shared<shared_model::proto::ProtoBlockJsonConverter>();
+  auto block_storage_factory = std::make_shared<InMemoryBlockStorageFactory>();
   auto storageResult = StorageImpl::create(block_store_dir_,
                                            pg_conn_,
                                            common_objects_factory_,
                                            std::move(block_converter),
-                                           perm_converter);
+                                           perm_converter,
+                                           std::move(block_storage_factory));
   storageResult.match(
       [&](expected::Value<std::shared_ptr<ametsuchi::StorageImpl>> &_storage) {
         storage = _storage.value;

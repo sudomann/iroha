@@ -65,6 +65,7 @@ namespace iroha {
         std::shared_ptr<shared_model::interface::BlockJsonConverter> converter,
         std::shared_ptr<shared_model::interface::PermissionToString>
             perm_converter,
+        std::shared_ptr<BlockStorageFactory> block_storage_factory,
         size_t pool_size,
         bool enable_prepared_blocks,
         logger::Logger log)
@@ -75,6 +76,7 @@ namespace iroha {
           factory_(std::move(factory)),
           converter_(std::move(converter)),
           perm_converter_(std::move(perm_converter)),
+          block_storage_factory_(std::move(block_storage_factory)),
           log_(std::move(log)),
           pool_size_(pool_size),
           prepared_blocks_enabled_(enable_prepared_blocks),
@@ -137,7 +139,8 @@ namespace iroha {
                   }),
               std::make_shared<PostgresCommandExecutor>(*sql, perm_converter_),
               std::move(sql),
-              factory_));
+              factory_,
+              block_storage_factory_->create()));
     }
 
     boost::optional<std::shared_ptr<PeerQuery>> StorageImpl::createPeerQuery()
@@ -357,6 +360,7 @@ namespace iroha {
         std::shared_ptr<shared_model::interface::BlockJsonConverter> converter,
         std::shared_ptr<shared_model::interface::PermissionToString>
             perm_converter,
+        std::shared_ptr<BlockStorageFactory> block_storage_factory,
         size_t pool_size) {
       boost::optional<std::string> string_res = boost::none;
 
@@ -394,6 +398,7 @@ namespace iroha {
                                       factory,
                                       converter,
                                       perm_converter,
+                                      std::move(block_storage_factory),
                                       pool_size,
                                       enable_prepared_transactions)));
                 },
@@ -403,12 +408,12 @@ namespace iroha {
       return storage;
     }
 
-    void StorageImpl::commit(std::unique_ptr<MutableStorage> mutableStorage) {
-      auto storage_ptr = std::move(mutableStorage);  // get ownership of storage
-      auto storage = static_cast<MutableStorageImpl *>(storage_ptr.get());
-      for (const auto &block : storage->block_store_) {
-        storeBlock(*block.second);
-      }
+    void StorageImpl::commit(std::unique_ptr<MutableStorage> mutable_storage) {
+      auto storage = static_cast<MutableStorageImpl *>(mutable_storage.get());
+
+      storage->block_storage_->visit(
+          [this](auto, const auto &block) { this->storeBlock(*block); });
+
       try {
         *(storage->sql_) << "COMMIT";
         storage->committed = true;

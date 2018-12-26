@@ -14,7 +14,7 @@
 
 #include <soci/soci.h>
 #include <boost/optional.hpp>
-
+#include "ametsuchi/block_storage_factory.hpp"
 #include "ametsuchi/impl/postgres_options.hpp"
 #include "ametsuchi/key_value_storage.hpp"
 #include "interfaces/common_objects/common_objects_factory.hpp"
@@ -56,6 +56,7 @@ namespace iroha {
               converter,
           std::shared_ptr<shared_model::interface::PermissionToString>
               perm_converter,
+          std::shared_ptr<BlockStorageFactory> block_storage_factory,
           size_t pool_size = 10);
 
       expected::Result<std::unique_ptr<TemporaryWsv>, std::string>
@@ -100,7 +101,7 @@ namespace iroha {
 
       void freeConnections() override;
 
-      void commit(std::unique_ptr<MutableStorage> mutableStorage) override;
+      void commit(std::unique_ptr<MutableStorage> mutable_storage) override;
 
       bool commitPrepared(const shared_model::interface::Block &block) override;
 
@@ -126,6 +127,7 @@ namespace iroha {
                       converter,
                   std::shared_ptr<shared_model::interface::PermissionToString>
                       perm_converter,
+                  std::shared_ptr<BlockStorageFactory> block_storage_factory,
                   size_t pool_size,
                   bool enable_prepared_blocks,
                   logger::Logger log = logger::log("StorageImpl"));
@@ -162,6 +164,8 @@ namespace iroha {
 
       std::shared_ptr<shared_model::interface::PermissionToString>
           perm_converter_;
+
+      std::shared_ptr<BlockStorageFactory> block_storage_factory_;
 
       logger::Logger log_;
 
