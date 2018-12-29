@@ -8,24 +8,6 @@
 namespace logger {
   const std::string end = "\033[0m";
 
-  std::string red(const std::string &string) {
-    const std::string red_start = "\033[31m";
-    return red_start + string + end;
-  }
-
-  std::string yellow(const std::string &string) {
-    const std::string yellow_start = "\033[33m";
-    return yellow_start + string + end;
-  }
-
-  std::string output(const std::string &string) {
-    return yellow("---> " + string);
-  }
-
-  std::string input(const std::string &string) {
-    return red("<--- " + string);
-  }
-
   static void setGlobalPattern(spdlog::logger &logger) {
     logger.set_pattern("[%Y-%m-%d %H:%M:%S.%F] %n %v");
   }

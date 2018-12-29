@@ -15,10 +15,6 @@ TEST(LoggerTest, getLoggerTest) {
   auto another_logger = logger::log("another_logger");
   another_logger->warn("another logger");
   another_logger->info("temporal output {}, {}", 123, "string param");
-  another_logger->info(logger::red("color output"));
-  another_logger->info(
-      logger::yellow("color args output {} // note: require char *").c_str(),
-      "=^._.^=");
 }
 
 TEST(LoggerTest, boolReprTest) {

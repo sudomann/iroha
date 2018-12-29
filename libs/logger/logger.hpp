@@ -25,13 +25,6 @@ namespace logger {
 
   using Logger = std::shared_ptr<spdlog::logger>;
 
-  std::string red(const std::string &string);
-
-  std::string yellow(const std::string &string);
-
-  std::string output(const std::string &string);
-
-  std::string input(const std::string &string);
 
   /**
    * Provide logger object
