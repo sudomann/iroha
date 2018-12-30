@@ -6,9 +6,13 @@
 #ifndef IROHA_SPDLOG_LOGGER_LOGGER_HPP
 #define IROHA_SPDLOG_LOGGER_LOGGER_HPP
 
+#include <map>
 #include <memory>
 #include <numeric>  // for std::accumulate
 #include <string>
+#include <unordered_map>
+
+#include <boost/optional.hpp>
 
 /// Allows to log objects, which have toString() method without calling it, e.g.
 /// log.info("{}", myObject)
@@ -18,28 +22,193 @@ auto operator<<(StreamType &os, const T &object)
   return os << object.toString();
 }
 
-#include <spdlog/fmt/ostr.h>
-#include <spdlog/spdlog.h>
-
 namespace logger {
 
-  using Logger = std::shared_ptr<spdlog::logger>;
+  class Logger;
+  class LogPatterns;
+  enum class LogLevel;
 
+  using LoggerPtr = std::shared_ptr<Logger>;
 
-  /**
-   * Provide logger object
-   * @param tag - tagging name for identifiing logger
-   * @return logger object
-   */
-  Logger log(const std::string &tag);
+  extern const LogLevel kDefaultLogLevel;
+  extern const LogPatterns kDefaultLogPatterns;
 
-  /**
-   * Provide logger for using in test purposes;
-   * This logger write data only for console
-   * @param tag - tagging name for identifiing logger
-   * @return logger object
-   */
-  Logger testLog(const std::string &tag);
+  /// Patterns for logging depending on the log level.
+  class LogPatterns {
+   public:
+    /// Set a logging pattern for the given level.
+    void setPattern(LogLevel level, std::string pattern);
+
+    /// Get the logging pattern for the given level. If not set, get the
+    /// next present more verbose level pattern, if any, or the default
+    /// pattern.
+    std::string getPattern(LogLevel level) const;
+
+   private:
+    std::map<LogLevel, std::string> patterns_;
+  };
+
+  // TODO mboldyrev 29.12.2018 Add sink options (console, file, syslog, etc)
+  struct LoggerConfig {
+    LogLevel log_level;
+    LogPatterns patterns;
+  };
+
+  class LoggerConfigTreeNode {
+   public:
+    /// Constructor.
+    LoggerConfigTreeNode(std::string tag, LoggerConfig config);
+
+    /**
+     * Add a child configuration. The new child's cnofiguartion parameters
+     * are taken from the parent optionally overrided by the arguments.
+     *
+     * @param tag - the child's tag, without any parents' frefixes
+     * @param log_level - override the log level for the new child
+     * @param patterns - override the patterns
+     */
+    void addChild(std::string tag,
+                  boost::optional<LogLevel> log_level,
+                  boost::optional<LogPatterns> patterns);
+
+    /// Get tag.
+    const std::string &getTag() const;
+
+    /// Get config.
+    const LoggerConfig &getConfig() const;
+
+    /// Get child config by tag, if present.
+    boost::optional<std::shared_ptr<LoggerConfigTreeNode>> getChild(
+        const std::string &tag) const;
+
+   private:
+    const std::string tag_;
+    const LoggerConfig config_;
+    std::unordered_map<std::string, std::shared_ptr<LoggerConfigTreeNode>>
+        children_;
+  };
+
+  /// Log levels
+  enum class LogLevel {
+    kTrace,
+    kDebug,
+    kInfo,
+    kWarn,
+    kError,
+    kCritical,
+  };
+
+  /// Logger thread safety
+  enum class LoggerThreadSafety {
+    kSingleThread,
+    kMultiThread,
+  };
+
+  class Logger {
+    public:
+     using Level = LogLevel;
+
+     // --- Constructors and assignment (aka the big 5) ---
+
+     /**
+      * Create a logger corresponding to the root of the given tree config.
+      * @param tree_config - the logger config tree
+      * @param ts - thread safety of the created logger
+      */
+     Logger(std::shared_ptr<const LoggerConfigTreeNode> tree_config,
+            LoggerThreadSafety ts);
+
+     /**
+      * Create a standalone logger without tree config.
+      * @param tag - the tag for logging (aka logger name)
+      * @param config - logger configuration
+      * @param ts - thread safety of the created logger
+      */
+     Logger(std::string tag, LoggerConfig config, LoggerThreadSafety ts);
+
+     Logger(const Logger &other);
+     Logger(Logger &&other);
+     Logger &operator=(const Logger &other);
+     Logger &operator=(Logger &&other);
+
+     virtual ~Logger();
+
+     // --- Logging functions ---
+
+     template <typename... Args>
+     void trace(const std::string &format, const Args &... args) const {
+       log(LogLevel::kTrace, format, args...);
+     }
+
+     template <typename... Args>
+     void debug(const std::string &format, const Args &... args) const {
+       log(LogLevel::kDebug, format, args...);
+     }
+
+     template <typename... Args>
+     void info(const std::string &format, const Args &... args) const {
+       log(LogLevel::kInfo, format, args...);
+     }
+
+     template <typename... Args>
+     void warn(const std::string &format, const Args &... args) const {
+       log(LogLevel::kWarn, format, args...);
+     }
+
+     template <typename... Args>
+     void error(const std::string &format, const Args &... args) const {
+       log(LogLevel::kError, format, args...);
+     }
+
+     template <typename... Args>
+     void critical(const std::string &format, const Args &... args) const {
+       log(LogLevel::kCritical, format, args...);
+     }
+
+     template <typename... Args>
+     void log(Level level,
+              const std::string &format,
+              const Args &... args) const {
+       if (shouldLog(level)) {
+         logInternal(level, format); // TODO perform the actual formatting here
+       }
+     }
+
+     // --- Misc functions ---
+
+     /**
+      * Get child logger. Internally keeps all created children, so asking
+      * for the same child twice will yield the same object.
+      *
+      * @param tag - the tag of the child logger
+      * @param ts - thread safety of the child logger
+      */
+     LoggerPtr getChild(std::string tag, LoggerThreadSafety ts);
+
+     // Public impl is needed to allow inheritance from Impl.
+     class Impl;
+
+    private:
+
+     /**
+      * Create a child logger corresponding to the root of the tree config.
+      * @param tag - the tag for logging (aka logger name)
+      * @param tree_config - the logger config tree
+      * @param ts - thread safety of the created logger
+      */
+     Logger(std::string tag,
+            std::shared_ptr<const LoggerConfigTreeNode> tree_config,
+            LoggerThreadSafety ts);
+
+     void logInternal(Level level, const std::string &s) const;
+
+     /// Whether the configured logging level is at least as verbose as the
+     /// one given in parameter.
+     bool shouldLog(Level level) const;
+
+     friend class Logger::Impl;
+     const std::shared_ptr<Impl> impl_;
+  };
 
   /**
    * Convert bool value to human readable string repr
