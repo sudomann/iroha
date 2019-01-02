@@ -8,13 +8,14 @@
 
 #include <vector>
 
-TEST(LoggerTest, getLoggerTest) {
-  auto one_logger = logger::log("one_logger");
-  one_logger->info("one logger");
-
-  auto another_logger = logger::log("another_logger");
-  another_logger->warn("another logger");
-  another_logger->info("temporal output {}, {}", 123, "string param");
+TEST(LoggerTest, basicStandaloneLoggerTest) {
+  logger::LoggerConfig config;
+  config.log_level = logger::LogLevel::kInfo;
+  auto one_logger = logger::Logger(
+      "standalone_logger", config, logger::LoggerThreadSafety::kSingleThread);
+  one_logger.trace("testing a standalone logger: trace");
+  one_logger.info("testing a standalone logger: info");
+  one_logger.error("testing a standalone logger: error");
 }
 
 TEST(LoggerTest, boolReprTest) {
