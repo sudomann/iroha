@@ -25,10 +25,14 @@ auto operator<<(StreamType &os, const T &object)
 namespace logger {
 
   class Logger;
+  class LoggerConfigTreeNode;
   class LogPatterns;
   enum class LogLevel;
 
   using LoggerPtr = std::shared_ptr<Logger>;
+  using LoggerConfigTreeNodePtr = std::shared_ptr<LoggerConfigTreeNode>;
+  using ConstLoggerConfigTreeNodePtr =
+      std::shared_ptr<const LoggerConfigTreeNode>;
 
   extern const LogLevel kDefaultLogLevel;
   extern const LogPatterns kDefaultLogPatterns;
@@ -67,9 +71,9 @@ namespace logger {
      * @param log_level - override the log level for the new child
      * @param patterns - override the patterns
      */
-    void addChild(std::string tag,
-                  boost::optional<LogLevel> log_level,
-                  boost::optional<LogPatterns> patterns);
+    LoggerConfigTreeNodePtr addChild(std::string tag,
+                                     boost::optional<LogLevel> log_level,
+                                     boost::optional<LogPatterns> patterns);
 
     /// Get tag.
     const std::string &getTag() const;
@@ -77,15 +81,18 @@ namespace logger {
     /// Get config.
     const LoggerConfig &getConfig() const;
 
-    /// Get child config by tag, if present.
-    boost::optional<std::shared_ptr<LoggerConfigTreeNode>> getChild(
+    /// Get non-const child config by tag, if present.
+    boost::optional<LoggerConfigTreeNodePtr> getChild(
+        const std::string &tag);
+
+    /// Get const child config by tag, if present.
+    boost::optional<ConstLoggerConfigTreeNodePtr> getChild(
         const std::string &tag) const;
 
    private:
     const std::string tag_;
     const LoggerConfig config_;
-    std::unordered_map<std::string, std::shared_ptr<LoggerConfigTreeNode>>
-        children_;
+    std::unordered_map<std::string, LoggerConfigTreeNodePtr> children_;
   };
 
   /// Log levels
@@ -115,8 +122,7 @@ namespace logger {
       * @param tree_config - the logger config tree
       * @param ts - thread safety of the created logger
       */
-     Logger(std::shared_ptr<const LoggerConfigTreeNode> tree_config,
-            LoggerThreadSafety ts);
+     Logger(ConstLoggerConfigTreeNodePtr tree_config, LoggerThreadSafety ts);
 
      /**
       * Create a standalone logger without tree config.
@@ -197,7 +203,7 @@ namespace logger {
       * @param ts - thread safety of the created logger
       */
      Logger(std::string tag,
-            std::shared_ptr<const LoggerConfigTreeNode> tree_config,
+            ConstLoggerConfigTreeNodePtr tree_config,
             LoggerThreadSafety ts);
 
      void logInternal(Level level, const std::string &s) const;

@@ -41,14 +41,18 @@ namespace logger {
                                              LoggerConfig config)
       : tag_(std::move(tag)), config_(std::move(config)){};
 
-  void LoggerConfigTreeNode::addChild(std::string tag,
-                                      boost::optional<LogLevel> log_level,
-                                      boost::optional<LogPatterns> patterns) {
-    children_[tag] = std::make_shared<LoggerConfigTreeNode>(
-        tag,
-        LoggerConfig{
-            log_level.value_or(config_.log_level),
-            patterns ? LogPatterns{std::move(*patterns)} : config_.patterns});
+  LoggerConfigTreeNodePtr LoggerConfigTreeNode::addChild(
+      std::string tag,
+      boost::optional<LogLevel> log_level,
+      boost::optional<LogPatterns> patterns) {
+    LoggerConfig child_config{
+        log_level.value_or(config_.log_level),
+        patterns ? LogPatterns{std::move(*patterns)} : config_.patterns};
+    auto child =
+        std::make_shared<LoggerConfigTreeNode>(tag, std::move(child_config));
+    auto map_elem = std::make_pair<const std::string, LoggerConfigTreeNodePtr>(
+        std::move(tag), std::move(child));
+    return children_.emplace(std::move(map_elem)).first->second;
   }
 
   const std::string &LoggerConfigTreeNode::getTag() const {
@@ -59,13 +63,22 @@ namespace logger {
     return config_;
   }
 
-  boost::optional<std::shared_ptr<LoggerConfigTreeNode>>
-  LoggerConfigTreeNode::getChild(const std::string &tag) const {
+  boost::optional<LoggerConfigTreeNodePtr> LoggerConfigTreeNode::getChild(
+      const std::string &tag) {
     const auto it = children_.find(tag);
     if (it == children_.end()) {
       return boost::none;
     }
     return it->second;
+  }
+
+  boost::optional<ConstLoggerConfigTreeNodePtr> LoggerConfigTreeNode::getChild(
+      const std::string &tag) const {
+    const auto it = children_.find(tag);
+    if (it == children_.end()) {
+      return boost::none;
+    }
+    return std::static_pointer_cast<const LoggerConfigTreeNode>(it->second);
   }
 
   class Logger::Impl {
@@ -78,7 +91,7 @@ namespace logger {
     /// @param tree - the logger tree configuration
     /// @param spdlog_logger - the spdlog logger to use
     Impl(std::string tag,
-         std::shared_ptr<const LoggerConfigTreeNode> tree,
+         ConstLoggerConfigTreeNodePtr tree,
          std::shared_ptr<spdlog::logger> spdlog_logger)
         : tag_(std::move(tag)),
           tree_(std::move(tree)),
@@ -128,7 +141,7 @@ namespace logger {
     // --- Fields accessible by logger::Logger ---
    public:
     const std::string tag_;
-    const std::shared_ptr<const LoggerConfigTreeNode> tree_;
+    const ConstLoggerConfigTreeNodePtr tree_;
     const std::shared_ptr<spdlog::logger> logger_;
 
     // --- Internal use fields ---
@@ -173,7 +186,7 @@ namespace logger {
 
   static std::unique_ptr<Logger::Impl> makeLoggerImpl(
       std::string tag,
-      std::shared_ptr<const LoggerConfigTreeNode> tree_config,
+      ConstLoggerConfigTreeNodePtr tree_config,
       LoggerThreadSafety ts) {
     switch (ts) {
       case LoggerThreadSafety::kSingleThread:
@@ -187,8 +200,7 @@ namespace logger {
     }
   }
 
-  Logger::Logger(std::shared_ptr<const LoggerConfigTreeNode> tree_config,
-                 LoggerThreadSafety ts)
+  Logger::Logger(ConstLoggerConfigTreeNodePtr tree_config, LoggerThreadSafety ts)
       : impl_(makeLoggerImpl(tree_config->getTag(), tree_config, ts)) {}
 
   Logger::Logger(std::string tag, LoggerConfig config, LoggerThreadSafety ts)
@@ -198,7 +210,7 @@ namespace logger {
             ts)) {}
 
   Logger::Logger(std::string tag,
-                 std::shared_ptr<const LoggerConfigTreeNode> tree_config,
+                 ConstLoggerConfigTreeNodePtr tree_config,
                  LoggerThreadSafety ts)
       : impl_(makeLoggerImpl(std::move(tag), std::move(tree_config), ts)) {}
 
