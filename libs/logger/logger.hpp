@@ -207,7 +207,7 @@ namespace logger {
      bool shouldLog(Level level) const;
 
      friend class Logger::Impl;
-     const std::shared_ptr<Impl> impl_;
+     std::shared_ptr<Impl> impl_;
   };
 
   /**

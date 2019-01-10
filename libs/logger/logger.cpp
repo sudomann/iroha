@@ -206,12 +206,14 @@ namespace logger {
 
   Logger::Logger(Logger &&other) : impl_(std::move(other.impl_)) {}
 
-  Logger &operator=(const Logger &other) {
+  Logger &Logger::operator=(const Logger &other) {
     impl_ = other.impl_;
+    return *this;
   }
 
-  Logger &operator=(Logger &&other) {
+  Logger &Logger::operator=(Logger &&other) {
     impl_ = std::move(other.impl_);
+    return *this;
   }
 
   Logger::~Logger() = default;
