@@ -22,6 +22,7 @@
 #include "integration/acceptance/acceptance_fixture.hpp"
 #include "interfaces/query_responses/roles_response.hpp"
 #include "logger/logger.hpp"
+#include "logger/logger_manager.hpp"
 #include "main/iroha_conf_literals.hpp"
 #include "torii/command_client.hpp"
 #include "torii/query_client.hpp"
@@ -37,12 +38,31 @@ using namespace std::chrono_literals;
 using namespace common_constants;
 using iroha::operator|;
 
+static logger::LoggerManagerTreePtr getIrohadTestLoggerManager() {
+  static logger::LoggerManagerTreePtr irohad_test_logger_manager;
+  if (!irohad_test_logger_manager) {
+    irohad_test_logger_manager =
+        std::make_shared<logger::LoggerManagerTree>(logger::LoggerConfig{
+            logger::LogLevel::kInfo, logger::kDefaultLogPatterns});
+  }
+  return irohad_test_logger_manager->getChild("IrohadTest");
+}
+
 class IrohadTest : public AcceptanceFixture {
  public:
-  IrohadTest() : kAddress("127.0.0.1"), kPort(50051) {}
+  IrohadTest()
+      : kAddress("127.0.0.1"),
+        kPort(50051),
+        test_data_path_(boost::filesystem::path(PATHTESTDATA)),
+        keys_manager_(
+            kAdminId,
+            test_data_path_,
+            getIrohadTestLoggerManager()->getChild("KeysManager")->getLogger()),
+        log_(getIrohadTestLoggerManager()->getLogger()) {}
 
   void SetUp() override {
     setPaths();
+
     rapidjson::Document doc;
     std::ifstream ifs_iroha(path_config_.string());
     rapidjson::IStreamWrapper isw(ifs_iroha);
@@ -151,7 +171,10 @@ class IrohadTest : public AcceptanceFixture {
         complete(baseTx(kAdminId).setAccountQuorum(kAdminId, 1), key_pair);
     tx_request.set_tx_hash(tx.hash().hex());
 
-    torii::CommandSyncClient client(kAddress, kPort);
+    torii::CommandSyncClient client(
+        kAddress,
+        kPort,
+        getIrohadTestLoggerManager()->getChild("CommandClient")->getLogger());
     client.Torii(tx.getTransport());
 
     auto resub_counter(resubscribe_attempts);
@@ -182,7 +205,6 @@ class IrohadTest : public AcceptanceFixture {
   void setPaths() {
     path_irohad_ = boost::filesystem::path(PATHIROHAD);
     irohad_executable = path_irohad_ / "irohad";
-    test_data_path_ = boost::filesystem::path(PATHTESTDATA);
     path_config_ = test_data_path_ / "config.sample";
     path_genesis_ = test_data_path_ / "genesis.block";
     path_keypair_ = test_data_path_ / "node0";
@@ -242,6 +264,9 @@ DROP TABLE IF EXISTS position_by_account_asset;
   std::string pgopts_;
   std::string blockstore_path_;
   std::string config_copy_;
+  iroha::KeysManagerImpl keys_manager_;
+
+  logger::LoggerPtr log_;
 };
 
 /**
@@ -263,8 +288,7 @@ TEST_F(IrohadTest, RunIrohad) {
 TEST_F(IrohadTest, SendTx) {
   launchIroha();
 
-  auto key_manager = iroha::KeysManagerImpl(kAdminId, test_data_path_);
-  auto key_pair = key_manager.loadKeys();
+  auto key_pair = keys_manager_.loadKeys();
   ASSERT_TRUE(key_pair);
 
   SCOPED_TRACE("From send transaction test");
@@ -279,8 +303,8 @@ TEST_F(IrohadTest, SendTx) {
  */
 TEST_F(IrohadTest, SendQuery) {
   launchIroha();
-  auto key_manager = iroha::KeysManagerImpl(kAdminId, test_data_path_);
-  auto key_pair = key_manager.loadKeys();
+
+  auto key_pair = keys_manager_.loadKeys();
   ASSERT_TRUE(key_pair);
 
   iroha::protocol::QueryResponse response;
@@ -306,8 +330,7 @@ TEST_F(IrohadTest, SendQuery) {
 TEST_F(IrohadTest, RestartWithOverwriteLedger) {
   launchIroha();
 
-  auto key_manager = iroha::KeysManagerImpl(kAdminId, test_data_path_);
-  auto key_pair = key_manager.loadKeys();
+  auto key_pair = keys_manager_.loadKeys();
   ASSERT_TRUE(key_pair);
 
   SCOPED_TRACE("From restart with --overwrite-ledger flag test");
@@ -338,8 +361,7 @@ TEST_F(IrohadTest, RestartWithOverwriteLedger) {
 TEST_F(IrohadTest, RestartWithoutResetting) {
   launchIroha();
 
-  auto key_manager = iroha::KeysManagerImpl(kAdminId, test_data_path_);
-  auto key_pair = key_manager.loadKeys();
+  auto key_pair = keys_manager_.loadKeys();
   ASSERT_TRUE(key_pair);
 
   SCOPED_TRACE("From restart without resetting test");
