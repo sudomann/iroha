@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/stringbuffer.h>
 #include <soci/postgresql/soci-postgresql.h>
@@ -42,23 +43,26 @@ class IrohadTest : public AcceptanceFixture {
 
   void SetUp() override {
     setPaths();
-    auto config = parse_iroha_config(path_config_.string());
+    rapidjson::Document doc;
+    std::ifstream ifs_iroha(path_config_.string());
+    rapidjson::IStreamWrapper isw(ifs_iroha);
+    doc.ParseStream(isw);
+    ASSERT_FALSE(doc.HasParseError())
+        << "Failed to parse irohad config at " << path_config_.string();
     blockstore_path_ = (boost::filesystem::temp_directory_path()
                         / boost::filesystem::unique_path())
                            .string();
     pgopts_ = integration_framework::getPostgresCredsOrDefault(
-        config[config_members::PgOpt].GetString());
+        doc[config_members::PgOpt].GetString());
     // we need a separate file here in case if target environment
     // has custom database connection options set
     // via environment variables
-    auto config_copy_json = parse_iroha_config(path_config_.string());
-    config_copy_json[config_members::BlockStorePath].SetString(
-        blockstore_path_.data(), blockstore_path_.size());
-    config_copy_json[config_members::PgOpt].SetString(pgopts_.data(),
-                                                      pgopts_.size());
+    doc[config_members::BlockStorePath].SetString(blockstore_path_.data(),
+                                                  blockstore_path_.size());
+    doc[config_members::PgOpt].SetString(pgopts_.data(), pgopts_.size());
     rapidjson::StringBuffer sb;
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
-    config_copy_json.Accept(writer);
+    doc.Accept(writer);
     std::string config_copy_string = sb.GetString();
     std::ofstream copy_file(config_copy_);
     copy_file.write(config_copy_string.data(), config_copy_string.size());
