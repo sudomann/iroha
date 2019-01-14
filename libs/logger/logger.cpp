@@ -10,7 +10,7 @@
 #include <spdlog/fmt/ostr.h>
 #include <spdlog/spdlog.h>
 
-static const std::string kDefaultPattern = R"([%Y-%m-%d %H:%M:%S.%F] %n %v)";
+static const std::string kDefaultPattern = R"([%Y-%m-%d %H:%M:%S.%F][%L] %n: %v)";
 static const std::string kTagHierarchySeparator = "/";
 
 namespace logger {
@@ -19,7 +19,7 @@ namespace logger {
   const LogPatterns kDefaultLogPatterns = ([] {
     LogPatterns p;
     p.setPattern(LogLevel::kTrace,
-                 R"([%Y-%m-%d %H:%M:%S.%F][th:%t][%l] %n %v)");
+                 R"([%Y-%m-%d %H:%M:%S.%F][th:%t][%L] %n: %v)");
     p.setPattern(LogLevel::kInfo, kDefaultPattern);
     return p;
   })();
