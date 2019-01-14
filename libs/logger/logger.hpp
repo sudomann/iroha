@@ -40,9 +40,11 @@ namespace logger {
     /// Set a logging pattern for the given level.
     void setPattern(LogLevel level, std::string pattern);
 
-    /// Get the logging pattern for the given level. If not set, get the
-    /// next present more verbose level pattern, if any, or the default
-    /// pattern.
+    /**
+     * Get the logging pattern for the given level. If not set, get the
+     * next present more verbose level pattern, if any, or the default
+     * pattern.
+     */
     std::string getPattern(LogLevel level) const;
 
    private:
