@@ -49,7 +49,7 @@ namespace logger {
     std::map<LogLevel, std::string> patterns_;
   };
 
-  // TODO mboldyrev 29.12.2018 Add sink options (console, file, syslog, etc)
+  // TODO mboldyrev 29.12.2018 IR-188 Add sink options (console, file, syslog)
   struct LoggerConfig {
     LogLevel log_level;
     LogPatterns patterns;
