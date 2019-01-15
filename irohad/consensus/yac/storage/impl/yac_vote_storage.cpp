@@ -59,7 +59,7 @@ namespace iroha {
       void YacVoteStorage::removeByRound(const iroha::consensus::Round &round) {
         auto val = getProposalStorage(round);
         if (val != proposal_storages_.end()) {
-          //          processing_state_.erase(val);
+          proposal_storages_.erase(val);
         }
       }
 

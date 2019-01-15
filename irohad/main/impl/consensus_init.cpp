@@ -95,14 +95,16 @@ namespace iroha {
               async_call,
           std::shared_ptr<shared_model::interface::CommonObjectsFactory>
               common_objects_factory) {
+        // TODO: 2018-12-25 @muratovv make dynamic change of the number IR-154
+        const BufferedCleanupStrategy::QueueSizeType kNumberOfSavedRounds = 10;
         std::shared_ptr<iroha::consensus::yac::CleanupStrategy>
             cleanup_strategy = std::make_shared<
                 iroha::consensus::yac::BufferedCleanupStrategy>(
-                3,
+                kNumberOfSavedRounds,
                 iroha::consensus::Round(1, 0),
                 std::queue<iroha::consensus::Round>());
         return Yac::create(
-            YacVoteStorage(cleanup_strategy),
+            YacVoteStorage(std::move(cleanup_strategy)),
             createNetwork(std::move(async_call)),
             createCryptoProvider(keypair, std::move(common_objects_factory)),
             createTimer(delay_milliseconds),
