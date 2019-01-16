@@ -153,7 +153,7 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
   EXPECT_CALL(*query, getTopBlock())
       .WillOnce(Return(expected::makeValue(wBlock(clone(block)))));
 
-  EXPECT_CALL(*query, getTopBlockHeight()).WillOnce(Return(block.height()));
+  //  EXPECT_CALL(*query, getTopBlockHeight()).WillOnce(Return(block.height()));
   EXPECT_CALL(*validator, validate(_, _))
       .WillOnce(Invoke([&validation_result](const auto &p, auto &v) {
         return std::move(validation_result);
@@ -161,37 +161,42 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
 
   EXPECT_CALL(*ordering_gate, onProposal())
       .WillOnce(Return(rxcpp::observable<>::empty<OrderingEvent>()));
-
-  EXPECT_CALL(*shared_model::crypto::crypto_signer_expecter,
-              sign(A<shared_model::interface::Block &>()))
-      .Times(1);
-
+  //
+  //  EXPECT_CALL(*shared_model::crypto::crypto_signer_expecter,
+  //              sign(A<shared_model::interface::Block &>()))
+  //      .Times(1);
+  //
   init();
-
-  auto proposal_wrapper =
-      make_test_subscriber<CallExact>(simulator->onVerifiedProposal(), 1);
-  proposal_wrapper.subscribe([&proposal](auto event) {
-    auto verified_proposal = getVerifiedProposalUnsafe(event);
-
-    ASSERT_EQ(verified_proposal->verified_proposal->height(),
-              proposal->height());
-    ASSERT_EQ(verified_proposal->verified_proposal->transactions(),
-              proposal->transactions());
-    ASSERT_TRUE(verified_proposal->rejected_transactions.empty());
-  });
-
-  auto block_wrapper = make_test_subscriber<CallExact>(simulator->onBlock(), 1);
-  block_wrapper.subscribe([&proposal](const auto &event) {
-    auto block = getBlockUnsafe(event);
-
-    ASSERT_EQ(block->height(), proposal->height());
-    ASSERT_EQ(block->transactions(), proposal->transactions());
-  });
-
-  simulator->processProposal(*proposal, round);
-
-  ASSERT_TRUE(proposal_wrapper.validate());
-  ASSERT_TRUE(block_wrapper.validate());
+  //
+  //  auto proposal_wrapper =
+  //      make_test_subscriber<CallExact>(simulator->onVerifiedProposal(), 1);
+  //  proposal_wrapper.subscribe([&proposal](auto event) {
+  //    auto verified_proposal = getVerifiedProposalUnsafe(event);
+  //
+  //    ASSERT_EQ(verified_proposal->verified_proposal->height(),
+  //              proposal->height());
+  //    ASSERT_EQ(verified_proposal->verified_proposal->transactions(),
+  //              proposal->transactions());
+  //    ASSERT_TRUE(verified_proposal->rejected_transactions.empty());
+  //  });
+  //
+  //  auto block_wrapper = make_test_subscriber<CallExact>(simulator->onBlock(),
+  //  1); block_wrapper.subscribe([&proposal](const auto &event) {
+  //    auto block = getBlockUnsafe(event);
+  //
+  //    ASSERT_EQ(block->height(), proposal->height());
+  //    ASSERT_EQ(block->transactions(), proposal->transactions());
+  //  });
+  //
+  auto verification_result = simulator->processProposal(*proposal, round);
+  ASSERT_TRUE(verification_result);
+  auto verified_proposal = verification_result->get()->verified_proposal;
+  EXPECT_EQ(verified_proposal->height(), proposal->height());
+  EXPECT_EQ(verified_proposal->transactions(), proposal->transactions());
+  EXPECT_TRUE(verification_result->get()->rejected_transactions.empty());
+  //
+  //  ASSERT_TRUE(proposal_wrapper.validate());
+  //  ASSERT_TRUE(block_wrapper.validate());
 }
 
 TEST_F(SimulatorTest, FailWhenNoBlock) {
@@ -271,8 +276,8 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
  * transactions are provided as well
  */
 TEST_F(SimulatorTest, SomeFailingTxs) {
-  // create a 3-height proposal, but validator returns only a 2-height verified
-  // proposal
+  // create a 3-height proposal, but validator returns only a 2-height
+  // verified proposal
   const int kNumTransactions = 3;
   std::vector<shared_model::proto::Transaction> txs;
   for (int i = 0; i < kNumTransactions; ++i) {
@@ -318,48 +323,66 @@ TEST_F(SimulatorTest, SomeFailingTxs) {
   EXPECT_CALL(*query, getTopBlock())
       .WillOnce(Return(expected::makeValue(wBlock(clone(block)))));
 
-  EXPECT_CALL(*query, getTopBlockHeight()).WillOnce(Return(2));
+//  EXPECT_CALL(*query, getTopBlockHeight()).WillOnce(Return(2));
 
   EXPECT_CALL(*validator, validate(_, _))
       .WillOnce(Invoke([&verified_proposal_and_errors](const auto &p, auto &v) {
         return std::move(verified_proposal_and_errors);
       }));
 
-  EXPECT_CALL(*ordering_gate, onProposal())
-      .WillOnce(Return(rxcpp::observable<>::empty<OrderingEvent>()));
+    EXPECT_CALL(*ordering_gate, onProposal())
+        .WillOnce(Return(rxcpp::observable<>::empty<OrderingEvent>()));
 
-  EXPECT_CALL(*shared_model::crypto::crypto_signer_expecter,
-              sign(A<shared_model::interface::Block &>()))
-      .Times(1);
+  //  EXPECT_CALL(*shared_model::crypto::crypto_signer_expecter,
+  //              sign(A<shared_model::interface::Block &>()))
+  //      .Times(1);
+  //
+    init();
+  //
+  //  auto proposal_wrapper =
+  //      make_test_subscriber<CallExact>(simulator->onVerifiedProposal(), 1);
+  //  proposal_wrapper.subscribe([&](auto event) {
+  //    auto verified_proposal_ = getVerifiedProposalUnsafe(event);
+  //
+  //    // ensure that txs in verified proposal do not include failed ones
+  //    ASSERT_EQ(verified_proposal_->verified_proposal->height(),
+  //              verified_proposal_height);
+  //    ASSERT_EQ(verified_proposal_->verified_proposal->transactions(),
+  //              verified_proposal_transactions);
+  //    ASSERT_TRUE(verified_proposal_->rejected_transactions.size()
+  //                == kNumTransactions - 1);
+  //    const auto verified_proposal_rejected_tx_hashes =
+  //        verified_proposal_->rejected_transactions
+  //        | boost::adaptors::transformed(
+  //              [](const auto &tx_error) { return tx_error.tx_hash; });
+  //    for (auto rejected_tx = txs.begin() + 1; rejected_tx != txs.end();
+  //         ++rejected_tx) {
+  //      ASSERT_NE(boost::range::find(verified_proposal_rejected_tx_hashes,
+  //                                   rejected_tx->hash()),
+  //                boost::end(verified_proposal_rejected_tx_hashes))
+  //          << rejected_tx->toString() << " missing in rejected
+  //          transactions.";
+  //    }
+  //  });
+  //
+  auto verification_result = simulator->processProposal(*proposal, round);
+  ASSERT_TRUE(verification_result);
+  auto verified_proposal = verification_result->get()->verified_proposal;
 
-  init();
-
-  auto proposal_wrapper =
-      make_test_subscriber<CallExact>(simulator->onVerifiedProposal(), 1);
-  proposal_wrapper.subscribe([&](auto event) {
-    auto verified_proposal_ = getVerifiedProposalUnsafe(event);
-
-    // ensure that txs in verified proposal do not include failed ones
-    ASSERT_EQ(verified_proposal_->verified_proposal->height(),
-              verified_proposal_height);
-    ASSERT_EQ(verified_proposal_->verified_proposal->transactions(),
-              verified_proposal_transactions);
-    ASSERT_TRUE(verified_proposal_->rejected_transactions.size()
-                == kNumTransactions - 1);
-    const auto verified_proposal_rejected_tx_hashes =
-        verified_proposal_->rejected_transactions
-        | boost::adaptors::transformed(
-              [](const auto &tx_error) { return tx_error.tx_hash; });
-    for (auto rejected_tx = txs.begin() + 1; rejected_tx != txs.end();
-         ++rejected_tx) {
-      ASSERT_NE(boost::range::find(verified_proposal_rejected_tx_hashes,
-                                   rejected_tx->hash()),
-                boost::end(verified_proposal_rejected_tx_hashes))
-          << rejected_tx->toString() << " missing in rejected transactions.";
-    }
-  });
-
-  simulator->processProposal(*proposal, round);
-
-  ASSERT_TRUE(proposal_wrapper.validate());
+  // ensure that txs in verified proposal do not include failed ones
+  EXPECT_EQ(verified_proposal->height(), verified_proposal_height);
+  EXPECT_EQ(verified_proposal->transactions(), verified_proposal_transactions);
+  EXPECT_TRUE(verification_result->get()->rejected_transactions.size()
+              == kNumTransactions - 1);
+  const auto verified_proposal_rejected_tx_hashes =
+      verification_result->get()->rejected_transactions
+      | boost::adaptors::transformed(
+            [](const auto &tx_error) { return tx_error.tx_hash; });
+  for (auto rejected_tx = txs.begin() + 1; rejected_tx != txs.end();
+       ++rejected_tx) {
+    EXPECT_NE(boost::range::find(verified_proposal_rejected_tx_hashes,
+                                 rejected_tx->hash()),
+              boost::end(verified_proposal_rejected_tx_hashes))
+        << rejected_tx->toString() << " missing in rejected transactions.";
+  }
 }

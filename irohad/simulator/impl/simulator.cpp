@@ -32,7 +32,14 @@ namespace iroha {
       ordering_gate->onProposal().subscribe(
           proposal_subscription_, [this](const network::OrderingEvent &event) {
             if (event.proposal) {
-              this->processProposal(*getProposalUnsafe(event), event.round);
+              auto validated_proposal_and_errors =
+                  this->processProposal(*getProposalUnsafe(event), event.round);
+
+              if (validated_proposal_and_errors) {
+                log_->info("Proposal validated successfully");
+                notifier_.get_subscriber().on_next(VerifiedProposalCreatorEvent{
+                    *validated_proposal_and_errors, event.round});
+              }
             } else {
               notifier_.get_subscriber().on_next(
                   VerifiedProposalCreatorEvent{boost::none, event.round});
@@ -42,6 +49,7 @@ namespace iroha {
       notifier_.get_observable().subscribe(
           verified_proposal_subscription_,
           [this](const VerifiedProposalCreatorEvent &event) {
+            log_->info("Received validated proposal");
             if (event.verified_proposal_result) {
               auto proposal_and_errors = getVerifiedProposalUnsafe(event);
               auto block = this->processVerifiedProposal(proposal_and_errors,
@@ -68,7 +76,8 @@ namespace iroha {
       return notifier_.get_observable();
     }
 
-    void Simulator::processProposal(
+    boost::optional<std::shared_ptr<validation::VerifiedProposalAndErrors>>
+    Simulator::processProposal(
         const shared_model::interface::Proposal &proposal,
         const consensus::Round &round) {
       log_->info("process proposal");
@@ -78,7 +87,7 @@ namespace iroha {
         auto block_var = block_query_opt.value()->getTopBlock();
         if (auto e = boost::get<expected::Error<std::string>>(&block_var)) {
           log_->warn("Could not fetch last block: " + e->error);
-          return;
+          return boost::none;
         }
 
         last_block = boost::get<expected::Value<
@@ -86,21 +95,21 @@ namespace iroha {
                          ->value;
       } else {
         log_->error("could not create block query");
-        return;
+        return boost::none;
       }
 
       if (last_block->height() + 1 != proposal.height()) {
         log_->warn("Last block height: {}, proposal height: {}",
                    last_block->height(),
                    proposal.height());
-        return;
+        return boost::none;
       }
 
       auto temporary_wsv_var = ametsuchi_factory_->createTemporaryWsv();
       if (auto e =
               boost::get<expected::Error<std::string>>(&temporary_wsv_var)) {
         log_->error("could not create temporary storage: {}", e->error);
-        return;
+        return boost::none;
       }
 
       auto storage = std::move(
@@ -113,8 +122,7 @@ namespace iroha {
               validator_->validate(proposal, *storage);
       ametsuchi_factory_->prepareBlock(std::move(storage));
 
-      notifier_.get_subscriber().on_next(
-          VerifiedProposalCreatorEvent{validated_proposal_and_errors, round});
+      return validated_proposal_and_errors;
     }
 
     std::shared_ptr<shared_model::interface::Block>
