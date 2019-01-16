@@ -105,12 +105,6 @@ namespace logger {
     kCritical,
   };
 
-  /// Logger thread safety
-  enum class LoggerThreadSafety {
-    kSingleThread,
-    kMultiThread,
-  };
-
   class Logger {
     public:
      using Level = LogLevel;
@@ -120,17 +114,15 @@ namespace logger {
      /**
       * Create a logger corresponding to the root of the given tree config.
       * @param tree_config - the logger config tree
-      * @param ts - thread safety of the created logger
       */
-     Logger(ConstLoggerConfigTreeNodePtr tree_config, LoggerThreadSafety ts);
+     Logger(ConstLoggerConfigTreeNodePtr tree_config);
 
      /**
       * Create a standalone logger without tree config.
       * @param tag - the tag for logging (aka logger name)
       * @param config - logger configuration
-      * @param ts - thread safety of the created logger
       */
-     Logger(std::string tag, LoggerConfig config, LoggerThreadSafety ts);
+     Logger(std::string tag, LoggerConfig config);
 
      Logger(const Logger &other);
      Logger(Logger &&other);
@@ -187,12 +179,8 @@ namespace logger {
       * for the same child twice will yield the same object.
       *
       * @param tag - the tag of the child logger
-      * @param ts - thread safety of the child logger
       */
-     LoggerPtr getChild(std::string tag, LoggerThreadSafety ts);
-
-     // Public impl is needed to allow inheritance from Impl.
-     class Impl;
+     LoggerPtr getChild(std::string tag);
 
     private:
 
@@ -200,11 +188,8 @@ namespace logger {
       * Create a child logger corresponding to the root of the tree config.
       * @param tag - the tag for logging (aka logger name)
       * @param tree_config - the logger config tree
-      * @param ts - thread safety of the created logger
       */
-     Logger(std::string tag,
-            ConstLoggerConfigTreeNodePtr tree_config,
-            LoggerThreadSafety ts);
+     Logger(std::string tag, ConstLoggerConfigTreeNodePtr tree_config);
 
      void logInternal(Level level, const std::string &s) const;
 
@@ -212,7 +197,8 @@ namespace logger {
      /// one given in parameter.
      bool shouldLog(Level level) const;
 
-     friend class Logger::Impl;
+     class Impl;
+     friend class Impl;
      std::shared_ptr<Impl> impl_;
   };
 

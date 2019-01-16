@@ -90,33 +90,27 @@ namespace logger {
     /// @param tag - the tag of constructed logger
     /// @param tree - the logger tree configuration
     /// @param spdlog_logger - the spdlog logger to use
-    Impl(std::string tag,
-         ConstLoggerConfigTreeNodePtr tree,
-         std::shared_ptr<spdlog::logger> spdlog_logger)
+    Impl(std::string tag, ConstLoggerConfigTreeNodePtr tree)
         : tag_(std::move(tag)),
           tree_(std::move(tree)),
-          logger_(std::move(spdlog_logger)) {
+          logger_(spdlog::stdout_color_mt(tag)) {
       setupLogger();
     }
 
-    virtual LoggerPtr getChild(std::string tag, LoggerThreadSafety ts) = 0;
-
-   protected:
-    LoggerPtr getChildSingleTread(std::string tag, LoggerThreadSafety ts) {
-      std::string child_full_tag = tag_ + kTagHierarchySeparator + tag;
-      auto &children_by_tag = children_[tag];
-      const auto child_it = children_by_tag.find(ts);
-      if (child_it != children_by_tag.end()) {
+    LoggerPtr getChild(std::string tag) {
+      std::lock_guard<std::mutex> lock(children_mutex_);
+      const auto child_it = children_.find(tag);
+      if (child_it != children_.end()) {
         return child_it->second;
       }
       // if a node for this child is not found in the tree config, create a
       // new standalone logger using this logger's settings
       auto child_config = tree_->getChild(tag).value_or(
           std::make_shared<LoggerConfigTreeNode>(tag, tree_->getConfig()));
-      Logger new_child(
-          tag_ + kTagHierarchySeparator + tag, std::move(child_config), ts);
-      return children_by_tag
-          .emplace(std::make_pair(ts, std::make_shared<Logger>(new_child)))
+      Logger new_child(tag_ + kTagHierarchySeparator + tag,
+                       std::move(child_config));
+      return children_
+          .emplace(std::make_pair(tag, std::make_shared<Logger>(new_child)))
           .first->second;
     }
 
@@ -146,73 +140,20 @@ namespace logger {
 
     // --- Internal use fields ---
    private:
-    std::unordered_map<std::string, std::map<LoggerThreadSafety, LoggerPtr>>
-        children_;
+    std::unordered_map<std::string, LoggerPtr> children_;
+    std::mutex children_mutex_;
   };
 
-  class LoggerImplSingleThread : public Logger::Impl {
-   public:
-    template <typename... Types>
-    LoggerImplSingleThread(std::string tag, Types &&... args)
-        : Logger::Impl(
-              tag, std::forward<Types>(args)..., spdlog::stdout_color_st(tag)) {
-    }
+  Logger::Logger(ConstLoggerConfigTreeNodePtr tree_config)
+      : impl_(std::make_shared<Impl>(tree_config->getTag(), tree_config)) {}
 
-    virtual ~LoggerImplSingleThread() = default;
-
-    LoggerPtr getChild(std::string tag, LoggerThreadSafety ts) {
-      return getChildSingleTread(tag, ts);
-    }
-  };
-
-  class LoggerImplMultiThread : public Logger::Impl {
-   public:
-    template <typename... Types>
-    LoggerImplMultiThread(std::string tag, Types &&... args)
-        : Logger::Impl(
-              tag, std::forward<Types>(args)..., spdlog::stdout_color_mt(tag)) {
-    }
-
-    virtual ~LoggerImplMultiThread() = default;
-
-    LoggerPtr getChild(std::string tag, LoggerThreadSafety ts) {
-      std::lock_guard<std::mutex> lock(children_mutex);
-      return getChildSingleTread(tag, ts);
-    }
-
-   private:
-    std::mutex children_mutex;
-  };
-
-  static std::unique_ptr<Logger::Impl> makeLoggerImpl(
-      std::string tag,
-      ConstLoggerConfigTreeNodePtr tree_config,
-      LoggerThreadSafety ts) {
-    switch (ts) {
-      case LoggerThreadSafety::kSingleThread:
-        return std::make_unique<LoggerImplSingleThread>(std::move(tag),
-                                                        std::move(tree_config));
-      case LoggerThreadSafety::kMultiThread:
-        return std::make_unique<LoggerImplMultiThread>(std::move(tag),
-                                                       std::move(tree_config));
-      default:
-        BOOST_THROW_EXCEPTION(std::runtime_error("Unknown logger type!"));
-    }
-  }
-
-  Logger::Logger(ConstLoggerConfigTreeNodePtr tree_config, LoggerThreadSafety ts)
-      : impl_(makeLoggerImpl(tree_config->getTag(), tree_config, ts)) {}
-
-  Logger::Logger(std::string tag, LoggerConfig config, LoggerThreadSafety ts)
-      : impl_(makeLoggerImpl(
+  Logger::Logger(std::string tag, LoggerConfig config)
+      : impl_(std::make_shared<Impl>(
             tag,
-            std::make_shared<LoggerConfigTreeNode>(tag, std::move(config)),
-            ts)) {}
+            std::make_shared<LoggerConfigTreeNode>(tag, std::move(config)))) {}
 
-  Logger::Logger(std::string tag,
-                 ConstLoggerConfigTreeNodePtr tree_config,
-                 LoggerThreadSafety ts)
-      : impl_(makeLoggerImpl(std::move(tag), std::move(tree_config), ts)) {}
+  Logger::Logger(std::string tag, ConstLoggerConfigTreeNodePtr tree_config)
+      : impl_(std::make_shared<Impl>(std::move(tag), std::move(tree_config))) {}
 
   Logger::Logger(const Logger &other) : impl_(other.impl_) {}
 
@@ -259,8 +200,8 @@ namespace logger {
     return impl_->tree_->getConfig().log_level <= level;
   }
 
-  LoggerPtr Logger::getChild(std::string tag, LoggerThreadSafety ts) {
-    return impl_->getChild(tag, ts);
+  LoggerPtr Logger::getChild(std::string tag) {
+    return impl_->getChild(tag);
   }
 
   std::string boolRepr(bool value) {
