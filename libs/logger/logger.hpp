@@ -10,7 +10,6 @@
 #include <memory>
 #include <numeric>  // for std::accumulate
 #include <string>
-#include <unordered_map>
 
 #include <boost/optional.hpp>
 
@@ -25,14 +24,12 @@ auto operator<<(StreamType &os, const T &object)
 namespace logger {
 
   class Logger;
-  class LoggerConfigTreeNode;
   class LogPatterns;
+  class LoggerConfig;
   enum class LogLevel;
 
   using LoggerPtr = std::shared_ptr<Logger>;
-  using LoggerConfigTreeNodePtr = std::shared_ptr<LoggerConfigTreeNode>;
-  using ConstLoggerConfigTreeNodePtr =
-      std::shared_ptr<const LoggerConfigTreeNode>;
+  using ConstLoggerConfigPtr = std::shared_ptr<const LoggerConfig>;
 
   extern const LogLevel kDefaultLogLevel;
   extern const LogPatterns kDefaultLogPatterns;
@@ -58,43 +55,6 @@ namespace logger {
     LogPatterns patterns;
   };
 
-  class LoggerConfigTreeNode {
-   public:
-    /// Constructor.
-    LoggerConfigTreeNode(std::string tag, LoggerConfig config);
-
-    /**
-     * Add a child configuration. The new child's cnofiguartion parameters
-     * are taken from the parent optionally overrided by the arguments.
-     *
-     * @param tag - the child's tag, without any parents' frefixes
-     * @param log_level - override the log level for the new child
-     * @param patterns - override the patterns
-     */
-    LoggerConfigTreeNodePtr addChild(std::string tag,
-                                     boost::optional<LogLevel> log_level,
-                                     boost::optional<LogPatterns> patterns);
-
-    /// Get tag.
-    const std::string &getTag() const;
-
-    /// Get config.
-    const LoggerConfig &getConfig() const;
-
-    /// Get non-const child config by tag, if present.
-    boost::optional<LoggerConfigTreeNodePtr> getChild(
-        const std::string &tag);
-
-    /// Get const child config by tag, if present.
-    boost::optional<ConstLoggerConfigTreeNodePtr> getChild(
-        const std::string &tag) const;
-
-   private:
-    const std::string tag_;
-    const LoggerConfig config_;
-    std::unordered_map<std::string, LoggerConfigTreeNodePtr> children_;
-  };
-
   /// Log levels
   enum class LogLevel {
     kTrace,
@@ -112,17 +72,10 @@ namespace logger {
      // --- Constructors and assignment (aka the big 5) ---
 
      /**
-      * Create a logger corresponding to the root of the given tree config.
-      * @param tree_config - the logger config tree
-      */
-     Logger(ConstLoggerConfigTreeNodePtr tree_config);
-
-     /**
-      * Create a standalone logger without tree config.
       * @param tag - the tag for logging (aka logger name)
       * @param config - logger configuration
       */
-     Logger(std::string tag, LoggerConfig config);
+     Logger(std::string tag, ConstLoggerConfigPtr config);
 
      Logger(const Logger &other);
      Logger(Logger &&other);
@@ -172,24 +125,7 @@ namespace logger {
        }
      }
 
-     // --- Misc functions ---
-
-     /**
-      * Get child logger. Internally keeps all created children, so asking
-      * for the same child twice will yield the same object.
-      *
-      * @param tag - the tag of the child logger
-      */
-     LoggerPtr getChild(std::string tag);
-
     private:
-
-     /**
-      * Create a child logger corresponding to the root of the tree config.
-      * @param tag - the tag for logging (aka logger name)
-      * @param tree_config - the logger config tree
-      */
-     Logger(std::string tag, ConstLoggerConfigTreeNodePtr tree_config);
 
      void logInternal(Level level, const std::string &s) const;
 
