@@ -33,10 +33,9 @@ namespace iroha {
           proposal_subscription_, [this](const network::OrderingEvent &event) {
             if (event.proposal) {
               auto validated_proposal_and_errors =
-                  this->processProposal(*getProposalUnsafe(event), event.round);
+                  this->processProposal(*getProposalUnsafe(event));
 
               if (validated_proposal_and_errors) {
-                log_->info("Proposal validated successfully");
                 notifier_.get_subscriber().on_next(VerifiedProposalCreatorEvent{
                     *validated_proposal_and_errors, event.round});
               }
@@ -49,14 +48,12 @@ namespace iroha {
       notifier_.get_observable().subscribe(
           verified_proposal_subscription_,
           [this](const VerifiedProposalCreatorEvent &event) {
-            log_->info("Received validated proposal");
             if (event.verified_proposal_result) {
               auto proposal_and_errors = getVerifiedProposalUnsafe(event);
-              auto block = this->processVerifiedProposal(proposal_and_errors,
-                                                         event.round);
+              auto block = this->processVerifiedProposal(proposal_and_errors);
               if (block) {
                 block_notifier_.get_subscriber().on_next(BlockCreatorEvent{
-                    RoundData{proposal_and_errors->verified_proposal, block},
+                    RoundData{proposal_and_errors->verified_proposal, *block},
                     event.round});
               }
             } else {
@@ -78,8 +75,7 @@ namespace iroha {
 
     boost::optional<std::shared_ptr<validation::VerifiedProposalAndErrors>>
     Simulator::processProposal(
-        const shared_model::interface::Proposal &proposal,
-        const consensus::Round &round) {
+        const shared_model::interface::Proposal &proposal) {
       log_->info("process proposal");
 
       // Get last block from local ledger
@@ -125,11 +121,10 @@ namespace iroha {
       return validated_proposal_and_errors;
     }
 
-    std::shared_ptr<shared_model::interface::Block>
+    boost::optional<std::shared_ptr<shared_model::interface::Block>>
     Simulator::processVerifiedProposal(
         const std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>
-            &verified_proposal_and_errors,
-        const consensus::Round &round) {
+            &verified_proposal_and_errors) {
       log_->info("process verified proposal");
 
       auto height = block_query_factory_->createBlockQuery() |
@@ -138,7 +133,7 @@ namespace iroha {
           };
       if (not height) {
         log_->error("Unable to query top block height");
-        return nullptr;
+        return boost::none;
       }
       const auto &proposal = verified_proposal_and_errors->verified_proposal;
       std::vector<shared_model::crypto::Hash> rejected_hashes;

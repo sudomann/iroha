@@ -32,8 +32,7 @@ namespace iroha {
        */
       virtual boost::optional<
           std::shared_ptr<validation::VerifiedProposalAndErrors>>
-      processProposal(const shared_model::interface::Proposal &proposal,
-                      const consensus::Round &round) = 0;
+      processProposal(const shared_model::interface::Proposal &proposal) = 0;
 
       /**
        * Emit proposals which were verified by stateful validator
