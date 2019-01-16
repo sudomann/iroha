@@ -42,7 +42,7 @@ namespace iroha {
       rxcpp::observable<VerifiedProposalCreatorEvent> onVerifiedProposal()
           override;
 
-      void processVerifiedProposal(
+      std::shared_ptr<shared_model::interface::Block> processVerifiedProposal(
           const std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>
               &verified_proposal_and_errors,
           const consensus::Round &round) override;

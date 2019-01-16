@@ -43,8 +43,14 @@ namespace iroha {
           verified_proposal_subscription_,
           [this](const VerifiedProposalCreatorEvent &event) {
             if (event.verified_proposal_result) {
-              this->processVerifiedProposal(getVerifiedProposalUnsafe(event),
-                                            event.round);
+              auto proposal_and_errors = getVerifiedProposalUnsafe(event);
+              auto block = this->processVerifiedProposal(proposal_and_errors,
+                                                         event.round);
+              if (block) {
+                block_notifier_.get_subscriber().on_next(BlockCreatorEvent{
+                    RoundData{proposal_and_errors->verified_proposal, block},
+                    event.round});
+              }
             } else {
               block_notifier_.get_subscriber().on_next(
                   BlockCreatorEvent{boost::none, event.round});
@@ -111,7 +117,8 @@ namespace iroha {
           VerifiedProposalCreatorEvent{validated_proposal_and_errors, round});
     }
 
-    void Simulator::processVerifiedProposal(
+    std::shared_ptr<shared_model::interface::Block>
+    Simulator::processVerifiedProposal(
         const std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>
             &verified_proposal_and_errors,
         const consensus::Round &round) {
@@ -123,7 +130,7 @@ namespace iroha {
           };
       if (not height) {
         log_->error("Unable to query top block height");
-        return;
+        return nullptr;
       }
       const auto &proposal = verified_proposal_and_errors->verified_proposal;
       std::vector<shared_model::crypto::Hash> rejected_hashes;
@@ -138,8 +145,8 @@ namespace iroha {
                                             proposal->transactions(),
                                             rejected_hashes);
       crypto_signer_->sign(*block);
-      block_notifier_.get_subscriber().on_next(
-          BlockCreatorEvent{RoundData{proposal, block}, round});
+
+      return block;
     }
 
     rxcpp::observable<BlockCreatorEvent> Simulator::onBlock() {
