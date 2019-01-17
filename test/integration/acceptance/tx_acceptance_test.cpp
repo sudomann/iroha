@@ -171,9 +171,9 @@ TEST_F(AcceptanceTest, TransactionEmptyPubKey) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SLV integration test
- * including SignableModelValidator or even whole
- * torii::CommandServiceTransportGrpc and the crypto provider
+ * TODO mboldyrev 05.12.2018 IR-56 convert to a crypto provider unit test.
+ * Also make a single SVL integration test including SignableModelValidator or
+ * even whole torii::CommandServiceTransportGrpc and the crypto provider
  *
  * @given some user
  * @when sending transactions with an empty signedBlob
@@ -189,9 +189,7 @@ TEST_F(AcceptanceTest, TransactionEmptySignedblob) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SLV integration test
- * including SignableModelValidator or even whole
- * torii::CommandServiceTransportGrpc and the crypto provider
+ * TODO mboldyrev 05.12.2018 IR-56 convert to a crypto provider unit test
  *
  * @given some user
  * @when sending transactions with correctly formed invalid PublicKey
@@ -213,9 +211,7 @@ TEST_F(AcceptanceTest, TransactionInvalidPublicKey) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SLV integration test
- * including SignableModelValidator or even whole
- * torii::CommandServiceTransportGrpc and the crypto provider
+ * TODO mboldyrev 05.12.2018 IR-56 convert to a crypto provider unit test
  *
  * @given some user
  * @when sending transactions with Invalid SignedBlock
@@ -239,7 +235,8 @@ TEST_F(AcceptanceTest, TransactionInvalidSignedBlob) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a separate status test
+ * TODO mboldyrev 05.12.2018 IR-56 remove? successful case covered by
+ * higher-level tests
  *
  * @given some user
  * @when sending transactions with valid signature

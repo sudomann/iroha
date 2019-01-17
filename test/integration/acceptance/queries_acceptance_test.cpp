@@ -199,9 +199,8 @@ TEST_F(QueriesAcceptanceTest, TenMinutesFromFuture) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
- * including SignableModelValidator or even whole torii::QueryService
- * and the crypto provider
+ * TODO mboldyrev 05.12.2018 IR-56 convert to a crypto provider unit test
+ * Note a similar test: AcceptanceTest.TransactionInvalidPublicKey
  *
  * @given query with Keypair which contains invalid signature but valid public
  * key
@@ -221,9 +220,7 @@ TEST_F(QueriesAcceptanceTest, InvalidSignValidPubKeypair) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
- * including SignableModelValidator or even whole torii::QueryService
- * and the crypto provider
+ * TODO mboldyrev 05.12.2018 IR-56 convert to a crypto provider unit test
  *
  * @given query with Keypair which contains valid signature but invalid public
  * key
@@ -243,8 +240,7 @@ TEST_F(QueriesAcceptanceTest, ValidSignInvalidPubKeypair) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
- * query_processor_test QueryProcessorTest.QueryProcessorWithWrongKey
+ * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
  *
  * @given query with Keypair which contains invalid signature and invalid public
  * key
@@ -264,9 +260,8 @@ TEST_F(QueriesAcceptanceTest, FullyInvalidKeypair) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
- * including SignableModelValidator or even whole torii::QueryService
- * and the crypto provider
+ * TODO mboldyrev 05.12.2018 IR-56 convert to a crypto provider unit test
+ * Note a similar test: AcceptanceTest.EmptySignatures
  *
  * @given query with Keypair which contains empty signature and valid public key
  * @when execute any correct query with kGetRoles permissions
@@ -302,9 +297,7 @@ TEST_F(QueriesAcceptanceTest, ValidSignEmptyPubKeypair) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
- * including SignableModelValidator or even whole torii::QueryService
- * and the crypto provider
+ * TODO mboldyrev 05.12.2018 IR-56 convert to a crypto provider unit test
  *
  * @given query with Keypair which contains empty signature and empty public key
  * @when execute any correct query with kGetRoles permissions
@@ -323,9 +316,7 @@ TEST_F(QueriesAcceptanceTest, FullyEmptyPubKeypair) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
- * including SignableModelValidator or even whole torii::QueryService
- * and the crypto provider
+ * TODO mboldyrev 05.12.2018 IR-56 convert to a crypto provider unit test
  *
  * @given query with Keypair which contains invalid signature and empty public
  * key
@@ -351,7 +342,9 @@ TEST_F(QueriesAcceptanceTest, InvalidSignEmptyPubKeypair) {
 /**
  * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
  * including SignableModelValidator or even whole torii::QueryService
- * and the crypto provider
+ * and the crypto provider, that verifies that a transaction failing the
+ * crypto provider check is rejected.
+ *
  *
  * @given query with Keypair which contains empty signature and invalid public
  * key

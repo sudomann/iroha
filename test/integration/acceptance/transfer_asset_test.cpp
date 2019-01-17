@@ -306,7 +306,7 @@ TEST_F(TransferAsset, Uint256DestOverflow) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SLV integration test
+ * TODO mboldyrev 05.12.2018 IR-56 convert to a TransactionValidator unit test
  *
  * @given some user with all required permissions
  * @when execute tx with TransferAsset command where the source and destination
