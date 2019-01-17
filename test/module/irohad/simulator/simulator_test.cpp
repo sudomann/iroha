@@ -12,6 +12,7 @@
 #include "backend/protobuf/proto_block_factory.hpp"
 #include "backend/protobuf/transaction.hpp"
 #include "builders/protobuf/transaction.hpp"
+#include "datetime/time.hpp"
 #include "framework/test_subscriber.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
@@ -59,13 +60,10 @@ class SimulatorTest : public ::testing::Test {
             shared_model::interface::Block>>(),
         std::make_unique<
             shared_model::validation::MockValidator<iroha::protocol::Block>>());
-  }
 
-  void TearDown() override {
-    shared_model::crypto::crypto_signer_expecter.reset();
-  }
+    EXPECT_CALL(*ordering_gate, onProposal())
+        .WillOnce(Return(ordering_events.get_observable()));
 
-  void init() {
     simulator = std::make_shared<Simulator>(ordering_gate,
                                             validator,
                                             factory,
@@ -73,6 +71,13 @@ class SimulatorTest : public ::testing::Test {
                                             crypto_signer,
                                             std::move(block_factory));
   }
+
+  void TearDown() override {
+    shared_model::crypto::crypto_signer_expecter.reset();
+  }
+
+  //  void init() {
+  //  }
 
   consensus::Round round;
 
@@ -83,6 +88,7 @@ class SimulatorTest : public ::testing::Test {
   std::shared_ptr<MockOrderingGate> ordering_gate;
   std::shared_ptr<shared_model::crypto::CryptoModelSigner<>> crypto_signer;
   std::unique_ptr<shared_model::interface::UnsafeBlockFactory> block_factory;
+  rxcpp::subjects::subject<OrderingEvent> ordering_events;
 
   std::shared_ptr<Simulator> simulator;
 };
@@ -112,30 +118,33 @@ auto makeProposal(int height) {
                       .createdTime(iroha::time::now())
                       .transactions(txs)
                       .build();
-  return std::make_shared<shared_model::proto::Proposal>(std::move(proposal));
+  return std::shared_ptr<shared_model::interface::Proposal>(
+      std::make_shared<shared_model::proto::Proposal>(std::move(proposal)));
 }
 
-TEST_F(SimulatorTest, ValidWhenInitialized) {
-  // simulator constructor => onProposal subscription called
-  EXPECT_CALL(*ordering_gate, onProposal())
-      .WillOnce(Return(rxcpp::observable<>::empty<OrderingEvent>()));
-
-  init();
+auto makeTx() {
+  return shared_model::proto::TransactionBuilder()
+      .createdTime(iroha::time::now())
+      .creatorAccountId("admin@ru")
+      .addAssetQuantity("coin#coin", "1.0")
+      .quorum(1)
+      .build()
+      .signAndAddSignature(
+          shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair())
+      .finish();
 }
+
+// TEST_F(SimulatorTest, ValidWhenInitialized) {
+//  // simulator constructor => onProposal subscription called
+//  EXPECT_CALL(*ordering_gate, onProposal())
+//      .WillOnce(Return(rxcpp::observable<>::empty<OrderingEvent>()));
+//
+//  init();
+//}
 
 TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
   // proposal with height 2 => height 1 block present => new block generated
-  auto tx = shared_model::proto::TransactionBuilder()
-                .createdTime(iroha::time::now())
-                .creatorAccountId("admin@ru")
-                .addAssetQuantity("coin#coin", "1.0")
-                .quorum(1)
-                .build()
-                .signAndAddSignature(
-                    shared_model::crypto::DefaultCryptoAlgorithmType::
-                        generateKeypair())
-                .finish();
-  std::vector<shared_model::proto::Transaction> txs = {tx, tx};
+  std::vector<shared_model::proto::Transaction> txs = {makeTx(), makeTx()};
 
   auto validation_result =
       std::make_unique<iroha::validation::VerifiedProposalAndErrors>();
@@ -159,27 +168,32 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
         return std::move(validation_result);
       }));
 
-  EXPECT_CALL(*ordering_gate, onProposal())
-      .WillOnce(Return(rxcpp::observable<>::empty<OrderingEvent>()));
-
   EXPECT_CALL(*shared_model::crypto::crypto_signer_expecter,
               sign(A<shared_model::interface::Block &>()))
       .Times(1);
 
-  init();
+  auto proposal_wrapper =
+      make_test_subscriber<CallExact>(simulator->onVerifiedProposal(), 1);
+  proposal_wrapper.subscribe([&](auto event) {
+    auto verification_result = getVerifiedProposalUnsafe(event);
+    auto verified_proposal = verification_result->verified_proposal;
+    EXPECT_EQ(verified_proposal->height(), proposal->height());
+    EXPECT_EQ(verified_proposal->transactions(), proposal->transactions());
+    EXPECT_TRUE(verification_result->rejected_transactions.empty());
+  });
 
-  auto verification_result = simulator->processProposal(*proposal);
-  ASSERT_TRUE(verification_result);
-  auto verified_proposal = verification_result->get()->verified_proposal;
-  EXPECT_EQ(verified_proposal->height(), proposal->height());
-  EXPECT_EQ(verified_proposal->transactions(), proposal->transactions());
-  EXPECT_TRUE(verification_result->get()->rejected_transactions.empty());
+  auto block_wrapper = make_test_subscriber<CallExact>(simulator->onBlock(), 1);
+  block_wrapper.subscribe([&](auto event) {
+    auto block = getBlockUnsafe(event);
+    EXPECT_EQ(block->height(), proposal->height());
+    EXPECT_EQ(block->transactions(), proposal->transactions());
+  });
 
-  auto resulting_block =
-      simulator->processVerifiedProposal(*verification_result);
-  ASSERT_TRUE(resulting_block);
-  EXPECT_EQ(resulting_block->get()->height(), proposal->height());
-  EXPECT_EQ(resulting_block->get()->transactions(), proposal->transactions());
+  ordering_events.get_subscriber().on_next(
+      OrderingEvent{proposal, consensus::Round{}});
+
+  EXPECT_TRUE(proposal_wrapper.validate());
+  EXPECT_TRUE(block_wrapper.validate());
 }
 
 TEST_F(SimulatorTest, FailWhenNoBlock) {
@@ -192,14 +206,9 @@ TEST_F(SimulatorTest, FailWhenNoBlock) {
 
   EXPECT_CALL(*validator, validate(_, _)).Times(0);
 
-  EXPECT_CALL(*ordering_gate, onProposal())
-      .WillOnce(Return(rxcpp::observable<>::empty<OrderingEvent>()));
-
   EXPECT_CALL(*shared_model::crypto::crypto_signer_expecter,
               sign(A<shared_model::interface::Block &>()))
       .Times(0);
-
-  init();
 
   auto proposal_wrapper =
       make_test_subscriber<CallExact>(simulator->onVerifiedProposal(), 0);
@@ -208,7 +217,8 @@ TEST_F(SimulatorTest, FailWhenNoBlock) {
   auto block_wrapper = make_test_subscriber<CallExact>(simulator->onBlock(), 0);
   block_wrapper.subscribe();
 
-  simulator->processProposal(*proposal);
+  ordering_events.get_subscriber().on_next(
+      OrderingEvent{proposal, consensus::Round{}});
 
   ASSERT_TRUE(proposal_wrapper.validate());
   ASSERT_TRUE(block_wrapper.validate());
@@ -227,14 +237,9 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
 
   EXPECT_CALL(*validator, validate(_, _)).Times(0);
 
-  EXPECT_CALL(*ordering_gate, onProposal())
-      .WillOnce(Return(rxcpp::observable<>::empty<OrderingEvent>()));
-
   EXPECT_CALL(*shared_model::crypto::crypto_signer_expecter,
               sign(A<shared_model::interface::Block &>()))
       .Times(0);
-
-  init();
 
   auto proposal_wrapper =
       make_test_subscriber<CallExact>(simulator->onVerifiedProposal(), 0);
@@ -243,7 +248,8 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
   auto block_wrapper = make_test_subscriber<CallExact>(simulator->onBlock(), 0);
   block_wrapper.subscribe();
 
-  simulator->processProposal(*proposal);
+  ordering_events.get_subscriber().on_next(
+      OrderingEvent{proposal, consensus::Round{}});
 
   ASSERT_TRUE(proposal_wrapper.validate());
   ASSERT_TRUE(block_wrapper.validate());
@@ -258,22 +264,13 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
  * @then verified proposal consists of txs we did not fail, and the failed
  * transactions are provided as well
  */
-TEST_F(SimulatorTest, SomeFailingTxs) {
+ TEST_F(SimulatorTest, SomeFailingTxs) {
   // create a 3-height proposal, but validator returns only a 2-height
   // verified proposal
   const int kNumTransactions = 3;
   std::vector<shared_model::proto::Transaction> txs;
   for (int i = 0; i < kNumTransactions; ++i) {
-    txs.emplace_back(shared_model::proto::TransactionBuilder()
-                         .createdTime(iroha::time::now() + i)
-                         .creatorAccountId("admin@ru")
-                         .addAssetQuantity("coin#coin", "1.0")
-                         .quorum(1)
-                         .build()
-                         .signAndAddSignature(
-                             shared_model::crypto::DefaultCryptoAlgorithmType::
-                                 generateKeypair())
-                         .finish());
+    txs.push_back(makeTx());
   }
   auto proposal = std::make_shared<shared_model::proto::Proposal>(
       shared_model::proto::ProposalBuilder()
@@ -283,8 +280,8 @@ TEST_F(SimulatorTest, SomeFailingTxs) {
           .build());
   auto verified_proposal_and_errors =
       std::make_unique<VerifiedProposalAndErrors>();
-  const shared_model::interface::types::HeightType verified_proposal_height = 2;
-  const std::vector<shared_model::proto::Transaction>
+  const shared_model::interface::types::HeightType verified_proposal_height =
+  2; const std::vector<shared_model::proto::Transaction>
       verified_proposal_transactions{txs[0]};
   verified_proposal_and_errors->verified_proposal =
       std::make_unique<shared_model::proto::Proposal>(
@@ -307,20 +304,19 @@ TEST_F(SimulatorTest, SomeFailingTxs) {
       .WillOnce(Return(expected::makeValue(wBlock(clone(block)))));
 
   EXPECT_CALL(*validator, validate(_, _))
-      .WillOnce(Invoke([&verified_proposal_and_errors](const auto &p, auto &v) {
+      .WillOnce(Invoke([&verified_proposal_and_errors](const auto &p, auto &v)
+      {
         return std::move(verified_proposal_and_errors);
       }));
 
-  EXPECT_CALL(*ordering_gate, onProposal())
-      .WillOnce(Return(rxcpp::observable<>::empty<OrderingEvent>()));
-  init();
   auto verification_result = simulator->processProposal(*proposal);
   ASSERT_TRUE(verification_result);
   auto verified_proposal = verification_result->get()->verified_proposal;
 
   // ensure that txs in verified proposal do not include failed ones
   EXPECT_EQ(verified_proposal->height(), verified_proposal_height);
-  EXPECT_EQ(verified_proposal->transactions(), verified_proposal_transactions);
+  EXPECT_EQ(verified_proposal->transactions(),
+  verified_proposal_transactions);
   EXPECT_TRUE(verification_result->get()->rejected_transactions.size()
               == kNumTransactions - 1);
   const auto verified_proposal_rejected_tx_hashes =

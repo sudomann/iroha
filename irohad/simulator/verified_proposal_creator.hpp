@@ -28,7 +28,7 @@ namespace iroha {
     class VerifiedProposalCreator {
      public:
       /**
-       * Execute stateful validation for given proposal and round
+       * Execute stateful validation for given proposal
        */
       virtual boost::optional<
           std::shared_ptr<validation::VerifiedProposalAndErrors>>

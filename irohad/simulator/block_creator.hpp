@@ -22,7 +22,7 @@ namespace iroha {
     class BlockCreator {
      public:
       /**
-       * Creates a block from given proposal and round
+       * Creates a block from given proposal
        */
       virtual boost::optional<std::shared_ptr<shared_model::interface::Block>>
       processVerifiedProposal(
