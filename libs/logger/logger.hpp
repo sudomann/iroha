@@ -6,6 +6,8 @@
 #ifndef IROHA_SPDLOG_LOGGER_LOGGER_HPP
 #define IROHA_SPDLOG_LOGGER_LOGGER_HPP
 
+#include "logger/logger_fwd.hpp"
+
 #include <map>
 #include <memory>
 #include <numeric>  // for std::accumulate
@@ -22,14 +24,6 @@ auto operator<<(StreamType &os, const T &object)
 }
 
 namespace logger {
-
-  class Logger;
-  class LogPatterns;
-  class LoggerConfig;
-  enum class LogLevel;
-
-  using LoggerPtr = std::shared_ptr<Logger>;
-  using ConstLoggerConfigPtr = std::shared_ptr<const LoggerConfig>;
 
   extern const LogLevel kDefaultLogLevel;
   extern const LogPatterns kDefaultLogPatterns;
