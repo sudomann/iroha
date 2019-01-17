@@ -22,7 +22,7 @@ class AddAssetQuantity : public AcceptanceFixture {
 };
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 "Basic" tests should be replaced with a
+ * TODO mboldyrev 17.01.2019 IR-228 "Basic" tests should be replaced with a
  * common acceptance test
  *
  * @given some user with can_add_asset_qty permission
@@ -41,7 +41,7 @@ TEST_F(AddAssetQuantity, Basic) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a  integration test
+ * TODO mboldyrev 17.01.2019 IR-203 convert to an integration test
  *
  * @given some user without can_add_asset_qty permission
  * @when execute tx with AddAssetQuantity command
@@ -63,7 +63,7 @@ TEST_F(AddAssetQuantity, NoPermissions) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a field validator unit test
+ * TODO mboldyrev 17.01.2019 IR-203 convert to a field validator unit test
  *
  * @given pair of users with all required permissions
  * @when execute tx with AddAssetQuantity command with negative amount
@@ -82,7 +82,7 @@ TEST_F(AddAssetQuantity, NegativeAmount) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 seems can be removed (covered by field
+ * TODO mboldyrev 17.01.2019 IR-203 seems can be removed (covered by field
  * validator test and the above test)
  *
  * @given pair of users with all required permissions
@@ -102,7 +102,7 @@ TEST_F(AddAssetQuantity, ZeroAmount) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 17.01.2019 IR-203 remove, covered by
  * postgres_executor_test AddAccountAssetTest.Uint256Overflow
  *
  * @given pair of users with all required permissions
@@ -135,7 +135,7 @@ TEST_F(AddAssetQuantity, Uint256DestOverflow) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 17.01.2019 IR-203 remove, covered by
  * postgres_executor_test AddAccountAssetTest.InvalidAsset
  *
  * @given some user with all required permissions
