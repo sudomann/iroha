@@ -13,8 +13,11 @@
 namespace iroha {
   using PeerList = std::vector<std::shared_ptr<shared_model::interface::Peer>>;
 
-  struct LedgerEvent {
-    std::unique_ptr<PeerList> ledger_peers;
+  struct LedgerState {
+    std::shared_ptr<PeerList> ledger_peers;
+
+    LedgerState(std::shared_ptr<PeerList> peers): ledger_peers(peers) {}
+    LedgerState() = default;
   };
 }  // namespace iroha
 

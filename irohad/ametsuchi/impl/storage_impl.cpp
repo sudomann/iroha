@@ -411,7 +411,8 @@ namespace iroha {
       return storage;
     }
 
-    void StorageImpl::commit(std::unique_ptr<MutableStorage> mutableStorage) {
+    std::unique_ptr<LedgerState> StorageImpl::commit(
+        std::unique_ptr<MutableStorage> mutableStorage) {
       auto storage_ptr = std::move(mutableStorage);  // get ownership of storage
       auto storage = static_cast<MutableStorageImpl *>(storage_ptr.get());
       for (const auto &block : storage->block_store_) {
@@ -420,9 +421,18 @@ namespace iroha {
       try {
         *(storage->sql_) << "COMMIT";
         storage->committed = true;
+        auto peers = createPeerQuery() |
+            [](const auto &peer_query) { return peer_query->getLedgerPeers(); };
+        if (peers) {
+          return std::make_unique<LedgerState>(
+              std::make_shared<PeerList>(std::move(*peers)));
+        } else {
+          return std::make_unique<LedgerState>();
+        }
       } catch (std::exception &e) {
         storage->committed = false;
         log_->warn("Mutable storage is not committed. Reason: {}", e.what());
+        return std::make_unique<LedgerState>();
       }
     }
 

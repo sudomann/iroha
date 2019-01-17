@@ -6,9 +6,11 @@
 #ifndef IROHA_SYNCHRONIZER_IMPL_HPP
 #define IROHA_SYNCHRONIZER_IMPL_HPP
 
+#include <ametsuchi/peer_query.hpp>
 #include "synchronizer/synchronizer.hpp"
 
 #include "ametsuchi/mutable_factory.hpp"
+#include "ametsuchi/peer_query_factory.hpp"
 #include "logger/logger.hpp"
 #include "network/block_loader.hpp"
 #include "network/consensus_gate.hpp"

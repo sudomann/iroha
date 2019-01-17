@@ -183,14 +183,17 @@ namespace iroha {
           createMutableStorage,
           expected::Result<std::unique_ptr<MutableStorage>, std::string>(void));
 
-      void commit(std::unique_ptr<MutableStorage> mutableStorage) override {
+      std::unique_ptr<LedgerState> commit(
+          std::unique_ptr<MutableStorage> mutableStorage) override {
         // gmock workaround for non-copyable parameters
-        commit_(mutableStorage);
+        return commit_(mutableStorage);
       }
 
       MOCK_METHOD1(commitPrepared,
                    bool(const shared_model::interface::Block &));
-      MOCK_METHOD1(commit_, void(std::unique_ptr<MutableStorage> &));
+      MOCK_METHOD1(
+          commit_,
+          std::unique_ptr<LedgerState>(std::unique_ptr<MutableStorage> &));
     };
 
     class MockPeerQuery : public PeerQuery {
@@ -222,7 +225,8 @@ namespace iroha {
           boost::optional<std::shared_ptr<QueryExecutor>>(
               std::shared_ptr<PendingTransactionStorage>,
               std::shared_ptr<shared_model::interface::QueryResponseFactory>));
-      MOCK_METHOD1(doCommit, void(MutableStorage *storage));
+      MOCK_METHOD1(doCommit,
+                   std::unique_ptr<LedgerState>(MutableStorage *storage));
       MOCK_METHOD1(commitPrepared,
                    bool(const shared_model::interface::Block &));
       MOCK_METHOD1(insertBlock, bool(const shared_model::interface::Block &));
@@ -243,8 +247,9 @@ namespace iroha {
       on_commit() override {
         return notifier.get_observable();
       }
-      void commit(std::unique_ptr<MutableStorage> storage) override {
-        doCommit(storage.get());
+      std::unique_ptr<LedgerState> commit(
+          std::unique_ptr<MutableStorage> storage) override {
+        return doCommit(storage.get());
       }
       rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Block>>
           notifier;
