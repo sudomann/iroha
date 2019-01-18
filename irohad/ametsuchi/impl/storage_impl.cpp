@@ -436,16 +436,16 @@ namespace iroha {
       }
     }
 
-    bool StorageImpl::commitPrepared(
+    boost::optional<std::unique_ptr<LedgerState>> StorageImpl::commitPrepared(
         const shared_model::interface::Block &block) {
       if (not prepared_blocks_enabled_) {
         log_->warn("prepared blocks are not enabled");
-        return false;
+        return boost::none;
       }
 
       if (not block_is_prepared) {
         log_->info("there are no prepared blocks");
-        return false;
+        return boost::none;
       }
       log_->info("applying prepared block");
 
@@ -453,7 +453,7 @@ namespace iroha {
         std::shared_lock<std::shared_timed_mutex> lock(drop_mutex);
         if (not connection_) {
           log_->info("connection to database is not initialised");
-          return false;
+          return boost::none;
         }
         soci::session sql(*connection_);
         sql << "COMMIT PREPARED '" + prepared_block_name_ + "';";
@@ -464,10 +464,19 @@ namespace iroha {
         log_->warn("failed to apply prepared block {}: {}",
                    block.hash().hex(),
                    e.what());
-        return false;
+        return boost::none;
+      }
+      auto peers = createPeerQuery() |
+          [](const auto &peer_query) { return peer_query->getLedgerPeers(); };
+      std::unique_ptr<LedgerState> state;
+      if (peers) {
+        state = std::make_unique<LedgerState>(
+            std::make_shared<PeerList>(std::move(*peers)));
+      } else {
+        state = std::make_unique<LedgerState>();
       }
 
-      return storeBlock(block);
+      return {storeBlock(block), std::move(state)};
     }
 
     std::shared_ptr<WsvQuery> StorageImpl::getWsvQuery() const {

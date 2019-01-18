@@ -42,6 +42,8 @@ namespace iroha {
             this->processDifferent(msg);
           },
           [this](const consensus::ProposalReject &msg) {
+            //TODO: IR-147 18.01.19 add peers
+            // list from GateObject when it has one
             notifier_.get_subscriber().on_next(SynchronizationEvent{
                 rxcpp::observable<>::empty<
                     std::shared_ptr<shared_model::interface::Block>>(),
@@ -49,6 +51,8 @@ namespace iroha {
                 msg.round});
           },
           [this](const consensus::BlockReject &msg) {
+            //TODO: IR-147 18.01.19 add peers
+            // list from GateObject when it has one
             notifier_.get_subscriber().on_next(SynchronizationEvent{
                 rxcpp::observable<>::empty<
                     std::shared_ptr<shared_model::interface::Block>>(),
@@ -56,6 +60,8 @@ namespace iroha {
                 msg.round});
           },
           [this](const consensus::AgreementOnNone &msg) {
+            //TODO: IR-147 18.01.19 add peers
+            // list from GateObject when it has one
             notifier_.get_subscriber().on_next(SynchronizationEvent{
                 rxcpp::observable<>::empty<
                     std::shared_ptr<shared_model::interface::Block>>(),
@@ -133,7 +139,8 @@ namespace iroha {
       notifier_.get_subscriber().on_next(
           SynchronizationEvent{rxcpp::observable<>::just(msg.block),
                                SynchronizationOutcomeType::kCommit,
-                               msg.round});
+                               msg.round,
+                               {}});
     }
 
     void SynchronizerImpl::processDifferent(const consensus::VoteOther &msg) {

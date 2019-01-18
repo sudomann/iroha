@@ -103,7 +103,7 @@ namespace iroha {
       std::unique_ptr<LedgerState> commit(
           std::unique_ptr<MutableStorage> mutableStorage) override;
 
-      bool commitPrepared(
+      boost::optional<std::unique_ptr<LedgerState>> commitPrepared(
           const shared_model::interface::Block &block) override;
 
       std::shared_ptr<WsvQuery> getWsvQuery() const override;

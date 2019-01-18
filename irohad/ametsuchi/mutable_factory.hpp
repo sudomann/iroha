@@ -48,7 +48,7 @@ namespace iroha {
        * @return state of the ledger if commit is succesful, boost::none if
        * prepared block failed to apply. WSV is not changed in this case.
        */
-      virtual bool commitPrepared(
+      virtual boost::optional<std::unique_ptr<LedgerState>> commitPrepared(
           const shared_model::interface::Block &block) = 0;
 
       virtual ~MutableFactory() = default;

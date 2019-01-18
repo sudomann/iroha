@@ -335,7 +335,9 @@ TEST_F(SynchronizerTest, NoneOutcome) {
  * @then commitPrepared is called @and commit is not called
  */
 TEST_F(SynchronizerTest, VotedForBlockCommitPrepared) {
-  EXPECT_CALL(*mutable_factory, commitPrepared(_)).WillOnce(Return(true));
+  EXPECT_CALL(*mutable_factory, commitPrepared(_))
+      .WillOnce(Return(
+          ByMove(boost::optional<std::unique_ptr<LedgerState>>(nullptr))));
 
   EXPECT_CALL(*mutable_factory, commit_(_)).Times(0);
 
@@ -406,7 +408,8 @@ TEST_F(SynchronizerTest, VotedForThisCommitPreparedFailure) {
   auto storage_value =
       expected::makeValue<std::unique_ptr<MutableStorage>>(std::move(ustorage));
 
-  EXPECT_CALL(*mutable_factory, commitPrepared(_)).WillOnce(Return(false));
+  EXPECT_CALL(*mutable_factory, commitPrepared(_))
+      .WillOnce(Return(ByMove(boost::none)));
 
   EXPECT_CALL(*mutable_factory, createMutableStorage())
       .WillOnce(Return(ByMove(std::move(storage_value))));
