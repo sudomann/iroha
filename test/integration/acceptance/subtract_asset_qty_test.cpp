@@ -38,7 +38,7 @@ class SubtractAssetQuantity : public AcceptanceFixture {
 };
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 "Basic" tests should be replaced with a
+ * TODO mboldyrev 18.01.2019 IR-228 "Basic" tests should be replaced with a
  * common acceptance test
  * also covered by postgres_executor_test SubtractAccountAssetTest.Valid
  *
@@ -62,7 +62,7 @@ TEST_F(SubtractAssetQuantity, Everything) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-225 remove, covered by
  * postgres_executor_test SubtractAccountAssetTest.NotEnoughAsset
  *
  * @given some user with all required permissions
@@ -90,7 +90,7 @@ TEST_F(SubtractAssetQuantity, Overdraft) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-225 remove, covered by
  * postgres_executor_test SubtractAccountAssetTest.NoPerms
  *
  * @given some user without can_subtract_asset_qty permission
@@ -117,7 +117,7 @@ TEST_F(SubtractAssetQuantity, NoPermissions) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-225 remove, covered by field validator test
  *
  * @given pair of users with all required permissions
  * @when execute tx with SubtractAssetQuantity command with negative amount
@@ -136,7 +136,7 @@ TEST_F(SubtractAssetQuantity, NegativeAmount) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-225 remove, covered by field validator test
  *
  * @given pair of users with all required permissions
  * @when execute tx with SubtractAssetQuantity command with zero amount
@@ -155,7 +155,7 @@ TEST_F(SubtractAssetQuantity, ZeroAmount) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-225 remove, covered by
  * postgres_executor_test SubtractAccountAssetTest.NoAsset
  *
  * @given some user with all required permissions
