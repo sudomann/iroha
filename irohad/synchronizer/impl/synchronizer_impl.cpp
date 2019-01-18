@@ -42,7 +42,7 @@ namespace iroha {
             this->processDifferent(msg);
           },
           [this](const consensus::ProposalReject &msg) {
-            //TODO: IR-147 18.01.19 add peers
+            // TODO: nickaleks IR-147 18.01.19 add peers
             // list from GateObject when it has one
             notifier_.get_subscriber().on_next(SynchronizationEvent{
                 rxcpp::observable<>::empty<
@@ -51,7 +51,7 @@ namespace iroha {
                 msg.round});
           },
           [this](const consensus::BlockReject &msg) {
-            //TODO: IR-147 18.01.19 add peers
+            // TODO: nickaleks IR-147 18.01.19 add peers
             // list from GateObject when it has one
             notifier_.get_subscriber().on_next(SynchronizationEvent{
                 rxcpp::observable<>::empty<
@@ -60,7 +60,7 @@ namespace iroha {
                 msg.round});
           },
           [this](const consensus::AgreementOnNone &msg) {
-            //TODO: IR-147 18.01.19 add peers
+            // TODO: nickaleks IR-147 18.01.19 add peers
             // list from GateObject when it has one
             notifier_.get_subscriber().on_next(SynchronizationEvent{
                 rxcpp::observable<>::empty<
@@ -98,9 +98,12 @@ namespace iroha {
 
           if (blocks.back()->height() >= expected_height
               and validator_->validateAndApply(chain, *storage)) {
-            mutable_factory_->commit(std::move(storage));
+            auto ledger_state = mutable_factory_->commit(std::move(storage));
 
-            return {chain, SynchronizationOutcomeType::kCommit, msg.round};
+            return {chain,
+                    SynchronizationOutcomeType::kCommit,
+                    msg.round,
+                    std::move(ledger_state)};
           }
         }
       }
@@ -123,7 +126,9 @@ namespace iroha {
 
     void SynchronizerImpl::processNext(const consensus::PairValid &msg) {
       log_->info("at handleNext");
-      if (not mutable_factory_->commitPrepared(*msg.block)) {
+      auto ledger_state =
+          mutable_factory_->commitPrepared(*msg.block);
+      if (not ledger_state) {
         auto opt_storage = getStorage();
         if (opt_storage == boost::none) {
           return;
@@ -131,7 +136,7 @@ namespace iroha {
         std::unique_ptr<ametsuchi::MutableStorage> storage =
             std::move(opt_storage.value());
         if (storage->apply(*msg.block)) {
-          mutable_factory_->commit(std::move(storage));
+          ledger_state = mutable_factory_->commit(std::move(storage));
         } else {
           log_->warn("Block was not committed due to fail in mutable storage");
         }
@@ -140,7 +145,7 @@ namespace iroha {
           SynchronizationEvent{rxcpp::observable<>::just(msg.block),
                                SynchronizationOutcomeType::kCommit,
                                msg.round,
-                               {}});
+                               std::move(*ledger_state)});
     }
 
     void SynchronizerImpl::processDifferent(const consensus::VoteOther &msg) {
