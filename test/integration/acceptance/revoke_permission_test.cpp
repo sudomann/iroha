@@ -15,7 +15,7 @@ using namespace shared_model::interface::permissions;
 using namespace common_constants;
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 "Basic" tests should be replaced with a
+ * TODO mboldyrev 18.01.2019 IR-228 "Basic" tests should be replaced with a
  * common acceptance test
  * also covered by postgres_executor_test RevokePermission.Valid
  *
@@ -48,7 +48,7 @@ TEST_F(GrantablePermissionsFixture, RevokeFromNonExistingAccount) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+ * TODO mboldyrev 18.01.2019 IR-222 convert to a SFV integration test
  * (no such test in postgres_executor_test)
  *
  * C271 Revoke permission more than once
@@ -89,7 +89,7 @@ TEST_F(GrantablePermissionsFixture, RevokeTwice) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-222 remove, covered by
  * postgres_executor_test RevokePermission.NoPerms
  *
  * Revoke without permission
@@ -322,7 +322,7 @@ namespace grantables {
   TYPED_TEST_CASE(GrantRevokeFixture, GrantablePermissionsTypes);
 
   /**
-   * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+   * TODO mboldyrev 18.01.2019 IR-222 convert to a SFV integration test
    *
    * The test iterates over helper types (GrantablePermissionsTypes).
    * That helper types contain information about required Grantable and Role
