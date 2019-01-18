@@ -22,7 +22,7 @@ class CreateDomain : public AcceptanceFixture {
 };
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 "Basic" tests should be replaced with a
+ * TODO mboldyrev 18.01.2019 IR-228 "Basic" tests should be replaced with a
  * common acceptance test
  *
  * @given some user with can_create_domain permission
@@ -41,7 +41,7 @@ TEST_F(CreateDomain, Basic) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-207 remove, covered by
  * postgres_executor_test CreateDomain.NoPerms
  *
  * @given some user without can_create_domain permission
@@ -64,7 +64,7 @@ TEST_F(CreateDomain, NoPermissions) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-207 remove, covered by
  * postgres_executor_test CreateDomain.NoDefaultRole
  *
  * @given some user with can_create_domain permission
@@ -88,7 +88,7 @@ TEST_F(CreateDomain, NoRole) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-207 remove, covered by
  * postgres_executor_test CreateDomain.NameNotUnique
  *
  * @given some user with can_create_domain permission
@@ -111,7 +111,7 @@ TEST_F(CreateDomain, ExistingName) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-207 remove, covered by field validator test
  *
  * @given some user with can_create_domain permission
  * @when execute tx with CreateDomain command with maximum available length
@@ -135,7 +135,7 @@ TEST_F(CreateDomain, MaxLenName) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-207 remove, covered by field validator test
  *
  * @given some user with can_create_domain permission
  * @when execute tx with CreateDomain command with too long length
@@ -153,7 +153,7 @@ TEST_F(CreateDomain, TooLongName) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-207 remove, covered by field validator test
  *
  * @given some user with can_create_domain permission
  * @when execute tx with CreateDomain command with empty domain name
@@ -172,7 +172,7 @@ TEST_F(CreateDomain, EmptyName) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-207 remove, covered by field validator test
  *
  * @given some user with can_create_domain permission
  * @when execute tx with CreateDomain command with empty role name
