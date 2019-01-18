@@ -49,7 +49,7 @@ class SetAccountDetail : public AcceptanceFixture {
 };
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-223 remove, covered by
  * postgres_executor_test SetAccountDetail.Valid
  *
  * C274
@@ -69,7 +69,7 @@ TEST_F(SetAccountDetail, Self) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-223 remove, covered by
  * postgres_executor_test SetAccountDetail.NoAccount
  *
  * C273
@@ -90,7 +90,7 @@ TEST_F(SetAccountDetail, NonExistentUser) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-223 remove, covered by
  * postgres_executor_test SetAccountDetail.NoPerms
  *
  * C280
@@ -120,7 +120,7 @@ TEST_F(SetAccountDetail, WithoutNoPerm) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-223 remove, covered by
  * postgres_executor_test SetAccountDetail.ValidRolePerm
  *
  * @given a pair of users and first one with can_set_detail perm
@@ -145,7 +145,7 @@ TEST_F(SetAccountDetail, WithPerm) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-223 remove, covered by
  * postgres_executor_test SetAccountDetail.ValidGrantablePerm
  *
  * C275
@@ -185,7 +185,7 @@ TEST_F(SetAccountDetail, WithGrantablePerm) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a field validator unit test
+ * TODO mboldyrev 18.01.2019 IR-223 convert to a field validator unit test
  *
  * C276
  * @given a user with required permission
@@ -205,7 +205,7 @@ TEST_F(SetAccountDetail, BigPossibleKey) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-223 remove, covered by field validator test
  *
  * C277
  * @given a user with required permission
@@ -224,7 +224,7 @@ TEST_F(SetAccountDetail, EmptyKey) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-223 remove, covered by field validator test
  *
  * C278
  * @given a user with required permission
@@ -244,7 +244,7 @@ TEST_F(SetAccountDetail, EmptyValue) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert the part with key to a field
+ * TODO mboldyrev 18.01.2019 IR-223 convert the part with key to a field
  * validator unit test; the part with value is covered by field validator test
  *
  * C279
