@@ -24,7 +24,7 @@ class CreateAccount : public AcceptanceFixture {
 };
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 "Basic" tests should be replaced with a
+ * TODO mboldyrev 18.01.2019 IR-228 "Basic" tests should be replaced with a
  * common acceptance test
  *
  * @given some user with can_create_account permission
@@ -44,7 +44,7 @@ TEST_F(CreateAccount, Basic) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-205 remove, covered by
  * postgres_executor_test CreateAccount.NoPerms
  *
  * @given some user without can_create_account permission
@@ -68,7 +68,7 @@ TEST_F(CreateAccount, NoPermissions) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-205 remove, covered by
  * postgres_executor_test CreateAccount.NoDomain
  *
  * @given some user with can_create_account permission
@@ -93,7 +93,7 @@ TEST_F(CreateAccount, NoDomain) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-205 remove, covered by
  * postgres_executor_test CreateAccount.NameExists
  *
  * @given some user with can_create_account permission
@@ -118,7 +118,7 @@ TEST_F(CreateAccount, ExistingName) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 seems can be removed (covered by field
+ * TODO mboldyrev 18.01.2019 IR-205 seems can be removed (covered by field
  * validator test)
  *
  * @given some user with can_create_account permission
@@ -138,7 +138,7 @@ TEST_F(CreateAccount, MaxLenName) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 seems can be removed (covered by field
+ * TODO mboldyrev 18.01.2019 IR-205 seems can be removed (covered by field
  * validator test)
  *
  * @given some user with can_create_account permission
@@ -158,7 +158,7 @@ TEST_F(CreateAccount, TooLongName) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 seems can be removed (covered by field
+ * TODO mboldyrev 18.01.2019 IR-205 seems can be removed (covered by field
  * validator test and the above test)
  *
  * @given some user with can_create_account permission
