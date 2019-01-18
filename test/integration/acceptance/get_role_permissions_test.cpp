@@ -16,7 +16,7 @@ using namespace shared_model;
 using namespace common_constants;
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 "Basic" tests should be replaced with a
+ * TODO mboldyrev 18.01.2019 IR-228 "Basic" tests should be replaced with a
  * common acceptance test
  *
  * C369 Get role permissions by user with allowed GetRoles permission
@@ -43,7 +43,7 @@ TEST_F(AcceptanceFixture, CanGetRolePermissions) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-213 remove, covered by
  * postgres_query_executor_test GetRolePermsExecutorTest.Invalid
  *
  * C370 Get role permissions without allowed GetRoles permission
