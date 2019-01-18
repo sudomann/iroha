@@ -54,7 +54,7 @@ class GetTransactions : public AcceptanceFixture {
 };
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+ * TODO mboldyrev 18.01.2019 IR-215 convert to a SFV integration test
  * (not covered by postgres_query_executor_test)
  * convert to a common SFV permissions integration test
  *
@@ -83,7 +83,7 @@ TEST_F(GetTransactions, HaveNoGetPerms) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-215 remove, covered by
  * postgres_query_executor_test GetTransactionsHashExecutorTest.ValidAllAccounts
  * convert to a common SFV permissions integration test
  *
@@ -115,7 +115,7 @@ TEST_F(GetTransactions, HaveGetAllTx) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-215 remove, covered by
  * postgres_query_executor_test GetTransactionsHashExecutorTest.ValidMyAccount
  * convert to a common SFV permissions integration test
  *
@@ -147,7 +147,7 @@ TEST_F(GetTransactions, HaveGetMyTx) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-215 remove, covered by
  * query_processor_test QueryProcessorTest.QueryProcessorWithWrongKey
  *
  * @given some user with only can_get_my_txs permission
@@ -185,7 +185,7 @@ TEST_F(GetTransactions, InvalidSignatures) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+ * TODO mboldyrev 18.01.2019 IR-215 convert to a SFV integration test
  * (not covered by postgres_query_executor_test)
  *
  * @given some user with only can_get_my_txs permission
@@ -217,7 +217,7 @@ TEST_F(GetTransactions, NonexistentHash) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+ * TODO mboldyrev 18.01.2019 IR-215 convert to a SFV integration test
  * (not covered by postgres_query_executor_test)
  * seems we should move the common_query_permissions_test to SFV integration
  *
