@@ -37,7 +37,7 @@ class CreateRole : public AcceptanceFixture {
 };
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 "Basic" tests should be replaced with a
+ * TODO mboldyrev 18.01.2019 IR-228 "Basic" tests should be replaced with a
  * common acceptance test
  *
  * @given some user with can_create_role permission
@@ -59,7 +59,7 @@ TEST_F(CreateRole, Basic) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? SFV covered by CreateRole.NoPerms
+ * TODO mboldyrev 18.01.2019 IR-208 remove, SFV covered by CreateRole.NoPerms
  *
  * @given some user without can_create_role permission
  * @when execute tx with CreateRole command
@@ -81,7 +81,7 @@ TEST_F(CreateRole, HaveNoPerms) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-208 remove, covered by field validator test
  *
  * @given some user with can_create_role permission
  * @when execute tx with CreateRole command with empty role
@@ -100,7 +100,7 @@ TEST_F(CreateRole, EmptyRole) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-208 remove, covered by field validator test
  *
  * @given some user with can_create_role permission
  * @when execute tx with CreateRole command with empty permission
@@ -120,7 +120,7 @@ TEST_F(CreateRole, EmptyPerms) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-208 remove, covered by field validator test
  *
  * @given some user with can_create_role permission
  * @when execute tx with CreateRole command with too long role name
@@ -140,7 +140,7 @@ TEST_F(CreateRole, LongRoleName) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-208 remove, covered by field validator test
  *
  * @given some user with can_create_role permission
  * @when execute tx with CreateRole command with maximal role name size
@@ -159,7 +159,7 @@ TEST_F(CreateRole, MaxLenRoleName) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-208 remove, covered by field validator test
  *
  * TODO 15/05/2018 andrei: IR-1267 fix builders setting default value for
  * nonexisting permissions
@@ -180,7 +180,7 @@ TEST_F(CreateRole, DISABLED_NonexistentPerm) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? SFV covered by CreateRole.NameNotUnique
+ * TODO mboldyrev 18.01.2019 IR-208 remove, SFV covered by CreateRole.NameNotUnique
  *
  * @given some user with can_create_role permission
  * @when execute tx with CreateRole command with existing role name
