@@ -35,7 +35,7 @@ class CreateAssetFixture : public AcceptanceFixture {
  */
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 "Basic" tests should be replaced with a
+ * TODO mboldyrev 18.01.2019 IR-228 "Basic" tests should be replaced with a
  * common acceptance test
  *
  * @given some user with can_create_asset permission
@@ -66,7 +66,7 @@ TEST_F(CreateAssetFixture, Basic) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SLV unit test (this one has more
+ * TODO mboldyrev 18.01.2019 IR-206 convert to a SLV unit test (this one has more
  * test cases than its duplicate field validator test)
  *
  * C235 Create asset with an empty name
@@ -89,7 +89,7 @@ TEST_F(CreateAssetFixture, IllegalCharactersInName) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-206 remove, covered by
  * postgres_executor_test CreateAccount.NameNotUnique
  *
  * C234 Create asset with an existing id (name)
@@ -117,7 +117,7 @@ TEST_F(CreateAssetFixture, ExistingName) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+ * TODO mboldyrev 18.01.2019 IR-206 convert to a SFV integration test
  *
  * C234a Create asset with an existing id (name) but different precision
  * @given a user with can_create_asset permission
@@ -146,7 +146,7 @@ TEST_F(CreateAssetFixture, ExistingNameDifferentPrecision) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-206 remove, covered by
  * postgres_executor_test CreateAccount.NoPerms
  *
  * C239 CreateAsset without such permissions
@@ -174,7 +174,7 @@ TEST_F(CreateAssetFixture, WithoutPermission) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-206 remove, covered by
  * postgres_executor_test CreateAccount.NoDomain
  *
  * @given a user with can_create_asset permission
@@ -202,7 +202,7 @@ TEST_F(CreateAssetFixture, ValidNonExistingDomain) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SLV unit test (this one has more
+ * TODO mboldyrev 18.01.2019 IR-206 convert to a SLV unit test (this one has more
  * test cases than its duplicate field validator test)
  *
  * @given a user with can_create_asset permission
