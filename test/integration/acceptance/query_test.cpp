@@ -49,7 +49,7 @@ class QueryAcceptanceTest : public AcceptanceFixture {
 };
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-220 remove, covered by
  * postgres_query_executor_test GetTransactionsHashExecutorTest.ValidMyAccount
  * seems we should move common query permissions tests to SFV integration
  *
