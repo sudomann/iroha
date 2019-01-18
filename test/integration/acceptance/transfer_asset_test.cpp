@@ -72,7 +72,7 @@ class TransferAsset : public AcceptanceFixture {
 };
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 "Basic" tests should be replaced with a
+ * TODO mboldyrev 18.01.2019 IR-228 "Basic" tests should be replaced with a
  * common acceptance test
  * also covered by postgres_executor_test TransferAccountAssetTest.Valid
  *
@@ -90,7 +90,7 @@ TEST_F(TransferAsset, Basic) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-226 remove, covered by
  * postgres_executor_test TransferAccountAssetTest.NoPerms
  *
  * @given pair of users
@@ -112,7 +112,7 @@ TEST_F(TransferAsset, WithoutCanTransfer) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+ * TODO mboldyrev 18.01.2019 IR-226 convert to a SFV integration test
  * (not covered by postgres_executor_test)
  *
  * @given pair of users
@@ -136,7 +136,7 @@ TEST_F(TransferAsset, WithoutCanReceive) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-226 remove, covered by
  * postgres_executor_test TransferAccountAssetTest.NoAccount
  *
  * @given some user with all required permissions
@@ -158,7 +158,7 @@ TEST_F(TransferAsset, NonexistentDest) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-226 remove, covered by
  * postgres_executor_test TransferAccountAssetTest.NoAsset
  *
  * @given pair of users with all required permissions
@@ -181,7 +181,7 @@ TEST_F(TransferAsset, NonexistentAsset) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a field validator unit test
+ * TODO mboldyrev 18.01.2019 IR-226 convert to a field validator unit test
  *
  * @given pair of users with all required permissions
  * @when execute tx with TransferAsset command with negative amount
@@ -198,7 +198,7 @@ TEST_F(TransferAsset, NegativeAmount) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-226 remove, covered by field validator test
  *
  * @given pair of users with all required permissions
  * @when execute tx with TransferAsset command with zero amount
@@ -215,7 +215,7 @@ TEST_F(TransferAsset, ZeroAmount) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-226 remove, covered by field validator test
  *
  * @given pair of users with all required permissions
  * @when execute tx with TransferAsset command with empty-str description
@@ -233,7 +233,7 @@ TEST_F(TransferAsset, EmptyDesc) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-226 remove, covered by field validator test
  *
  * @given pair of users with all required permissions
  * @when execute tx with TransferAsset command with very long description
@@ -253,7 +253,7 @@ TEST_F(TransferAsset, LongDesc) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-226 remove, covered by
  * postgres_executor_test TransferAccountAssetTest.Overdraft
  *
  * @given pair of users with all required permissions
@@ -274,7 +274,7 @@ TEST_F(TransferAsset, MoreThanHas) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-226 remove, covered by
  * postgres_executor_test TransferAccountAssetTest.OverflowDestination
  *
  * @given pair of users with all required permissions, and tx sender's balance
@@ -306,7 +306,7 @@ TEST_F(TransferAsset, Uint256DestOverflow) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a TransactionValidator unit test
+ * TODO mboldyrev 18.01.2019 IR-226 convert to a TransactionValidator unit test
  *
  * @given some user with all required permissions
  * @when execute tx with TransferAsset command where the source and destination
@@ -325,7 +325,7 @@ TEST_F(TransferAsset, SourceIsDest) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+ * TODO mboldyrev 18.01.2019 IR-226 convert to a SFV integration test
  * (not covered by postgres_executor_test)
  *
  * @given some user with all required permission
@@ -361,7 +361,7 @@ TEST_F(TransferAsset, InterDomain) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-226 remove, covered by field validator test
  *
  * @given a pair of users with all required permissions
  *        AND asset with big precision
