@@ -27,7 +27,7 @@ auto getAccountAssetsQuantityChecker(int quantity) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+ * TODO mboldyrev 18.01.2019 IR-210 convert to a SFV integration test
  * (no such test in postgres_query_executor_test)
  *
  * @given a user with all required permissions
