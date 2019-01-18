@@ -13,7 +13,7 @@ static constexpr shared_model::interface::types::TransactionsNumberType
     kTxPageSize(10);
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-209 remove, covered by field validator test
  *
  * C346 Pass an empty asset id
  * @given a user with kGetAllAccAstTxs permission
@@ -30,7 +30,7 @@ TEST_F(AccountAssetTxsFixture, ReadEmptyAssetHavingAllTxsPermission) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+ * TODO mboldyrev 18.01.2019 IR-209 convert to a SFV integration test
  * (no such test in postgres_query_executor_test)
  *
  * C347 Pass a non existing asset id
@@ -52,7 +52,7 @@ TEST_F(AccountAssetTxsFixture,
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+ * TODO mboldyrev 18.01.2019 IR-209 convert to a SFV integration test
  * (no such test in postgres_query_executor_test)
  *
  * @given a user with kGetAllAccAstTxs permission
@@ -75,7 +75,7 @@ TEST_F(AccountAssetTxsFixture, DISABLED_OwnTxsIncludingAddAssetQuantity) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+ * TODO mboldyrev 18.01.2019 IR-209 convert to a SFV integration test
  * (no such test in postgres_query_executor_test)
  *
  * @given a user with kGetAllAccAstTxs permission
