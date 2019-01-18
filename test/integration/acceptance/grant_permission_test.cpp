@@ -13,7 +13,7 @@ using namespace shared_model::interface::permissions;
 using namespace common_constants;
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-216 remove, covered by
  * postgres_executor_test GrantPermissions.NoAccount
  *
  * C256 Grant permission to a non-existing account
@@ -41,7 +41,7 @@ TEST_F(GrantablePermissionsFixture, GrantToInexistingAccount) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 transform to command executor storage
+ * TODO mboldyrev 18.01.2019 IR-216 transform to command executor storage
  * integration test
  * the part with queries is covered by permission SFV integration tests
  *
@@ -81,7 +81,7 @@ TEST_F(GrantablePermissionsFixture, GrantAddSignatoryPermission) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 transform to command executor storage
+ * TODO mboldyrev 18.01.2019 IR-216 transform to command executor storage
  * integration test
  * the part with queries is covered by permission SFV integration tests
  *
@@ -139,7 +139,7 @@ TEST_F(GrantablePermissionsFixture, GrantRemoveSignatoryPermission) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-216 remove, covered by
  * postgres_executor_test GrantPermissions.Valid
  * and permission tests
  *
@@ -192,7 +192,7 @@ TEST_F(GrantablePermissionsFixture, GrantSetQuorumPermission) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 transform to command executor storage
+ * TODO mboldyrev 18.01.2019 IR-216 transform to command executor storage
  * integration test
  * the part with queries is covered by permission SFV integration tests
  *
@@ -230,7 +230,7 @@ TEST_F(GrantablePermissionsFixture, GrantSetAccountDetailPermission) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 transform to command executor storage
+ * TODO mboldyrev 18.01.2019 IR-216 transform to command executor storage
  * integration test
  * the part with queries is covered by permission SFV integration tests
  *
@@ -276,7 +276,7 @@ TEST_F(GrantablePermissionsFixture, GrantTransferPermission) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-216 remove, covered by
  * postgres_executor_test GrantPermissions.NoPerms
  * the part with queries is covered by permission SFV integration tests
  *
@@ -301,7 +301,7 @@ TEST_F(GrantablePermissionsFixture, GrantWithoutGrantPermissions) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 transform to command executor storage
+ * TODO mboldyrev 18.01.2019 IR-216 transform to command executor storage
  * integration test
  *
  * C263 GrantPermission more than once
