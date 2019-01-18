@@ -37,7 +37,7 @@ class AcceptanceTest : public AcceptanceFixture {
 };
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a separate status test
+ * TODO mboldyrev 18.01.2019 IR-227 convert to a separate status test
  * and a SFV integration test of non existing tx creator account
  * (seems not covered in postgres_executor_test or transaction_processor_test)
  *
@@ -60,7 +60,7 @@ TEST_F(AcceptanceTest, NonExistentCreatorAccountId) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-227 remove, covered by field validator test
  *
  * @given some user
  * @when sending transactions with an 1 hour old UNIX time
@@ -80,7 +80,7 @@ TEST_F(AcceptanceTest, Transaction1HourOld) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-227 remove, covered by field validator test
  *
  * @given some user
  * @when sending transactions with an less than 24 hour old UNIX time
@@ -100,7 +100,7 @@ TEST_F(AcceptanceTest, DISABLED_TransactionLess24HourOld) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-227 remove, covered by field validator test
  *
  * @given some user
  * @when sending transactions with an more than 24 hour old UNIX time
@@ -116,7 +116,7 @@ TEST_F(AcceptanceTest, TransactionMore24HourOld) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-227 remove, covered by field validator test
  *
  * @given some user
  * @when sending transactions with an less that 5 minutes from future UNIX time
@@ -136,7 +136,7 @@ TEST_F(AcceptanceTest, Transaction5MinutesFromFuture) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-227 remove, covered by field validator test
  *
  * @given some user
  * @when sending transactions with an 10 minutes from future UNIX time
@@ -152,7 +152,7 @@ TEST_F(AcceptanceTest, Transaction10MinutesFromFuture) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-227 remove, covered by field validator test
  *
  * @given some user
  * @when sending transactions with an empty public Key
@@ -171,7 +171,7 @@ TEST_F(AcceptanceTest, TransactionEmptyPubKey) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a crypto provider unit test.
+ * TODO mboldyrev 18.01.2019 IR-227 convert to a crypto provider unit test.
  * Also make a single SVL integration test including SignableModelValidator or
  * even whole torii::CommandServiceTransportGrpc and the crypto provider
  *
@@ -189,7 +189,7 @@ TEST_F(AcceptanceTest, TransactionEmptySignedblob) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a crypto provider unit test
+ * TODO mboldyrev 18.01.2019 IR-227 convert to a crypto provider unit test
  *
  * @given some user
  * @when sending transactions with correctly formed invalid PublicKey
@@ -211,7 +211,7 @@ TEST_F(AcceptanceTest, TransactionInvalidPublicKey) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a crypto provider unit test
+ * TODO mboldyrev 18.01.2019 IR-227 convert to a crypto provider unit test
  *
  * @given some user
  * @when sending transactions with Invalid SignedBlock
@@ -235,7 +235,7 @@ TEST_F(AcceptanceTest, TransactionInvalidSignedBlob) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? successful case covered by
+ * TODO mboldyrev 18.01.2019 IR-227 remove, successful case covered by
  * higher-level tests
  *
  * @given some user
@@ -254,7 +254,7 @@ TEST_F(AcceptanceTest, TransactionValidSignedBlob) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SignableModelValidator test
+ * TODO mboldyrev 18.01.2019 IR-227 convert to a SignableModelValidator test
  *
  * @given some user
  * @when sending transaction without any signature
