@@ -27,7 +27,7 @@ class QuorumFixture : public AcceptanceFixture {
 };
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 "Basic" tests should be replaced with a
+ * TODO mboldyrev 18.01.2019 IR-228 "Basic" tests should be replaced with a
  * common acceptance test
  * also covered by postgres_executor_test SetQuorum.Valid
  *
@@ -43,7 +43,7 @@ TEST_F(QuorumFixture, CanRaiseQuorum) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-224 remove, covered by
  * postgres_executor_test SetQuorum.LessSignatoriesThanNewQuorum
  *
  * @given a user with two signatories linked
@@ -60,7 +60,7 @@ TEST_F(QuorumFixture, CannotRaiseQuorumMoreThanSignatures) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-224 remove, covered by
  * postgres_executor_test SetQuorum.Valid
  *
  * @given a user with two signatories linked
@@ -84,7 +84,7 @@ TEST_F(QuorumFixture, CanLowerQuorum) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a field validator unit test
+ * TODO mboldyrev 18.01.2019 IR-224 convert to a field validator unit test
  *
  * @given a user with two signatories linked
  * @when the user tries to set zero quorum
