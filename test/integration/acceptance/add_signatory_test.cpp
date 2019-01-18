@@ -37,7 +37,7 @@ class AddSignatory : public AcceptanceFixture {
 };
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 "Basic" tests should be replaced with a
+ * TODO mboldyrev 18.01.2019 IR-228 "Basic" tests should be replaced with a
  * common acceptance test
  *
  * C224 Add existing public key of other user
@@ -73,7 +73,7 @@ TEST_F(AddSignatory, Basic) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-204 remove, covered by
  * postgres_executor_test AddSignatory.NoPerms
  *
  * C228 AddSignatory without such permissions
@@ -94,7 +94,7 @@ TEST_F(AddSignatory, NoPermission) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-204 remove, covered by
  * postgres_executor_test AddSignatory.ValidGrantablePerms
  *
  * C225 Add signatory to other user
@@ -124,7 +124,7 @@ TEST_F(AddSignatory, GrantedPermission) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+ * TODO mboldyrev 18.01.2019 IR-204 convert to a SFV integration test
  *
  * C226 Add signatory to account, which isn't granted such permission
  * @given some user with CanAddMySignatory permission and a second user without
@@ -147,7 +147,7 @@ TEST_F(AddSignatory, NonGrantedPermission) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+ * TODO mboldyrev 18.01.2019 IR-204 convert to a SFV integration test
  *
  * C222 Add signatory to non-existing account ID
  * @given some user with CanAddMySignatory permission
@@ -165,7 +165,7 @@ TEST_F(AddSignatory, NonExistentUser) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by field validator test
+ * TODO mboldyrev 18.01.2019 IR-204 remove, covered by field validator test
  *
  * C223 Add invalid public key
  * @given some user with CanAddMySignatory permission
@@ -184,7 +184,7 @@ TEST_F(AddSignatory, InvalidKey) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 convert to a SFV integration test
+ * TODO mboldyrev 18.01.2019 IR-204 convert to a SFV integration test
  *
  * @given some user with CanAddMySignatory permission
  * @when execute tx with AddSignatory with a correctly formed key which isn't
