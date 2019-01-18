@@ -97,7 +97,7 @@ class GetAssetInfo : public AcceptanceFixture {
 };
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 "Basic" tests should be replaced with a
+ * TODO mboldyrev 18.01.2019 IR-228 "Basic" tests should be replaced with a
  * common acceptance test
  *
  * C363 Get asset info with CanReadAssets permission
@@ -111,7 +111,7 @@ TEST_F(GetAssetInfo, DISABLED_Basic) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 seems can be removed (covered by field
+ * TODO mboldyrev 18.01.2019 IR-212 seems can be removed (covered by field
  * validator test)
  *
  * C365 Pass an empty asset id
@@ -127,7 +127,7 @@ TEST_F(GetAssetInfo, EmptyAsset) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-212 remove, covered by
  * postgres_query_executor_test GetAssetInfoExecutorTest.InvalidNoAsset
  *
  * C366 Pass a non-existing asset id
@@ -142,7 +142,7 @@ TEST_F(GetAssetInfo, NonexistentAsset) {
 }
 
 /**
- * TODO mboldyrev 05.12.2018 IR-56 remove? covered by
+ * TODO mboldyrev 18.01.2019 IR-212 remove, covered by
  * postgres_query_executor_test GetAssetInfoExecutorTest.Invalid
  * seems we should move the common_query_permissions_test to SFV integration
  *
