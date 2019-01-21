@@ -18,12 +18,8 @@
 namespace logger {
 
   class Logger;
-  class LogPatterns;
-  struct LoggerConfig;
-  enum class LogLevel;
 
   using LoggerPtr = std::shared_ptr<Logger>;
-  using ConstLoggerConfigPtr = std::shared_ptr<const LoggerConfig>;
 
 }  // namespace logger
 
