@@ -1,3 +1,5 @@
+import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
+
 def tasks = [:]
 
 class Worker {
@@ -33,28 +35,26 @@ def build(Build build) {
         build.builder.buildSteps.each {
           it()
         }
-        build.builder.postSteps.success.each {
-          it()
-        }
-      } catch(Exception e) {
         if (currentBuild.currentResult == 'SUCCESS') {
-            print "Error: " + e
-            currentBuild.result = 'FAILURE'
-        }
-        else if(currentBuild.currentResult == 'UNSTABLE') {
+          build.builder.postSteps.success.each {
+            it()
+          }
+        } else if(currentBuild.currentResult == 'UNSTABLE') {
           build.builder.postSteps.unstable.each {
             it()
           }
         }
-        else if(currentBuild.currentResult == 'FAILURE') {
-          build.builder.postSteps.failure.each {
-            it()
-          }
+      } catch(FlowInterruptedException e) {
+        print "Looks like we ABORTED"
+        currentBuild.result = 'ABORTED'
+        build.builder.postSteps.aborted.each {
+          it()
         }
-        else if(currentBuild.currentResult == 'ABORTED') {
-          build.builder.postSteps.aborted.each {
-            it()
-          }
+      } catch(Exception e) {
+        print "Error was detected: " + e
+        currentBuild.result = 'FAILURE'
+        build.builder.postSteps.failure.each {
+          it()
         }
       }
       // ALWAYS
@@ -67,54 +67,36 @@ def build(Build build) {
   }
 }
 
-def getParamsAsList(String prefix) {
-    // Returns Boolean key if they set as true
-    list = []
-    for (i in  params){
-        if(i.key.startsWith(prefix) && i.value.getClass() == Boolean &&  i.value){
-            list += i.key.minus(prefix)
-        }
-    }
-    status = !list.isEmpty()
-    return [status, list]
-}
+// sanitise the string it should contain only 'key1=value1;key2=value2;...'
+def cmd_sanitize(String cmd){
+  if (cmd.contains("//"))
+    return false
 
+  for (i in cmd.split(";")){
+    if (i.split("=").size() != 2 )
+       return false
+    for (j in i.split("=")){
+      if (j.trim().contains(" "))
+      return false
+    }
+  }
+  return true
+}
 
 stage('Prepare environment'){
 timestamps(){
 
-properties([
-    parameters([
-        booleanParam(defaultValue: true, description: '', name: 'x64linux_compiler_gcc5'),
-        booleanParam(defaultValue: false, description: '', name: 'x64linux_compiler_gcc7'),
-        booleanParam(defaultValue: false, description: '', name: 'x64linux_compiler_clang6'),
-        booleanParam(defaultValue: false, description: '', name: 'x64linux_compiler_clang7'),
-
-        booleanParam(defaultValue: false, description: '', name: 'mac_compiler_appleclang'),
-
-        choice(choices: 'Debug\nRelease', description: 'Iroha build type', name: 'build_type'),
-
-        booleanParam(defaultValue: false, description: '', name: 'coverage'),
-        booleanParam(defaultValue: true, description: '', name: 'cppcheck'),
-        booleanParam(defaultValue: false, description: '', name: 'sonar'),
-
-        booleanParam(defaultValue: true, description: 'Unit tests', name: 'test_module'),
-        booleanParam(defaultValue: false, description: '', name: 'test_integration'),
-        booleanParam(defaultValue: false, description: '', name: 'test_system'),
-        booleanParam(defaultValue: false, description: '', name: 'test_cmake'),
-        booleanParam(defaultValue: false, description: '', name: 'test_regression'),
-        booleanParam(defaultValue: false, description: '', name: 'test_benchmark'),
-        booleanParam(defaultValue: false, description: 'Sanitize address;leak', name: 'sanitize'),
-        booleanParam(defaultValue: false, description: 'Build fuzzing, uses only clang6', name: 'fuzzing'),
-        booleanParam(defaultValue: false, description: 'Build docs', name: 'Doxygen'),
-        //TODO in build_type:Debug params.package do NOT work properly, need fix in Cmake(problem : deb/tar.gz is empty, tests empty)
-        booleanParam(defaultValue: false, description: 'Build package, for build type Debug, for Release always true', name: 'package'),
-    ]),
-    buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '30'))
-])
 
 node ('master') {
   scmVars = checkout scm
+  def textVariables = load '.jenkinsci/text-variables.groovy'
+  properties([
+      parameters([
+          choice(choices: textVariables.param_chose_opt, description: textVariables.param_descriptions, name: 'build_scenario'),
+          string(defaultValue: '', description: textVariables.cmd_description, name: 'custom_cmd', trim: true)
+      ]),
+      buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '30'))
+  ])
   environmentList = []
   environment = [:]
   environment = [
@@ -133,50 +115,105 @@ node ('master') {
   }
 
   // Define variable and params
-  (testing,testList) = getParamsAsList('test_')
-  testList = ( "(" +testList.findAll({it != ''}).join('|') + ")")
-  (x64linux_compiler, x64linux_compiler_list) =  getParamsAsList('x64linux_compiler_')
-  (mac_compiler, mac_compiler_list) =  getParamsAsList('mac_compiler_')
 
-  packageBuild = params.package
+  //All variable and Default values
+  x64linux_compiler_list = ['gcc5']
+  mac_compiler_list = []
+
+  testing = true
+  testList = '(module)'
+
+  sanitize = false
+  cppcheck = false
+  fuzzing = false // x64linux_compiler_list= ['clang6']  testing = true testList = "(None)"
+  sonar = false
+  coverage = false
+  coverage_mac = false
+  doxygen = false
+
+  build_type = 'Debug'
+  packageBuild = false
+  pushDockerTag = 'not-supposed-to-be-pushed'
   packagePush = false
+  specialBranch = false
+  parallelism = 0
 
-  if (params.build_type == 'Release') {
-    packageBuild = true
-    testing = false
-    if (scmVars.GIT_LOCAL_BRANCH ==~ /(master|develop|dev)/){
-      packagePush = true
-    }
-  }
-
-  if (params.fuzzing){
-    x64linux_compiler = true
-    x64linux_compiler_list= ['clang6']
-    //if no test selected still build it with test
-    if(!testing){
-      testing = true
-      testList = "(None)"
-    }
-  }
-
-  if (scmVars.GIT_LOCAL_BRANCH ==~ /(develop|dev)/){
-    pushDockerTag =  'develop'
-  } else if (scmVars.GIT_LOCAL_BRANCH == 'master'){
-    pushDockerTag = 'latest'
-  } else {
-    pushDockerTag = 'not-supposed-to-be-pushed'
-  }
-
-  if (scmVars.GIT_LOCAL_BRANCH in ["master","develop","dev"] || scmVars.CHANGE_BRANCH_LOCAL in ["develop","dev"]) {
+  if (scmVars.GIT_LOCAL_BRANCH in ["master","develop","dev"] || scmVars.CHANGE_BRANCH_LOCAL in ["develop","dev"])
     specialBranch =  true
-  }else {
+  else
     specialBranch = false
+
+  if (specialBranch){
+    // if specialBranch == true the release build will run, so set packagePush
+    packagePush = true
+    doxygen = true
   }
-  echo "packageBuild=${packageBuild}, pushDockerTag=${pushDockerTag}, packagePush=${packagePush} "
-  echo "testing=${testing}, testList=${testList}"
-  echo "x64linux_compiler=${x64linux_compiler}, x64linux_compiler_list=${x64linux_compiler_list}"
-  echo "mac_compiler=${mac_compiler}, mac_compiler_list=${mac_compiler_list}"
-  echo "specialBranch=${specialBranch}"
+
+  if (scmVars.GIT_LOCAL_BRANCH ==~ /(develop|dev)/)
+    pushDockerTag =  'develop'
+  else if (scmVars.GIT_LOCAL_BRANCH == 'master')
+    pushDockerTag = 'latest'
+  else
+    pushDockerTag = 'not-supposed-to-be-pushed'
+
+  if (params.build_scenario == 'Default')
+    if ( scmVars.GIT_BRANCH.startsWith('PR-'))
+      if (BUILD_NUMBER == '1')
+        build_scenario='On open PR'
+      else
+        build_scenario='Commit in Open PR'
+    else
+      build_scenario='Branch commit'
+  else
+    build_scenario = params.build_scenario
+
+
+  print("Selected Build Scenario '${build_scenario}'")
+  switch(build_scenario) {
+     case 'Branch commit':
+        echo "All Default"
+        break;
+     case 'On open PR':
+        mac_compiler_list = ['appleclang']
+        coverage = true
+        cppcheck = true
+        sonar = true
+        break;
+     case 'Commit in Open PR':
+        echo "All Default"
+        break;
+     case 'Before merge to trunk':
+        x64linux_compiler_list = ['gcc5','gcc7', 'clang6' , 'clang7']
+        mac_compiler_list = ['appleclang']
+        testing = true
+        testList = '()'
+        coverage = true
+        cppcheck = true
+        sonar = true
+        break;
+     case 'Custom command':
+        if (cmd_sanitize(params.custom_cmd)){
+          evaluate (params.custom_cmd)
+          // A very rare scenario when linux compiler is not selected but we still need coverage
+          if (x64linux_compiler_list.isEmpty() && coverage ){
+            coverage_mac = true
+          }
+        } else {
+           println("Unable to parse '${params.custom_cmd}'")
+           sh "exit 1"
+        }
+        break;
+     default:
+        println("The value build_scenario='${build_scenario}' is not implemented");
+        sh "exit 1"
+        break;
+  }
+
+  echo "specialBranch=${specialBranch}, packageBuild=${packageBuild}, pushDockerTag=${pushDockerTag}, packagePush=${packagePush} "
+  echo "testing=${testing}, testList=${testList}, parallelism=${parallelism}"
+  echo "x64linux_compiler_list=${x64linux_compiler_list}"
+  echo "mac_compiler_list=${mac_compiler_list}"
+  echo "sanitize=${sanitize}, cppcheck=${cppcheck}, fuzzing=${fuzzing}, sonar=${sonar}, coverage=${coverage}, coverage_mac=${coverage_mac} doxygen=${doxygen}"
   print scmVars
   print environmentList
 
@@ -187,28 +224,38 @@ node ('master') {
 
 
   // Define Workers
-  x64LinuxWorker = new Worker(label: 'x86_64', cpusAvailable: 4)
+  x64LinuxWorker = new Worker(label: 'docker-build-agent', cpusAvailable: 8)
   x64MacWorker = new Worker(label: 'mac', cpusAvailable: 4)
 
 
   // Define all possible steps
   def x64LinuxBuildSteps
   def x64LinuxPostSteps = new Builder.PostSteps()
-  if(x64linux_compiler){
+  if(!x64linux_compiler_list.isEmpty()){
     x64LinuxBuildSteps = [{x64LinuxBuildScript.buildSteps(
-      x64LinuxWorker.cpusAvailable, x64linux_compiler_list, params.build_type, specialBranch, params.coverage,
-      testing, testList, params.cppcheck, params.sonar, params.Doxygen, packageBuild, packagePush, params.sanitize, params.fuzzing, environmentList)}]
+      parallelism==0 ?x64LinuxWorker.cpusAvailable : parallelism, x64linux_compiler_list, build_type, specialBranch, coverage,
+      testing, testList, cppcheck, sonar, doxygen, packageBuild, sanitize, fuzzing, environmentList)}]
+    //If "master" or "dev" also run Release build
+    if(specialBranch && build_type == 'Debug'){
+      x64LinuxBuildSteps += [{x64LinuxBuildScript.buildSteps(
+      parallelism==0 ?x64LinuxWorker.cpusAvailable : parallelism, x64linux_compiler_list, 'Release', specialBranch, false,
+      false , testList, false, false, false, true, false, false, environmentList)}]
+    }
     x64LinuxPostSteps = new Builder.PostSteps(
       always: [{x64LinuxBuildScript.alwaysPostSteps(environmentList)}],
-      success: [{x64LinuxBuildScript.successPostSteps(scmVars, params.build_type, packagePush, pushDockerTag, environmentList)}])
+      success: [{x64LinuxBuildScript.successPostSteps(scmVars, packagePush, pushDockerTag, environmentList)}])
   }
   def x64MacBuildSteps
   def x64MacBuildPostSteps = new Builder.PostSteps()
-  if(mac_compiler){
-    x64MacBuildSteps = [{x64BuildScript.buildSteps(x64MacWorker.cpusAvailable, mac_compiler_list, params.build_type, params.coverage, testing, testList, packageBuild,  environmentList)}]
+  if(!mac_compiler_list.isEmpty()){
+    x64MacBuildSteps = [{x64BuildScript.buildSteps(parallelism==0 ?x64MacWorker.cpusAvailable : parallelism, mac_compiler_list, build_type, coverage_mac, testing, testList, packageBuild,  environmentList)}]
+    //If "master" or "dev" also run Release build
+    if(specialBranch && build_type == 'Debug'){
+      x64MacBuildSteps += [{x64BuildScript.buildSteps(parallelism==0 ?x64MacWorker.cpusAvailable : parallelism, mac_compiler_list, 'Release', false, false, testList, true,  environmentList)}]
+    }
     x64MacBuildPostSteps = new Builder.PostSteps(
       always: [{x64BuildScript.alwaysPostSteps(environmentList)}],
-      success: [{x64BuildScript.successPostSteps(scmVars, params.build_type, packagePush, environmentList)}])
+      success: [{x64BuildScript.successPostSteps(scmVars, packagePush, environmentList)}])
   }
 
   // Define builders
@@ -216,12 +263,12 @@ node ('master') {
   x64MacBuilder = new Builder(buildSteps: x64MacBuildSteps, postSteps: x64MacBuildPostSteps )
 
   // Define Build
-  x64LinuxBuild = new Build(name: "x86_64 Linux ${params.build_type}",
-                                    type: params.build_type,
+  x64LinuxBuild = new Build(name: "x86_64 Linux ${build_type}",
+                                    type: build_type,
                                     builder: x64LinuxBuilder,
                                     worker: x64LinuxWorker)
-  x64MacBuild = new Build(name: "Mac ${params.build_type}",
-                                     type: params.build_type,
+  x64MacBuild = new Build(name: "Mac ${build_type}",
+                                     type: build_type,
                                      builder: x64MacBuilder,
                                      worker: x64MacWorker)
 

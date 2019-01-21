@@ -24,7 +24,7 @@ def dockerManifestPush(dockerImageObj, String dockerTag, environment) {
 def testSteps(String buildDir, List environment, String testList) {
   withEnv(environment) {
     sh "cd ${buildDir}; ctest --output-on-failure --no-compress-output --tests-regex '${testList}'  --test-action Test || true"
-    sh "python .jenkinsci/helpers/platform_tag.py 'Linux \$(uname -m)' \$(ls ${buildDir}/Testing/*/Test.xml)"
+    sh """ python .jenkinsci/helpers/platform_tag.py "Linux \$(uname -m)" \$(ls ${buildDir}/Testing/*/Test.xml) """
     // Mark build as UNSTABLE if there are any failed tests (threshold <100%)
     xunit testTimeMargin: '3000', thresholdMode: 2, thresholds: [passed(unstableThreshold: '100')], \
       tools: [CTest(deleteOutputFiles: true, failIfNotNew: false, \
@@ -33,7 +33,7 @@ def testSteps(String buildDir, List environment, String testList) {
 }
 
 def buildSteps(int parallelism, List compilerVersions, String build_type, boolean specialBranch, boolean coverage,
-      boolean testing, String testList, boolean cppcheck, boolean sonar, boolean docs, boolean packagebuild, boolean packagePush, boolean sanitize, boolean fuzzing, List environment) {
+      boolean testing, String testList, boolean cppcheck, boolean sonar, boolean docs, boolean packagebuild, boolean sanitize, boolean fuzzing, List environment) {
   withEnv(environment) {
     scmVars = checkout scm
     def build = load '.jenkinsci/build.groovy'
@@ -91,6 +91,8 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
             coverage ? build.initialCoverage(buildDir) : echo('Skipping initial coverage...')
             testSteps(buildDir, environment, testList)
             coverage ? build.postCoverage(buildDir, '/tmp/lcov_cobertura.py') : echo('Skipping post coverage...')
+            // We run coverage one time,in first compiler, it enough
+            coverage = false
           }
         }
       }
@@ -101,7 +103,7 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
       stage('Build docs'){
         docs ? doxygen.doDoxygen(specialBranch, scmVars.GIT_LOCAL_BRANCH) : echo("Skipping Doxygen...")
       }
-      stage ('DockerManifestPush'){
+      stage ('Docker ManifestPush'){
         if (specialBranch) {
           utils.dockerPush(iC, "${platform}-develop-build")
           dockerManifestPush(iC, "develop-build", environment)
@@ -111,8 +113,8 @@ def buildSteps(int parallelism, List compilerVersions, String build_type, boolea
   }
 }
 
-def successPostSteps(scmVars, String build_type, boolean packagePush, String dockerTag, List environment) {
-  stage('successPostSteps') {
+def successPostSteps(scmVars, boolean packagePush, String dockerTag, List environment) {
+  stage('Linux success PostSteps') {
     withEnv(environment) {
       if (packagePush) {
         def artifacts = load ".jenkinsci/artifacts.groovy"
@@ -147,7 +149,7 @@ def successPostSteps(scmVars, String build_type, boolean packagePush, String doc
 }
 
 def alwaysPostSteps(List environment) {
-  stage('alwaysPostSteps') {
+  stage('Linux always PostSteps') {
     withEnv(environment) {
       sh "docker rm -f ${env.IROHA_POSTGRES_HOST} || true"
       sh "docker network rm ${env.IROHA_NETWORK}"
