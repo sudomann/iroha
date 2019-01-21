@@ -24,38 +24,11 @@ auto operator<<(StreamType &os, const T &object)
 namespace logger {
 
   class Logger;
-  class LogPatterns;
-  class LoggerConfig;
   enum class LogLevel;
 
   using LoggerPtr = std::shared_ptr<Logger>;
-  using ConstLoggerConfigPtr = std::shared_ptr<const LoggerConfig>;
 
   extern const LogLevel kDefaultLogLevel;
-  extern const LogPatterns kDefaultLogPatterns;
-
-  /// Patterns for logging depending on the log level.
-  class LogPatterns {
-   public:
-    /// Set a logging pattern for the given level.
-    void setPattern(LogLevel level, std::string pattern);
-
-    /**
-     * Get the logging pattern for the given level. If not set, get the
-     * next present more verbose level pattern, if any, or the default
-     * pattern.
-     */
-    std::string getPattern(LogLevel level) const;
-
-   private:
-    std::map<LogLevel, std::string> patterns_;
-  };
-
-  // TODO mboldyrev 29.12.2018 IR-188 Add sink options (console, file, syslog)
-  struct LoggerConfig {
-    LogLevel log_level;
-    LogPatterns patterns;
-  };
 
   /// Log levels
   enum class LogLevel {
@@ -71,20 +44,7 @@ namespace logger {
     public:
      using Level = LogLevel;
 
-     // --- Constructors and assignment (aka the big 5) ---
-
-     /**
-      * @param tag - the tag for logging (aka logger name)
-      * @param config - logger configuration
-      */
-     Logger(std::string tag, ConstLoggerConfigPtr config);
-
-     Logger(const Logger &other);
-     Logger(Logger &&other);
-     Logger &operator=(const Logger &other);
-     Logger &operator=(Logger &&other);
-
-     virtual ~Logger();
+     virtual ~Logger() = default;
 
      // --- Logging functions ---
 
@@ -128,16 +88,11 @@ namespace logger {
      }
 
     private:
-
-     void logInternal(Level level, const std::string &s) const;
+     virtual void logInternal(Level level, const std::string &s) const = 0;
 
      /// Whether the configured logging level is at least as verbose as the
      /// one given in parameter.
-     bool shouldLog(Level level) const;
-
-     class Impl;
-     friend class Impl;
-     std::shared_ptr<Impl> impl_;
+     virtual bool shouldLog(Level level) const = 0;
   };
 
   /**

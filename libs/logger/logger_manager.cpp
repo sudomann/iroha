@@ -7,6 +7,8 @@
 
 #include <atomic>
 
+#include "logger/logger_spdlog.hpp"
+
 static const std::string kTagHierarchySeparator = "/";
 
 static inline std::string joinTags(const std::string &parent,
@@ -48,7 +50,7 @@ namespace logger {
     LoggerPtr logger =
         std::atomic_load_explicit(&logger_, std::memory_order_acquire);
     if (not logger) {
-      auto new_logger = std::make_shared<Logger>(full_tag_, config_);
+      LoggerPtr new_logger = std::make_shared<LoggerSpdlog>(full_tag_, config_);
       while (not logger) {
         if (std::atomic_compare_exchange_weak_explicit(
                 &logger_,

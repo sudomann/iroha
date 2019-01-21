@@ -12,7 +12,7 @@
 #include <unordered_map>
 
 #include <boost/optional.hpp>
-#include "logger/logger.hpp"
+#include "logger/logger_spdlog.hpp"
 
 namespace logger {
 
