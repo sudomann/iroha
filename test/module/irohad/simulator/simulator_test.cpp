@@ -76,9 +76,6 @@ class SimulatorTest : public ::testing::Test {
     shared_model::crypto::crypto_signer_expecter.reset();
   }
 
-  //  void init() {
-  //  }
-
   consensus::Round round;
 
   std::shared_ptr<MockStatefulValidator> validator;
@@ -133,14 +130,6 @@ auto makeTx() {
           shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair())
       .finish();
 }
-
-// TEST_F(SimulatorTest, ValidWhenInitialized) {
-//  // simulator constructor => onProposal subscription called
-//  EXPECT_CALL(*ordering_gate, onProposal())
-//      .WillOnce(Return(rxcpp::observable<>::empty<OrderingEvent>()));
-//
-//  init();
-//}
 
 TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
   // proposal with height 2 => height 1 block present => new block generated
@@ -264,7 +253,7 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
  * @then verified proposal consists of txs we did not fail, and the failed
  * transactions are provided as well
  */
- TEST_F(SimulatorTest, SomeFailingTxs) {
+TEST_F(SimulatorTest, SomeFailingTxs) {
   // create a 3-height proposal, but validator returns only a 2-height
   // verified proposal
   const int kNumTransactions = 3;
@@ -315,8 +304,7 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
 
   // ensure that txs in verified proposal do not include failed ones
   EXPECT_EQ(verified_proposal->height(), verified_proposal_height);
-  EXPECT_EQ(verified_proposal->transactions(),
-  verified_proposal_transactions);
+  EXPECT_EQ(verified_proposal->transactions(), verified_proposal_transactions);
   EXPECT_TRUE(verification_result->get()->rejected_transactions.size()
               == kNumTransactions - 1);
   const auto verified_proposal_rejected_tx_hashes =

@@ -14,7 +14,7 @@
 #include "module/irohad/validation/validation_mocks.hpp"
 #include "module/shared_model/builders/protobuf/block.hpp"
 #include "module/shared_model/builders/protobuf/test_block_builder.hpp"
-#include "module/shared_model/builders/protobuf/test_peer_builder.hpp"
+#include "module/shared_model/interface_mocks.hpp"
 #include "validation/chain_validator.hpp"
 
 using namespace iroha;
@@ -102,11 +102,7 @@ class SynchronizerTest : public ::testing::Test {
  */
 TEST_F(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
   std::shared_ptr<shared_model::interface::Peer> peer =
-      std::make_shared<shared_model::proto::Peer>(
-          TestPeerBuilder()
-              .address("127.0.0.1")
-              .pubkey(shared_model::interface::types::PubkeyType("111"))
-              .build());
+      makePeer("127.0.0.1", shared_model::crypto::PublicKey("111"));
   std::shared_ptr<PeerList> ledger_peers =
       std::make_shared<PeerList>(PeerList{peer});
 
@@ -177,11 +173,7 @@ TEST_F(SynchronizerTest, ValidWhenBadStorage) {
  */
 TEST_F(SynchronizerTest, ValidWhenValidChain) {
   std::shared_ptr<shared_model::interface::Peer> peer =
-      std::make_shared<shared_model::proto::Peer>(
-          TestPeerBuilder()
-              .address("127.0.0.1")
-              .pubkey(shared_model::interface::types::PubkeyType("111"))
-              .build());
+      makePeer("127.0.0.1", shared_model::crypto::PublicKey("111"));
   std::shared_ptr<PeerList> ledger_peers =
       std::make_shared<PeerList>(PeerList{peer});
   DefaultValue<expected::Result<std::unique_ptr<MutableStorage>, std::string>>::
@@ -360,11 +352,7 @@ TEST_F(SynchronizerTest, NoneOutcome) {
  */
 TEST_F(SynchronizerTest, VotedForBlockCommitPrepared) {
   std::shared_ptr<shared_model::interface::Peer> peer =
-      std::make_shared<shared_model::proto::Peer>(
-          TestPeerBuilder()
-              .address("127.0.0.1")
-              .pubkey(shared_model::interface::types::PubkeyType("111"))
-              .build());
+      makePeer("127.0.0.1", shared_model::crypto::PublicKey("111"));
   std::shared_ptr<PeerList> ledger_peers =
       std::make_shared<PeerList>(PeerList{peer});
 
