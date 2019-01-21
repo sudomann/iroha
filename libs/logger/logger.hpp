@@ -13,10 +13,6 @@
 #include <numeric>  // for std::accumulate
 #include <string>
 
-#include <fmt/format.h>
-#include <fmt/ostream.h>
-#include <boost/optional.hpp>
-
 /// Allows to log objects, which have toString() method without calling it, e.g.
 /// log.info("{}", myObject)
 template <typename StreamType, typename T>
@@ -24,6 +20,10 @@ auto operator<<(StreamType &os, const T &object)
     -> decltype(os << object.toString()) {
   return os << object.toString();
 }
+
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <boost/optional.hpp>
 
 namespace logger {
 
