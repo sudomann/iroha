@@ -100,7 +100,7 @@ namespace iroha {
 
       void freeConnections() override;
 
-      std::unique_ptr<LedgerState> commit(
+      boost::optional<std::unique_ptr<LedgerState>> commit(
           std::unique_ptr<MutableStorage> mutableStorage) override;
 
       boost::optional<std::unique_ptr<LedgerState>> commitPrepared(

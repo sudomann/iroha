@@ -40,7 +40,7 @@ namespace iroha {
        * @param mutableStorage
        * @return new state of the ledger
        */
-      virtual std::unique_ptr<LedgerState> commit(
+      virtual boost::optional<std::unique_ptr<LedgerState>> commit(
           std::unique_ptr<MutableStorage> mutableStorage) = 0;
 
       /**

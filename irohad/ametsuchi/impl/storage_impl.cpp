@@ -411,7 +411,7 @@ namespace iroha {
       return storage;
     }
 
-    std::unique_ptr<LedgerState> StorageImpl::commit(
+    boost::optional<std::unique_ptr<LedgerState>> StorageImpl::commit(
         std::unique_ptr<MutableStorage> mutableStorage) {
       auto storage_ptr = std::move(mutableStorage);  // get ownership of storage
       auto storage = static_cast<MutableStorageImpl *>(storage_ptr.get());
@@ -427,12 +427,12 @@ namespace iroha {
           return std::make_unique<LedgerState>(
               std::make_shared<PeerList>(std::move(*peers)));
         } else {
-          return std::make_unique<LedgerState>();
+          return boost::none;
         }
       } catch (std::exception &e) {
         storage->committed = false;
         log_->warn("Mutable storage is not committed. Reason: {}", e.what());
-        return std::make_unique<LedgerState>();
+        return boost::none;
       }
     }
 
