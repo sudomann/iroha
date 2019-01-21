@@ -8,7 +8,7 @@
 #include <google/protobuf/empty.pb.h>
 
 #include "interfaces/iroha_internal/transaction_batch_factory.hpp"
-#include "logger/logger.hpp"
+#include "logger/logger_fwd.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "network/ordering_service_transport.hpp"
 #include "ordering.grpc.pb.h"
@@ -25,7 +25,8 @@ namespace iroha {
           std::shared_ptr<shared_model::interface::TransactionBatchFactory>
               transaction_batch_factory,
           std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>
-              async_call);
+              async_call,
+          logger::LoggerPtr log);
       void subscribe(
           std::shared_ptr<iroha::network::OrderingServiceNotification>
               subscriber) override;

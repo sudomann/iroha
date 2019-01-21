@@ -27,6 +27,7 @@
 #include "consensus/yac/storage/storage_result.hpp"  // for Answer
 #include "consensus/yac/storage/yac_common.hpp"      // for ProposalHash
 #include "consensus/yac/yac_types.hpp"
+#include "logger/logger_manager_fwd.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -93,6 +94,8 @@ namespace iroha {
        public:
         // --------| public api |--------
 
+        YacVoteStorage(logger::LoggerManagerTreePtr log_manager);
+
         /**
          * Insert votes in storage
          * @param state - current message with votes
@@ -143,6 +146,8 @@ namespace iroha {
          */
         std::unordered_map<Round, ProposalState, RoundTypeHasher>
             processing_state_;
+
+        logger::LoggerManagerTreePtr log_manager_;
       };
 
     }  // namespace yac

@@ -19,6 +19,7 @@
 #include "interfaces/iroha_internal/transaction_batch_parser.hpp"
 #include "interfaces/iroha_internal/tx_status_factory.hpp"
 #include "interfaces/transaction.hpp"
+#include "logger/logger.hpp"
 #include "network/consensus_gate.hpp"
 #include "torii/status_bus.hpp"
 
@@ -35,7 +36,7 @@ namespace torii {
           transaction_batch_factory,
       std::shared_ptr<iroha::network::ConsensusGate> consensus_gate,
       int maximum_rounds_without_update,
-      logger::Logger log)
+      logger::LoggerPtr log)
       : command_service_(std::move(command_service)),
         status_bus_(std::move(status_bus)),
         status_factory_(std::move(status_factory)),

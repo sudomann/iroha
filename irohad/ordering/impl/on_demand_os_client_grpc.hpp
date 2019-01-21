@@ -8,6 +8,7 @@
 
 #include "ordering/on_demand_os_transport.hpp"
 
+#include "logger/logger_fwd.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "ordering.grpc.pb.h"
 
@@ -33,7 +34,7 @@ namespace iroha {
                 async_call,
             std::function<TimepointType()> time_provider,
             std::chrono::milliseconds proposal_request_timeout,
-            logger::Logger log = logger::log("OnDemandOsClientGrpc"));
+            logger::LoggerPtr log);
 
         void onBatches(consensus::Round round, CollectionType batches) override;
 
@@ -41,7 +42,7 @@ namespace iroha {
             consensus::Round round) override;
 
        private:
-        logger::Logger log_;
+        logger::LoggerPtr log_;
         std::unique_ptr<proto::OnDemandOrdering::StubInterface> stub_;
         std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>
             async_call_;
@@ -55,7 +56,8 @@ namespace iroha {
             std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>
                 async_call,
             std::function<OnDemandOsClientGrpc::TimepointType()> time_provider,
-            OnDemandOsClientGrpc::TimeoutType proposal_request_timeout);
+            OnDemandOsClientGrpc::TimeoutType proposal_request_timeout,
+            logger::LoggerPtr client_log);
 
         /**
          * Create connection with insecure gRPC channel defined by
@@ -71,6 +73,7 @@ namespace iroha {
             async_call_;
         std::function<OnDemandOsClientGrpc::TimepointType()> time_provider_;
         std::chrono::milliseconds proposal_request_timeout_;
+        logger::LoggerPtr client_log_;
       };
 
     }  // namespace transport

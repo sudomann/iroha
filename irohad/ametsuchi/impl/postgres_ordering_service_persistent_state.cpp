@@ -8,6 +8,7 @@
 #include <soci/postgresql/soci-postgresql.h>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
+#include "logger/logger.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -25,7 +26,7 @@ namespace iroha {
     expected::Result<std::shared_ptr<PostgresOrderingServicePersistentState>,
                      std::string>
     PostgresOrderingServicePersistentState::create(
-        const std::string &postgres_options) {
+        const std::string &postgres_options, logger::LoggerPtr log) {
       std::unique_ptr<soci::session> sql;
       try {
         sql =
@@ -41,13 +42,13 @@ namespace iroha {
           storage;
       storage = expected::makeValue(
           std::make_shared<PostgresOrderingServicePersistentState>(
-              std::move(sql)));
+              std::move(sql), std::move(log)));
       return storage;
     }
 
     PostgresOrderingServicePersistentState::
         PostgresOrderingServicePersistentState(
-            std::unique_ptr<soci::session> sql, logger::Logger log)
+            std::unique_ptr<soci::session> sql, logger::LoggerPtr log)
         : sql_(std::move(sql)), log_(std::move(log)) {}
 
     bool PostgresOrderingServicePersistentState::initStorage() {

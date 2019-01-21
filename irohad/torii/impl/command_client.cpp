@@ -8,6 +8,7 @@
 #include <grpc++/grpc++.h>
 
 #include "common/byteutils.hpp"
+#include "logger/logger.hpp"
 #include "network/impl/grpc_channel_builder.hpp"
 #include "torii/command_client.hpp"
 #include "transaction.pb.h"
@@ -19,7 +20,7 @@ namespace torii {
 
   CommandSyncClient::CommandSyncClient(const std::string &ip,
                                        size_t port,
-                                       logger::Logger log)
+                                       logger::LoggerPtr log)
       : stub_(iroha::network::createClient<iroha::protocol::CommandService_v1>(
             ip + ":" + std::to_string(port))),
         log_(std::move(log)) {}

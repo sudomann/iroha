@@ -5,6 +5,7 @@
 
 #include "model/converters/pb_query_factory.hpp"
 
+#include "logger/logger.hpp"
 #include "model/common.hpp"
 #include "model/queries/get_account.hpp"
 #include "model/queries/get_account_assets.hpp"

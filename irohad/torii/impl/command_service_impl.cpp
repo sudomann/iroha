@@ -12,6 +12,7 @@
 #include "common/is_any.hpp"
 #include "common/visitor.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
+#include "logger/logger.hpp"
 
 namespace torii {
 
@@ -20,7 +21,7 @@ namespace torii {
       std::shared_ptr<iroha::ametsuchi::Storage> storage,
       std::shared_ptr<iroha::torii::StatusBus> status_bus,
       std::shared_ptr<shared_model::interface::TxStatusFactory> status_factory,
-      logger::Logger log)
+      logger::LoggerPtr log)
       : tx_processor_(std::move(tx_processor)),
         storage_(std::move(storage)),
         status_bus_(std::move(status_bus)),

@@ -13,7 +13,7 @@
 #include <tbb/concurrent_priority_queue.h>
 
 #include "interfaces/common_objects/types.hpp"
-#include "logger/logger.hpp"
+#include "logger/logger_fwd.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "network/ordering_gate_transport.hpp"
 
@@ -54,8 +54,8 @@ namespace iroha {
       OrderingGateImpl(
           std::shared_ptr<iroha::network::OrderingGateTransport> transport,
           shared_model::interface::types::HeightType initial_height,
-          bool run_async = true,
-          logger::Logger log = logger::log("OrderingGate"));
+          bool run_async,
+          logger::LoggerPtr log);
 
       void propagateBatch(
           std::shared_ptr<shared_model::interface::TransactionBatch> batch)
@@ -105,7 +105,7 @@ namespace iroha {
       /// subscription of pcs::on_commit
       rxcpp::composite_subscription pcs_subscriber_;
 
-      logger::Logger log_;
+      logger::LoggerPtr log_;
 
       bool run_async_;
     };
