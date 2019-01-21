@@ -8,6 +8,13 @@
 
 #include <memory>
 
+/* It is preferable to include this header in files that do not contain
+ * dereferencing of LoggerPtr and do not use the Logger class functions, because
+ * the actual Logger class definition contains template member functions that
+ * use template library functions, thus making the preprocessed source file much
+ * bigger.
+ */
+
 namespace logger {
 
   class Logger;
