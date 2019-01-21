@@ -421,14 +421,12 @@ namespace iroha {
       try {
         *(storage->sql_) << "COMMIT";
         storage->committed = true;
-        auto peers = createPeerQuery() |
-            [](const auto &peer_query) { return peer_query->getLedgerPeers(); };
-        if (peers) {
-          return std::make_unique<LedgerState>(
-              std::make_shared<PeerList>(std::move(*peers)));
-        } else {
-          return boost::none;
-        }
+        return createPeerQuery() |
+            [](const auto &peer_query) { return peer_query->getLedgerPeers(); }
+        | [](const auto &peers) {
+            return std::make_unique<LedgerState>(
+                std::make_shared<PeerList>(std::move(peers)));
+          };
       } catch (std::exception &e) {
         storage->committed = false;
         log_->warn("Mutable storage is not committed. Reason: {}", e.what());
@@ -466,17 +464,14 @@ namespace iroha {
                    e.what());
         return boost::none;
       }
-      auto peers = createPeerQuery() |
-          [](const auto &peer_query) { return peer_query->getLedgerPeers(); };
-      std::unique_ptr<LedgerState> state;
-      if (peers) {
-        state = std::make_unique<LedgerState>(
-            std::make_shared<PeerList>(std::move(*peers)));
-      } else {
-        state = std::make_unique<LedgerState>();
-      }
-
-      return {storeBlock(block), std::move(state)};
+      return createPeerQuery() |
+          [](const auto &peer_query) { return peer_query->getLedgerPeers(); } |
+          [this, &block](const auto &peers) {
+            auto state = std::make_unique<LedgerState>(
+                std::make_shared<PeerList>(std::move(peers)));
+            return boost::optional<std::unique_ptr<LedgerState>>{
+                storeBlock(block), std::move(state)};
+          };
     }
 
     std::shared_ptr<WsvQuery> StorageImpl::getWsvQuery() const {
