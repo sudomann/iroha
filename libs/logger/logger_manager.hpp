@@ -20,13 +20,18 @@ namespace logger {
 
   using LoggerManagerTreePtr = std::shared_ptr<LoggerManagerTree>;
 
+  /**
+   * A node of logger managers tree. It stores the configuration needed to
+   * create a logger corresponding to this node and its children. Thread safe.
+   */
   class LoggerManagerTree {
    public:
     LoggerManagerTree(ConstLoggerConfigPtr config);
 
     /**
      * Register a child configuration. The new child's cnofiguartion parameters
-     * are taken from the parent optionally overrided by the arguments.
+     * are taken from the parent optionally overrided by the arguments. Thread
+     * safe.
      *
      * @param tag - the child's tag, without any parents' frefixes
      * @param log_level - override the log level for the new child
@@ -36,10 +41,10 @@ namespace logger {
                                        boost::optional<LogLevel> log_level,
                                        boost::optional<LogPatterns> patterns);
 
-    /// Get this node's logger.
+    /// Get this node's logger. Thread safe.
     LoggerPtr getLogger();
 
-    /// Get non-const child config by tag, if present.
+    /// Get non-const child config by tag, if present. Thread safe.
     LoggerManagerTreePtr getChild(const std::string &tag);
 
    private:
