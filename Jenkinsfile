@@ -32,6 +32,7 @@ def build(Build build) {
     node(build.worker.label) {
       try {
         echo "Worker: ${env.NODE_NAME}"
+        gitNotify ("New CI: " + build.name, "Started...", 'PENDING')
         build.builder.buildSteps.each {
           it()
         }
@@ -59,6 +60,11 @@ def build(Build build) {
       }
       // ALWAYS
       finally {
+        if (currentBuild.currentResult == 'SUCCESS')
+           gitNotify ("New CI: " + build.name, "Finish", 'SUCCESS')
+        else
+           gitNotify ("New CI: " + build.name, currentBuild.currentResult, 'FAILURE')
+
         build.builder.postSteps.always.each {
           it()
         }
@@ -81,6 +87,10 @@ def cmd_sanitize(String cmd){
     }
   }
   return true
+}
+
+def gitNotify (context, description, status, targetUrl='' ){
+  githubNotify context: context, credentialsId: 'SORABOT_TOKEN_AND_LOGIN', description: description, status: status, targetUrl: targetUrl
 }
 
 stage('Prepare environment'){
@@ -174,15 +184,19 @@ node ('master') {
         echo "All Default"
         break;
      case 'On open PR':
+        // Just hint, not the main way to Notify about build status.
+        gitNotify ("New CI: Merge to trunk", "Please, run: 'Before merge to trunk'", 'PENDING', env.JOB_URL + "/build")
         mac_compiler_list = ['appleclang']
         coverage = true
         cppcheck = true
         sonar = true
         break;
      case 'Commit in Open PR':
+        gitNotify ("New CI: Merge to trunk", "Please, run: 'Before merge to trunk'", 'PENDING', env.JOB_URL + "/build")
         echo "All Default"
         break;
      case 'Before merge to trunk':
+        gitNotify ("New CI: Merge to trunk", "Started...", 'PENDING')
         x64linux_compiler_list = ['gcc5','gcc7', 'clang6' , 'clang7']
         mac_compiler_list = ['appleclang']
         testing = true
@@ -271,19 +285,16 @@ node ('master') {
                                      type: build_type,
                                      builder: x64MacBuilder,
                                      worker: x64MacWorker)
+  if(!x64linux_compiler_list.isEmpty())
+    tasks[x64LinuxBuild.name] = build(x64LinuxBuild)
+  if(!mac_compiler_list.isEmpty())
+    tasks[x64MacBuild.name] = build(x64MacBuild)
 
-  tasks[x64LinuxBuild.name] = build(x64LinuxBuild)
-  tasks[x64MacBuild.name] = build(x64MacBuild)
   cleanWs()
   parallel tasks
 
-  // if (currentBuild.currentResult == 'SUCCESS') {
-  //   if (scmVars.CHANGE_ID) {
-  //     if(scmVars.CHANGE_BRANCH == 'feature/ready-dev-experimental') {
-  //       sh 'echo PUSH!'
-  //     }
-  //   }
-  // }
+  if (build_scenario == 'Before merge to trunk')
+    gitNotify ("New CI: Merge to trunk", "Finish", 'SUCCESS')
 }
 
 }
