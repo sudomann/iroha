@@ -10,7 +10,7 @@
 
 #include <rxcpp/rx.hpp>
 
-#include "consensus/ledger_event.hpp"
+#include "ametsuchi/ledger_state.hpp"
 #include "consensus/round.hpp"
 #include "interfaces/iroha_internal/block.hpp"
 

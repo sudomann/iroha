@@ -423,9 +423,10 @@ namespace iroha {
         storage->committed = true;
         return createPeerQuery() |
             [](const auto &peer_query) { return peer_query->getLedgerPeers(); }
-        | [](const auto &peers) {
-            return std::make_unique<LedgerState>(
-                std::make_shared<PeerList>(std::move(peers)));
+        | [](auto &&peers) {
+            return boost::optional<std::unique_ptr<LedgerState>>(
+                std::make_unique<LedgerState>(
+                    std::make_shared<PeerList>(std::move(peers))));
           };
       } catch (std::exception &e) {
         storage->committed = false;
@@ -466,7 +467,7 @@ namespace iroha {
       }
       return createPeerQuery() |
           [](const auto &peer_query) { return peer_query->getLedgerPeers(); } |
-          [this, &block](const auto &peers) {
+          [this, &block](auto &&peers) {
             auto state = std::make_unique<LedgerState>(
                 std::make_shared<PeerList>(std::move(peers)));
             return boost::optional<std::unique_ptr<LedgerState>>{

@@ -269,8 +269,8 @@ TEST_F(SimulatorTest, SomeFailingTxs) {
           .build());
   auto verified_proposal_and_errors =
       std::make_unique<VerifiedProposalAndErrors>();
-  const shared_model::interface::types::HeightType verified_proposal_height =
-  2; const std::vector<shared_model::proto::Transaction>
+  const shared_model::interface::types::HeightType verified_proposal_height = 2;
+  const std::vector<shared_model::proto::Transaction>
       verified_proposal_transactions{txs[0]};
   verified_proposal_and_errors->verified_proposal =
       std::make_unique<shared_model::proto::Proposal>(
@@ -293,8 +293,7 @@ TEST_F(SimulatorTest, SomeFailingTxs) {
       .WillOnce(Return(expected::makeValue(wBlock(clone(block)))));
 
   EXPECT_CALL(*validator, validate(_, _))
-      .WillOnce(Invoke([&verified_proposal_and_errors](const auto &p, auto &v)
-      {
+      .WillOnce(Invoke([&verified_proposal_and_errors](const auto &p, auto &v) {
         return std::move(verified_proposal_and_errors);
       }));
 

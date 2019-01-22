@@ -62,6 +62,9 @@ class SynchronizerTest : public ::testing::Test {
                                                       mutable_factory,
                                                       block_query_factory,
                                                       block_loader);
+
+    peer = makePeer("127.0.0.1", shared_model::crypto::PublicKey("111"));
+    ledger_peers = std::make_shared<PeerList>(PeerList{peer});
   }
 
   std::shared_ptr<shared_model::interface::Block> makeCommit(
@@ -89,6 +92,8 @@ class SynchronizerTest : public ::testing::Test {
   std::shared_ptr<shared_model::interface::Block> commit_message;
   shared_model::interface::types::PublicKeyCollectionType public_keys;
   shared_model::interface::types::HashType hash;
+  std::shared_ptr<shared_model::interface::Peer> peer;
+  std::shared_ptr<PeerList> ledger_peers;
 
   rxcpp::subjects::subject<ConsensusGate::GateObject> gate_outcome;
 
@@ -101,11 +106,6 @@ class SynchronizerTest : public ::testing::Test {
  * @then Successful commit
  */
 TEST_F(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
-  std::shared_ptr<shared_model::interface::Peer> peer =
-      makePeer("127.0.0.1", shared_model::crypto::PublicKey("111"));
-  std::shared_ptr<PeerList> ledger_peers =
-      std::make_shared<PeerList>(PeerList{peer});
-
   EXPECT_CALL(*mutable_factory, commitPrepared(_))
       .WillOnce(Return(ByMove(boost::none)));
   EXPECT_CALL(*mutable_factory, createMutableStorage())
@@ -124,8 +124,8 @@ TEST_F(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
 
   auto wrapper =
       make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 1);
-  wrapper.subscribe([this, ledger_peers](auto commit_event) {
-    EXPECT_EQ(*ledger_peers, *commit_event.ledger_state->ledger_peers);
+  wrapper.subscribe([this](auto commit_event) {
+    EXPECT_EQ(*this->ledger_peers, *commit_event.ledger_state->ledger_peers);
     auto block_wrapper =
         make_test_subscriber<CallExact>(commit_event.synced_blocks, 1);
     block_wrapper.subscribe([this](auto block) {
@@ -172,10 +172,6 @@ TEST_F(SynchronizerTest, ValidWhenBadStorage) {
  * @then Successful commit
  */
 TEST_F(SynchronizerTest, ValidWhenValidChain) {
-  std::shared_ptr<shared_model::interface::Peer> peer =
-      makePeer("127.0.0.1", shared_model::crypto::PublicKey("111"));
-  std::shared_ptr<PeerList> ledger_peers =
-      std::make_shared<PeerList>(PeerList{peer});
   DefaultValue<expected::Result<std::unique_ptr<MutableStorage>, std::string>>::
       SetFactory(&createMockMutableStorage);
 
@@ -189,8 +185,8 @@ TEST_F(SynchronizerTest, ValidWhenValidChain) {
 
   auto wrapper =
       make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 1);
-  wrapper.subscribe([this, ledger_peers](auto commit_event) {
-    EXPECT_EQ(*ledger_peers, *commit_event.ledger_state->ledger_peers);
+  wrapper.subscribe([this](auto commit_event) {
+    EXPECT_EQ(*this->ledger_peers, *commit_event.ledger_state->ledger_peers);
     auto block_wrapper =
         make_test_subscriber<CallExact>(commit_event.synced_blocks, 1);
     block_wrapper.subscribe([this](auto block) {
@@ -217,7 +213,8 @@ TEST_F(SynchronizerTest, ExactlyThreeRetrievals) {
       SetFactory(&createMockMutableStorage);
   EXPECT_CALL(*mutable_factory, createMutableStorage()).Times(1);
   EXPECT_CALL(*mutable_factory, commit_(_))
-      .WillOnce(Return(ByMove(std::unique_ptr<LedgerState>{})));
+      .WillOnce(Return(ByMove(
+          boost::make_optional(std::make_unique<LedgerState>(ledger_peers)))));
   EXPECT_CALL(*chain_validator, validateAndApply(_, _))
       .WillOnce(Return(false))
       .WillOnce(testing::Invoke([](auto chain, auto &) {
@@ -251,7 +248,8 @@ TEST_F(SynchronizerTest, RetrieveBlockTwoFailures) {
       SetFactory(&createMockMutableStorage);
   EXPECT_CALL(*mutable_factory, createMutableStorage()).Times(1);
   EXPECT_CALL(*mutable_factory, commit_(_))
-      .WillOnce(Return(ByMove(std::unique_ptr<LedgerState>{})));
+      .WillOnce(Return(ByMove(
+          boost::make_optional(std::make_unique<LedgerState>(ledger_peers)))));
   EXPECT_CALL(*block_loader, retrieveBlocks(_, _))
       .WillRepeatedly(Return(rxcpp::observable<>::just(commit_message)));
 
@@ -353,11 +351,6 @@ TEST_F(SynchronizerTest, NoneOutcome) {
  * @then commitPrepared is called @and commit is not called
  */
 TEST_F(SynchronizerTest, VotedForBlockCommitPrepared) {
-  std::shared_ptr<shared_model::interface::Peer> peer =
-      makePeer("127.0.0.1", shared_model::crypto::PublicKey("111"));
-  std::shared_ptr<PeerList> ledger_peers =
-      std::make_shared<PeerList>(PeerList{peer});
-
   EXPECT_CALL(*mutable_factory, commitPrepared(_))
       .WillOnce(Return(ByMove(
           boost::make_optional(std::make_unique<LedgerState>(ledger_peers)))));
@@ -366,8 +359,8 @@ TEST_F(SynchronizerTest, VotedForBlockCommitPrepared) {
 
   auto wrapper =
       make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 1);
-  wrapper.subscribe([this, ledger_peers](auto commit_event) {
-    EXPECT_EQ(*ledger_peers, *commit_event.ledger_state->ledger_peers);
+  wrapper.subscribe([this](auto commit_event) {
+    EXPECT_EQ(*this->ledger_peers, *commit_event.ledger_state->ledger_peers);
     auto block_wrapper =
         make_test_subscriber<CallExact>(commit_event.synced_blocks, 1);
     block_wrapper.subscribe([this](auto block) {

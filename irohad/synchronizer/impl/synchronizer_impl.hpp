@@ -6,7 +6,6 @@
 #ifndef IROHA_SYNCHRONIZER_IMPL_HPP
 #define IROHA_SYNCHRONIZER_IMPL_HPP
 
-#include <ametsuchi/peer_query.hpp>
 #include "synchronizer/synchronizer.hpp"
 
 #include "ametsuchi/mutable_factory.hpp"

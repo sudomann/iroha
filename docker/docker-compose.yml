@@ -27,6 +27,7 @@ services:
     security_opt:
       - seccomp:unconfined
 
+
   postgres:
     image: postgres:9.5
     environment:

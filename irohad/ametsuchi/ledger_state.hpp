@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LEDGER_EVENT_HPP
-#define LEDGER_EVENT_HPP
+#ifndef IROHA_LEDGER_STATE_HPP
+#define IROHA_LEDGER_STATE_HPP
 
 #include <memory>
 
@@ -16,9 +16,10 @@ namespace iroha {
   struct LedgerState {
     std::shared_ptr<PeerList> ledger_peers;
 
-    LedgerState(std::shared_ptr<PeerList> peers): ledger_peers(peers) {}
+    LedgerState(std::shared_ptr<PeerList> peers)
+        : ledger_peers(std::move(peers)) {}
     LedgerState() = default;
   };
 }  // namespace iroha
 
-#endif  // LEDGER_EVENT_HPP
+#endif  // IROHA_LEDGER_STATE_HPP
