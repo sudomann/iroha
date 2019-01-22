@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef IROHA_SPDLOG_LOGGER_LOGGER_FWD_HPP
-#define IROHA_SPDLOG_LOGGER_LOGGER_FWD_HPP
+#ifndef IROHA_LOGGER_LOGGER_FWD_HPP
+#define IROHA_LOGGER_LOGGER_FWD_HPP
 
 #include <memory>
 
@@ -23,4 +23,4 @@ namespace logger {
 
 }  // namespace logger
 
-#endif // IROHA_SPDLOG_LOGGER_LOGGER_FWD_HPP
+#endif // IROHA_LOGGER_LOGGER_FWD_HPP
