@@ -7,8 +7,6 @@
 
 #include <atomic>
 
-#include "logger/logger_spdlog.hpp"
-
 static const std::string kTagHierarchySeparator = "/";
 
 static inline std::string joinTags(const std::string &parent,
@@ -34,7 +32,7 @@ namespace logger {
       boost::optional<LogPatterns> patterns) {
     LoggerConfig child_config{
         log_level.value_or(config_->log_level),
-        patterns ? LogPatterns{std::move(*patterns)} : config_->patterns};
+        patterns ? LogPatterns{*std::move(patterns)} : config_->patterns};
     // Operator new is employed due to private visibility of used constructor.
     LoggerManagerTreePtr child(new LoggerManagerTree(
         joinTags(full_tag_, tag),
