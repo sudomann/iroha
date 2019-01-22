@@ -29,11 +29,11 @@ namespace logger {
     LoggerManagerTree(ConstLoggerConfigPtr config);
 
     /**
-     * Register a child configuration. The new child's cnofiguartion parameters
+     * Register a child configuration. The new child's configuration parameters
      * are taken from the parent optionally overrided by the arguments. Thread
      * safe.
      *
-     * @param tag - the child's tag, without any parents' frefixes
+     * @param tag - the child's tag, without any parents' prefixes
      * @param log_level - override the log level for the new child
      * @param patterns - override the patterns
      */
@@ -44,7 +44,7 @@ namespace logger {
     /// Get this node's logger. Thread safe.
     LoggerPtr getLogger();
 
-    /// Get non-const child config by tag, if present. Thread safe.
+    /// Get non-const child node by tag, if present. Thread safe.
     LoggerManagerTreePtr getChild(const std::string &tag);
 
    private:

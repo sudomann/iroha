@@ -3,15 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef IROHA_SPDLOG_LOGGER_LOGGER_HPP
-#define IROHA_SPDLOG_LOGGER_LOGGER_HPP
+#ifndef IROHA_LOGGER_LOGGER_HPP
+#define IROHA_LOGGER_LOGGER_HPP
 
-#include <map>
 #include <memory>
 #include <numeric>  // for std::accumulate
 #include <string>
-
-#include <boost/optional.hpp>
 
 /// Allows to log objects, which have toString() method without calling it, e.g.
 /// log.info("{}", myObject)
@@ -87,7 +84,7 @@ namespace logger {
        }
      }
 
-    private:
+    protected:
      virtual void logInternal(Level level, const std::string &s) const = 0;
 
      /// Whether the configured logging level is at least as verbose as the
@@ -158,4 +155,4 @@ namespace logger {
 
 }  // namespace logger
 
-#endif
+#endif  // IROHA_LOGGER_LOGGER_HPP
