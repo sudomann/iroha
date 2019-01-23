@@ -9,6 +9,7 @@
 #include "backend/protobuf/transaction.hpp"
 #include "interfaces/common_objects/peer.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
+#include "logger/logger.hpp"
 #include "network/impl/grpc_channel_builder.hpp"
 
 using namespace iroha;
@@ -21,7 +22,7 @@ OnDemandOsClientGrpc::OnDemandOsClientGrpc(
         async_call,
     std::function<TimepointType()> time_provider,
     std::chrono::milliseconds proposal_request_timeout,
-    logger::Logger log)
+    logger::LoggerPtr log)
     : log_(std::move(log)),
       stub_(std::move(stub)),
       async_call_(std::move(async_call)),
@@ -72,10 +73,12 @@ OnDemandOsClientGrpcFactory::OnDemandOsClientGrpcFactory(
     std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>
         async_call,
     std::function<OnDemandOsClientGrpc::TimepointType()> time_provider,
-    OnDemandOsClientGrpc::TimeoutType proposal_request_timeout)
+    OnDemandOsClientGrpc::TimeoutType proposal_request_timeout,
+    logger::LoggerPtr client_log)
     : async_call_(std::move(async_call)),
       time_provider_(time_provider),
-      proposal_request_timeout_(proposal_request_timeout) {}
+      proposal_request_timeout_(proposal_request_timeout),
+      client_log_(std::move(client_log)) {}
 
 std::unique_ptr<OdOsNotification> OnDemandOsClientGrpcFactory::create(
     const shared_model::interface::Peer &to) {
@@ -84,5 +87,5 @@ std::unique_ptr<OdOsNotification> OnDemandOsClientGrpcFactory::create(
       async_call_,
       time_provider_,
       proposal_request_timeout_,
-      logger::log("OnDemandOsClientGrpc"));
+      client_log_);
 }

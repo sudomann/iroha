@@ -10,7 +10,7 @@
 #include "backend/protobuf/proto_proposal_factory.hpp"
 #include "backend/protobuf/transaction.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
-#include "logger/logger.hpp"
+#include "logger/logger_fwd.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "network/ordering_gate_transport.hpp"
 #include "ordering.grpc.pb.h"
@@ -25,7 +25,8 @@ namespace iroha {
       OrderingGateTransportGrpc(
           const std::string &server_address,
           std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>
-              async_call);
+              async_call,
+          logger::LoggerPtr log);
 
       grpc::Status onProposal(::grpc::ServerContext *context,
                               const protocol::Proposal *request,

@@ -26,6 +26,8 @@ namespace logger {
    public:
     LoggerManagerTree(ConstLoggerConfigPtr config);
 
+    LoggerManagerTree(LoggerConfig config);
+
     /**
      * Register a child configuration. The new child's configuration parameters
      * are taken from the parent optionally overrided by the arguments. Thread

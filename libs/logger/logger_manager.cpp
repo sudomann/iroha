@@ -19,6 +19,9 @@ namespace logger {
   LoggerManagerTree::LoggerManagerTree(ConstLoggerConfigPtr config)
       : config_(std::move(config)){};
 
+  LoggerManagerTree::LoggerManagerTree(LoggerConfig config)
+      : config_(std::make_shared<const LoggerConfig>(std::move(config))){};
+
   LoggerManagerTree::LoggerManagerTree(std::string full_tag,
                                        std::string node_tag,
                                        ConstLoggerConfigPtr config)

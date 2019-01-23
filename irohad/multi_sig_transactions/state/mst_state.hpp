@@ -10,7 +10,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "logger/logger.hpp"
+#include "logger/logger_fwd.hpp"
 #include "multi_sig_transactions/hash.hpp"
 #include "multi_sig_transactions/mst_types.hpp"
 
@@ -71,10 +71,12 @@ namespace iroha {
 
     /**
      * Create empty state
+     * @param log - the logger to use in the new object
      * @param completer - strategy for determine completed and expired batches
      * @return empty mst state
      */
     static MstState empty(
+        logger::LoggerPtr log,
         const CompleterType &completer = std::make_shared<DefaultCompleter>());
 
     /**
@@ -154,12 +156,11 @@ namespace iroha {
     using IndexType =
         std::priority_queue<DataType, std::vector<DataType>, Less>;
 
-    explicit MstState(const CompleterType &completer,
-                      logger::Logger log = logger::log("MstState"));
+    MstState(const CompleterType &completer, logger::LoggerPtr log);
 
     MstState(const CompleterType &completer,
              const InternalStateType &transactions,
-             logger::Logger log = logger::log("MstState"));
+             logger::LoggerPtr log);
 
     /**
      * Insert batch in own state and push it in out_completed_state or
@@ -183,7 +184,7 @@ namespace iroha {
 
     IndexType index_;
 
-    logger::Logger log_;
+    logger::LoggerPtr log_;
   };
 
 }  // namespace iroha

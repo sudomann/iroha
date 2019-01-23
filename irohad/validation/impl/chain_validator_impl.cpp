@@ -11,14 +11,16 @@
 #include "cryptography/public_key.hpp"
 #include "interfaces/common_objects/peer.hpp"
 #include "interfaces/iroha_internal/block.hpp"
+#include "logger/logger.hpp"
 
 namespace iroha {
   namespace validation {
     ChainValidatorImpl::ChainValidatorImpl(
         std::shared_ptr<consensus::yac::SupermajorityChecker>
             supermajority_checker,
-        logger::Logger log)
-        : supermajority_checker_(supermajority_checker), log_(std::move(log)) {}
+        logger::LoggerPtr log)
+        : supermajority_checker_(supermajority_checker),
+          log_(std::move(log)) {}
 
     bool ChainValidatorImpl::validateAndApply(
         rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>

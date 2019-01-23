@@ -11,7 +11,7 @@
 #include <memory>
 #include <thread>
 
-#include "logger/logger.hpp"
+#include "logger/logger_fwd.hpp"
 
 namespace torii {
 
@@ -22,7 +22,7 @@ namespace torii {
    public:
     CommandSyncClient(const std::string &ip,
                       size_t port,
-                      logger::Logger log = logger::log("CommandSyncClient"));
+                      logger::LoggerPtr log);
 
     /**
      * requests tx to a torii server and returns response (blocking, sync)
@@ -58,7 +58,7 @@ namespace torii {
 
    private:
     std::unique_ptr<iroha::protocol::CommandService_v1::Stub> stub_;
-    logger::Logger log_;
+    logger::LoggerPtr log_;
   };
 
 }  // namespace torii
