@@ -3,7 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-add_library(logger STATIC logger.cpp)
+add_library(logger
+  logger.cpp
+  logger_spdlog.cpp)
 target_link_libraries(logger
     spdlog
+)
+
+add_library(logger_manager logger_manager.cpp)
+target_link_libraries(logger_manager
+    logger
 )

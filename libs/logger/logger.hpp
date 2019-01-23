@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef IROHA_SPDLOG_LOGGER_LOGGER_HPP
-#define IROHA_SPDLOG_LOGGER_LOGGER_HPP
+#ifndef IROHA_LOGGER_LOGGER_HPP
+#define IROHA_LOGGER_LOGGER_HPP
 
 #include <memory>
 #include <numeric>  // for std::accumulate
@@ -18,35 +18,79 @@ auto operator<<(StreamType &os, const T &object)
   return os << object.toString();
 }
 
-#include <spdlog/fmt/ostr.h>
-#include <spdlog/spdlog.h>
-
 namespace logger {
 
-  using Logger = std::shared_ptr<spdlog::logger>;
+  class Logger;
+  enum class LogLevel;
 
-  std::string red(const std::string &string);
+  using LoggerPtr = std::shared_ptr<Logger>;
 
-  std::string yellow(const std::string &string);
+  extern const LogLevel kDefaultLogLevel;
 
-  std::string output(const std::string &string);
+  /// Log levels
+  enum class LogLevel {
+    kTrace,
+    kDebug,
+    kInfo,
+    kWarn,
+    kError,
+    kCritical,
+  };
 
-  std::string input(const std::string &string);
+  class Logger {
+    public:
+     using Level = LogLevel;
 
-  /**
-   * Provide logger object
-   * @param tag - tagging name for identifiing logger
-   * @return logger object
-   */
-  Logger log(const std::string &tag);
+     virtual ~Logger() = default;
 
-  /**
-   * Provide logger for using in test purposes;
-   * This logger write data only for console
-   * @param tag - tagging name for identifiing logger
-   * @return logger object
-   */
-  Logger testLog(const std::string &tag);
+     // --- Logging functions ---
+
+     template <typename... Args>
+     void trace(const std::string &format, const Args &... args) const {
+       log(LogLevel::kTrace, format, args...);
+     }
+
+     template <typename... Args>
+     void debug(const std::string &format, const Args &... args) const {
+       log(LogLevel::kDebug, format, args...);
+     }
+
+     template <typename... Args>
+     void info(const std::string &format, const Args &... args) const {
+       log(LogLevel::kInfo, format, args...);
+     }
+
+     template <typename... Args>
+     void warn(const std::string &format, const Args &... args) const {
+       log(LogLevel::kWarn, format, args...);
+     }
+
+     template <typename... Args>
+     void error(const std::string &format, const Args &... args) const {
+       log(LogLevel::kError, format, args...);
+     }
+
+     template <typename... Args>
+     void critical(const std::string &format, const Args &... args) const {
+       log(LogLevel::kCritical, format, args...);
+     }
+
+     template <typename... Args>
+     void log(Level level,
+              const std::string &format,
+              const Args &... args) const {
+       if (shouldLog(level)) {
+         logInternal(level, format); // TODO perform the actual formatting here
+       }
+     }
+
+    protected:
+     virtual void logInternal(Level level, const std::string &s) const = 0;
+
+     /// Whether the configured logging level is at least as verbose as the
+     /// one given in parameter.
+     virtual bool shouldLog(Level level) const = 0;
+  };
 
   /**
    * Convert bool value to human readable string repr
@@ -111,4 +155,4 @@ namespace logger {
 
 }  // namespace logger
 
-#endif
+#endif  // IROHA_LOGGER_LOGGER_HPP
