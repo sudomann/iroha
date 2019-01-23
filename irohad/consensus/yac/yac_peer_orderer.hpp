@@ -33,7 +33,9 @@ namespace iroha {
          * @return shuffled cluster order
          */
         virtual boost::optional<ClusterOrdering> getOrdering(
-            const YacHash &hash) = 0;
+            const YacHash &hash,
+            std::vector<std::shared_ptr<shared_model::interface::Peer>>
+                peers) = 0;
 
         virtual ~YacPeerOrderer() = default;
       };

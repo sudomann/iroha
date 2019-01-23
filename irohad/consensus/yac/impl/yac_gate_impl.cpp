@@ -64,7 +64,8 @@ namespace iroha {
                      current_hash_.vote_hashes.block_hash);
         }
 
-        auto order = orderer_->getOrdering(current_hash_);
+        auto order = orderer_->getOrdering(current_hash_,
+                                           *event.ledger_state->ledger_peers);
         if (not order) {
           log_->error("ordering doesn't provide peers => pass round");
           return;

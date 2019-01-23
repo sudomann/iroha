@@ -26,16 +26,13 @@ namespace iroha {
       }
 
       boost::optional<ClusterOrdering> PeerOrdererImpl::getOrdering(
-          const YacHash &hash) {
-        return peer_query_factory_->createPeerQuery() |
-            [](const auto &query) { return query->getLedgerPeers(); } |
-            [&hash](auto peers) {
-              std::seed_seq seed(hash.vote_hashes.block_hash.begin(),
-                                 hash.vote_hashes.block_hash.end());
-              std::default_random_engine gen(seed);
-              std::shuffle(peers.begin(), peers.end(), gen);
-              return ClusterOrdering::create(peers);
-            };
+          const YacHash &hash,
+          std::vector<std::shared_ptr<shared_model::interface::Peer>> peers) {
+        std::seed_seq seed(hash.vote_hashes.block_hash.begin(),
+                           hash.vote_hashes.block_hash.end());
+        std::default_random_engine gen(seed);
+        std::shuffle(peers.begin(), peers.end(), gen);
+        return ClusterOrdering::create(peers);
       }
     }  // namespace yac
   }    // namespace consensus
