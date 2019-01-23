@@ -471,7 +471,7 @@ namespace iroha {
             auto state = std::make_unique<LedgerState>(
                 std::make_shared<PeerList>(std::move(peers)));
             return boost::optional<std::unique_ptr<LedgerState>>{
-                storeBlock(block), std::move(state)};
+                this->storeBlock(block), std::move(state)};
           };
     }
 
