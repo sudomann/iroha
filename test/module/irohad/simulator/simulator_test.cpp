@@ -21,8 +21,8 @@
 #include "module/shared_model/builders/protobuf/test_block_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
 #include "module/shared_model/cryptography/crypto_model_signer_mock.hpp"
-#include "module/shared_model/validators/validators.hpp"
 #include "module/shared_model/interface_mocks.hpp"
+#include "module/shared_model/validators/validators.hpp"
 
 using namespace iroha;
 using namespace iroha::validation;
@@ -187,6 +187,8 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
     auto block = getBlockUnsafe(event);
     EXPECT_EQ(block->height(), proposal->height());
     EXPECT_EQ(block->transactions(), proposal->transactions());
+    EXPECT_EQ(*event.ledger_state->ledger_peers,
+              *ordering_event.ledger_state->ledger_peers);
   });
 
   ordering_events.get_subscriber().on_next(ordering_event);

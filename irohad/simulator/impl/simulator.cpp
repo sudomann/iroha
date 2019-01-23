@@ -56,11 +56,12 @@ namespace iroha {
               if (block) {
                 block_notifier_.get_subscriber().on_next(BlockCreatorEvent{
                     RoundData{proposal_and_errors->verified_proposal, *block},
-                    event.round});
+                    event.round,
+                    event.ledger_state});
               }
             } else {
-              block_notifier_.get_subscriber().on_next(
-                  BlockCreatorEvent{boost::none, event.round});
+              block_notifier_.get_subscriber().on_next(BlockCreatorEvent{
+                  boost::none, event.round, event.ledger_state});
             }
           });
     }
