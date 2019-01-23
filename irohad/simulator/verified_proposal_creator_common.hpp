@@ -9,6 +9,7 @@
 #include <boost/optional.hpp>
 #include "consensus/round.hpp"
 #include "validation/stateful_validator_common.hpp"
+#include "ametsuchi/ledger_state.hpp"
 
 namespace iroha {
   namespace simulator {
@@ -21,6 +22,7 @@ namespace iroha {
       boost::optional<std::shared_ptr<validation::VerifiedProposalAndErrors>>
           verified_proposal_result;
       consensus::Round round;
+      std::shared_ptr<LedgerState> ledger_state;
     };
 
     std::shared_ptr<validation::VerifiedProposalAndErrors>

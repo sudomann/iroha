@@ -36,12 +36,14 @@ namespace iroha {
                   this->processProposal(*getProposalUnsafe(event));
 
               if (validated_proposal_and_errors) {
-                notifier_.get_subscriber().on_next(VerifiedProposalCreatorEvent{
-                    *validated_proposal_and_errors, event.round});
+                notifier_.get_subscriber().on_next(
+                    VerifiedProposalCreatorEvent{*validated_proposal_and_errors,
+                                                 event.round,
+                                                 event.ledger_state});
               }
             } else {
-              notifier_.get_subscriber().on_next(
-                  VerifiedProposalCreatorEvent{boost::none, event.round});
+              notifier_.get_subscriber().on_next(VerifiedProposalCreatorEvent{
+                  boost::none, event.round, event.ledger_state});
             }
           });
 

@@ -22,6 +22,7 @@
 #include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
 #include "module/shared_model/cryptography/crypto_model_signer_mock.hpp"
 #include "module/shared_model/validators/validators.hpp"
+#include "module/shared_model/interface_mocks.hpp"
 
 using namespace iroha;
 using namespace iroha::validation;
@@ -70,6 +71,10 @@ class SimulatorTest : public ::testing::Test {
                                             block_query_factory,
                                             crypto_signer,
                                             std::move(block_factory));
+
+    auto peer = makePeer("127.0.0.1", shared_model::crypto::PublicKey("111"));
+    auto ledger_peers = std::make_shared<PeerList>(PeerList{peer});
+    ledger_state = std::make_shared<LedgerState>(ledger_peers);
   }
 
   void TearDown() override {
@@ -88,6 +93,7 @@ class SimulatorTest : public ::testing::Test {
   rxcpp::subjects::subject<OrderingEvent> ordering_events;
 
   std::shared_ptr<Simulator> simulator;
+  std::shared_ptr<LedgerState> ledger_state;
 };
 
 shared_model::proto::Block makeBlock(int height) {
@@ -161,6 +167,9 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
               sign(A<shared_model::interface::Block &>()))
       .Times(1);
 
+  auto ordering_event =
+      OrderingEvent{proposal, consensus::Round{}, ledger_state};
+
   auto proposal_wrapper =
       make_test_subscriber<CallExact>(simulator->onVerifiedProposal(), 1);
   proposal_wrapper.subscribe([&](auto event) {
@@ -169,6 +178,8 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
     EXPECT_EQ(verified_proposal->height(), proposal->height());
     EXPECT_EQ(verified_proposal->transactions(), proposal->transactions());
     EXPECT_TRUE(verification_result->rejected_transactions.empty());
+    EXPECT_EQ(*event.ledger_state->ledger_peers,
+              *ordering_event.ledger_state->ledger_peers);
   });
 
   auto block_wrapper = make_test_subscriber<CallExact>(simulator->onBlock(), 1);
@@ -178,8 +189,7 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
     EXPECT_EQ(block->transactions(), proposal->transactions());
   });
 
-  ordering_events.get_subscriber().on_next(
-      OrderingEvent{proposal, consensus::Round{}});
+  ordering_events.get_subscriber().on_next(ordering_event);
 
   EXPECT_TRUE(proposal_wrapper.validate());
   EXPECT_TRUE(block_wrapper.validate());
@@ -207,7 +217,7 @@ TEST_F(SimulatorTest, FailWhenNoBlock) {
   block_wrapper.subscribe();
 
   ordering_events.get_subscriber().on_next(
-      OrderingEvent{proposal, consensus::Round{}});
+      OrderingEvent{proposal, consensus::Round{}, ledger_state});
 
   ASSERT_TRUE(proposal_wrapper.validate());
   ASSERT_TRUE(block_wrapper.validate());
@@ -238,7 +248,7 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
   block_wrapper.subscribe();
 
   ordering_events.get_subscriber().on_next(
-      OrderingEvent{proposal, consensus::Round{}});
+      OrderingEvent{proposal, consensus::Round{}, ledger_state});
 
   ASSERT_TRUE(proposal_wrapper.validate());
   ASSERT_TRUE(block_wrapper.validate());
