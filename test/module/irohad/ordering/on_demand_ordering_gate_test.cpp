@@ -51,6 +51,10 @@ class OnDemandOrderingGateTest : public ::testing::Test {
                                                std::move(ufactory),
                                                tx_cache,
                                                initial_round);
+
+    auto peer = makePeer("127.0.0.1", shared_model::crypto::PublicKey("111"));
+    auto ledger_peers = std::make_shared<PeerList>(PeerList{peer});
+    ledger_state = std::make_shared<LedgerState>(ledger_peers);
   }
 
   rxcpp::subjects::subject<OnDemandOrderingGate::BlockRoundEventType> rounds;
@@ -64,6 +68,8 @@ class OnDemandOrderingGateTest : public ::testing::Test {
 
   const consensus::Round initial_round = {1, kFirstRejectRound},
                          round = {2, kFirstRejectRound};
+
+  std::shared_ptr<LedgerState> ledger_state;
 };
 
 /**
@@ -89,10 +95,6 @@ TEST_F(OnDemandOrderingGateTest, propagateBatch) {
  * @then new proposal round based on the received height is initiated
  */
 TEST_F(OnDemandOrderingGateTest, BlockEvent) {
-  auto peer = makePeer("127.0.0.1", shared_model::crypto::PublicKey("111"));
-  auto ledger_peers = std::make_shared<PeerList>(PeerList{peer});
-  auto ledger_state = std::make_shared<LedgerState>(ledger_peers);
-
   auto mproposal = std::make_unique<MockProposal>();
   auto proposal = mproposal.get();
   boost::optional<OdOsNotification::ProposalType> oproposal(
@@ -159,13 +161,17 @@ TEST_F(OnDemandOrderingGateTest, EmptyEvent) {
   ON_CALL(*factory_proposal, transactions())
       .WillByDefault(Return(txs | boost::adaptors::indirected));
 
+  auto empty_event = OnDemandOrderingGate::EmptyEvent{round, ledger_state};
+
   auto gate_wrapper =
       make_test_subscriber<CallExact>(ordering_gate->onProposal(), 1);
   gate_wrapper.subscribe([&](auto val) {
-    ASSERT_EQ(factory_proposal, getProposalUnsafe(val).get());
+    EXPECT_EQ(factory_proposal, getProposalUnsafe(val).get());
+    EXPECT_EQ(*val.ledger_state->ledger_peers,
+              *empty_event.ledger_state->ledger_peers);
   });
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::EmptyEvent{round});
+  rounds.get_subscriber().on_next(empty_event);
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -187,7 +193,8 @@ TEST_F(OnDemandOrderingGateTest, BlockEventNoProposal) {
       make_test_subscriber<CallExact>(ordering_gate->onProposal(), 1);
   gate_wrapper.subscribe([&](auto val) { ASSERT_FALSE(val.proposal); });
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{round, {}});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::BlockEvent{round, {}, ledger_state});
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -209,7 +216,8 @@ TEST_F(OnDemandOrderingGateTest, EmptyEventNoProposal) {
       make_test_subscriber<CallExact>(ordering_gate->onProposal(), 1);
   gate_wrapper.subscribe([&](auto val) { ASSERT_FALSE(val.proposal); });
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::EmptyEvent{round});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::EmptyEvent{round, ledger_state});
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -221,7 +229,7 @@ TEST_F(OnDemandOrderingGateTest, EmptyEventNoProposal) {
  * this transaction
  */
 TEST_F(OnDemandOrderingGateTest, ReplayedTransactionInProposal) {
-  OnDemandOrderingGate::BlockEvent event = {round, {}};
+  OnDemandOrderingGate::BlockEvent event = {round, {}, ledger_state};
 
   // initialize mock transaction
   auto tx1 = std::make_shared<NiceMock<MockTransaction>>();
@@ -292,7 +300,8 @@ TEST_F(OnDemandOrderingGateTest, PopNonEmptyBatchesFromTheCache) {
               onBatches(round, UnorderedElementsAreArray(collection)))
       .Times(1);
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{round, {}});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::BlockEvent{round, {}, ledger_state});
 }
 
 /**
@@ -309,7 +318,8 @@ TEST_F(OnDemandOrderingGateTest, PopEmptyBatchesFromTheCache) {
       .Times(1);
   EXPECT_CALL(*notification, onBatches(_, _)).Times(0);
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{round, {}});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::BlockEvent{round, {}, ledger_state});
 }
 
 /**
@@ -330,5 +340,5 @@ TEST_F(OnDemandOrderingGateTest, BatchesRemoveFromCache) {
   EXPECT_CALL(*cache, remove(UnorderedElementsAre(hash1, hash2))).Times(1);
 
   rounds.get_subscriber().on_next(
-      OnDemandOrderingGate::BlockEvent{round, {hash1, hash2}});
+      OnDemandOrderingGate::BlockEvent{round, {hash1, hash2}, ledger_state});
 }
