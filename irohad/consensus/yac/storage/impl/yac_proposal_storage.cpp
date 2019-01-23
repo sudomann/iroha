@@ -5,7 +5,8 @@
 
 #include "consensus/yac/storage/yac_proposal_storage.hpp"
 
-using namespace logger;
+#include "logger/logger.hpp"
+#include "logger/logger_manager.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -32,6 +33,7 @@ namespace iroha {
                     store_hash.vote_hashes.proposal_hash,
                     store_hash.vote_hashes.block_hash),
             peers_in_round_,
+            log_manager_->getChild("BlockStorage")->getLogger(),
             supermajority_checker_);
       }
 
@@ -40,13 +42,14 @@ namespace iroha {
       YacProposalStorage::YacProposalStorage(
           Round store_round,
           PeersNumberType peers_in_round,
+          logger::LoggerManagerTreePtr log_manager,
           std::shared_ptr<SupermajorityChecker> supermajority_checker)
           : current_state_(boost::none),
             storage_key_(store_round),
             peers_in_round_(peers_in_round),
-            supermajority_checker_(supermajority_checker) {
-        log_ = log("ProposalStorage");
-      }
+            supermajority_checker_(supermajority_checker),
+            log_manager_(std::move(log_manager)),
+            log_(log_manager_->getLogger()) {}
 
       boost::optional<Answer> YacProposalStorage::insert(VoteMessage msg) {
         if (shouldInsert(msg)) {

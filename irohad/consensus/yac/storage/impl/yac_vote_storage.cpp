@@ -21,6 +21,7 @@
 #include <utility>
 
 #include "consensus/yac/storage/yac_proposal_storage.hpp"
+#include "logger/logger_manager.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -46,10 +47,14 @@ namespace iroha {
             proposal_storages_.end(),
             msg.hash.vote_round,
             peers_in_round,
+            log_manager_->getChild("ProposalStorage"),
             std::make_shared<SupermajorityCheckerImpl>());
       }
 
       // --------| public api |--------
+
+      YacVoteStorage::YacVoteStorage(logger::LoggerManagerTreePtr log_manager)
+          : log_manager_(std::move(log_manager)) {}
 
       boost::optional<Answer> YacVoteStorage::store(
           std::vector<VoteMessage> state, PeersNumberType peers_in_round) {

@@ -10,7 +10,7 @@
 
 #include <soci/soci.h>
 #include "common/result.hpp"
-#include "logger/logger.hpp"
+#include "logger/logger_fwd.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -25,21 +25,20 @@ namespace iroha {
       /**
        * Create the instance of PostgresOrderingServicePersistentState
        * @param postgres_options postgres connection string
+       * @param log - the logger to use in the new object
        * @return new instace of PostgresOrderingServicePersistentState
        */
       static expected::Result<
           std::shared_ptr<PostgresOrderingServicePersistentState>,
           std::string>
-      create(const std::string &postgres_options);
+      create(const std::string &postgres_options, logger::LoggerPtr log);
 
       /**
        * @param sql - pointer to soci session
        * @param log to print progress
        */
-      PostgresOrderingServicePersistentState(
-          std::unique_ptr<soci::session> sql,
-          logger::Logger log =
-              logger::log("PostgresOrderingServicePersistentState"));
+      PostgresOrderingServicePersistentState(std::unique_ptr<soci::session> sql,
+                                             logger::LoggerPtr log);
 
       /**
        * Initialize storage.
@@ -75,7 +74,7 @@ namespace iroha {
      private:
       std::unique_ptr<soci::session> sql_;
 
-      logger::Logger log_;
+      logger::LoggerPtr log_;
 
       bool execute_(std::string query);
     };

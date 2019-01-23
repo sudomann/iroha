@@ -20,6 +20,8 @@
 #include "common/bind.hpp"
 #include "common/byteutils.hpp"
 #include "converters/protobuf/json_proto_converter.hpp"
+#include "logger/logger.hpp"
+#include "logger/logger_manager.hpp"
 #include "postgres_ordering_service_persistent_state.hpp"
 
 namespace {
@@ -66,7 +68,7 @@ namespace iroha {
             perm_converter,
         size_t pool_size,
         bool enable_prepared_blocks,
-        logger::Logger log)
+        logger::LoggerManagerTreePtr log_manager)
         : block_store_dir_(std::move(block_store_dir)),
           postgres_options_(std::move(postgres_options)),
           block_store_(std::move(block_store)),
@@ -74,7 +76,8 @@ namespace iroha {
           factory_(std::move(factory)),
           converter_(std::move(converter)),
           perm_converter_(std::move(perm_converter)),
-          log_(std::move(log)),
+          log_manager_(std::move(log_manager)),
+          log_(log_manager_->getLogger()),
           pool_size_(pool_size),
           prepared_blocks_enabled_(enable_prepared_blocks),
           block_is_prepared(false) {
@@ -104,7 +107,10 @@ namespace iroha {
 
       return expected::makeValue<std::unique_ptr<TemporaryWsv>>(
           std::make_unique<TemporaryWsvImpl>(
-              std::move(sql), factory_, perm_converter_));
+              std::move(sql),
+              factory_,
+              perm_converter_,
+              log_manager_->getChild("TemporaryWorldStateView")));
     }
 
     expected::Result<std::unique_ptr<MutableStorage>, std::string>
@@ -136,7 +142,8 @@ namespace iroha {
                   }),
               std::make_shared<PostgresCommandExecutor>(*sql, perm_converter_),
               std::move(sql),
-              factory_));
+              factory_,
+              log_manager_->getChild("MutableStorageImpl")));
     }
 
     boost::optional<std::shared_ptr<PeerQuery>> StorageImpl::createPeerQuery()
@@ -169,7 +176,9 @@ namespace iroha {
       return boost::make_optional<
           std::shared_ptr<OrderingServicePersistentState>>(
           std::make_shared<PostgresOrderingServicePersistentState>(
-              std::make_unique<soci::session>(*connection_)));
+              std::make_unique<soci::session>(*connection_),
+              log_manager_->getChild("OrderingServicePersistentState")
+                  ->getLogger()));
     }
 
     boost::optional<std::shared_ptr<QueryExecutor>>
@@ -189,7 +198,8 @@ namespace iroha {
               std::move(pending_txs_storage),
               converter_,
               std::move(response_factory),
-              perm_converter_));
+              perm_converter_,
+              log_manager_->getChild("QueryExecutor")));
     }
 
     bool StorageImpl::insertBlock(const shared_model::interface::Block &block) {
@@ -326,17 +336,17 @@ namespace iroha {
     }
 
     expected::Result<ConnectionContext, std::string>
-    StorageImpl::initConnections(std::string block_store_dir) {
-      auto log_ = logger::log("StorageImpl:initConnection");
-      log_->info("Start storage creation");
+    StorageImpl::initConnections(std::string block_store_dir,
+                                 logger::LoggerPtr log) {
+      log->info("Start storage creation");
 
-      auto block_store = FlatFile::create(block_store_dir);
+      auto block_store = FlatFile::create(block_store_dir, log);
       if (not block_store) {
         return expected::makeError(
             (boost::format("Cannot create block store in %s") % block_store_dir)
                 .str());
       }
-      log_->info("block store created");
+      log->info("block store created");
 
       return expected::makeValue(ConnectionContext(std::move(*block_store)));
     }
@@ -365,6 +375,7 @@ namespace iroha {
         std::shared_ptr<shared_model::interface::BlockJsonConverter> converter,
         std::shared_ptr<shared_model::interface::PermissionToString>
             perm_converter,
+        logger::LoggerManagerTreePtr log_manager,
         size_t pool_size) {
       boost::optional<std::string> string_res = boost::none;
 
@@ -383,7 +394,8 @@ namespace iroha {
         return expected::makeError(string_res.value());
       }
 
-      auto ctx_result = initConnections(block_store_dir);
+      auto ctx_result =
+          initConnections(block_store_dir, log_manager->getLogger());
       auto db_result = initPostgresConnection(postgres_options, pool_size);
       expected::Result<std::shared_ptr<StorageImpl>, std::string> storage;
       ctx_result.match(
@@ -403,7 +415,8 @@ namespace iroha {
                                       converter,
                                       perm_converter,
                                       pool_size,
-                                      enable_prepared_transactions)));
+                                      enable_prepared_transactions,
+                                      std::move(log_manager))));
                 },
                 [&](expected::Error<std::string> &error) { storage = error; });
           },
@@ -447,7 +460,8 @@ namespace iroha {
         }
         soci::session sql(*connection_);
         sql << "COMMIT PREPARED '" + prepared_block_name_ + "';";
-        PostgresBlockIndex block_index(sql);
+        PostgresBlockIndex block_index(
+            sql, log_manager_->getChild("BlockIndex")->getLogger());
         block_index.index(block);
         block_is_prepared = false;
       } catch (const std::exception &e) {
@@ -467,7 +481,9 @@ namespace iroha {
         return nullptr;
       }
       return std::make_shared<PostgresWsvQuery>(
-          std::make_unique<soci::session>(*connection_), factory_);
+          std::make_unique<soci::session>(*connection_),
+          factory_,
+          log_manager_->getChild("WsvQuery")->getLogger());
     }
 
     std::shared_ptr<BlockQuery> StorageImpl::getBlockQuery() const {
@@ -479,7 +495,8 @@ namespace iroha {
       return std::make_shared<PostgresBlockQuery>(
           std::make_unique<soci::session>(*connection_),
           *block_store_,
-          converter_);
+          converter_,
+          log_manager_->getChild("PostgresBlockQuery")->getLogger());
     }
 
     rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
