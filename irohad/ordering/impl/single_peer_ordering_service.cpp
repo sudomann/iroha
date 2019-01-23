@@ -15,6 +15,7 @@
 #include "datetime/time.hpp"
 #include "interfaces/common_objects/peer.hpp"
 #include "interfaces/iroha_internal/transaction_batch_impl.hpp"
+#include "logger/logger.hpp"
 #include "network/ordering_service_transport.hpp"
 
 namespace iroha {
@@ -27,7 +28,7 @@ namespace iroha {
         std::shared_ptr<ametsuchi::OsPersistentStateFactory> persistent_state,
         std::unique_ptr<shared_model::interface::ProposalFactory> factory,
         bool is_async,
-        logger::Logger log)
+        logger::LoggerPtr log)
         : peer_query_factory_(peer_query_factory),
           max_size_(max_size),
           current_size_(0),

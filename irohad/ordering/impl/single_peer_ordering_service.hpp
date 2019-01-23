@@ -15,7 +15,7 @@
 #include "ametsuchi/os_persistent_state_factory.hpp"
 #include "ametsuchi/peer_query_factory.hpp"
 #include "interfaces/iroha_internal/proposal_factory.hpp"
-#include "logger/logger.hpp"
+#include "logger/logger_fwd.hpp"
 #include "network/ordering_service.hpp"
 #include "ordering.grpc.pb.h"
 
@@ -56,8 +56,8 @@ namespace iroha {
           std::shared_ptr<network::OrderingServiceTransport> transport,
           std::shared_ptr<ametsuchi::OsPersistentStateFactory> persistent_state,
           std::unique_ptr<shared_model::interface::ProposalFactory> factory,
-          bool is_async = true,
-          logger::Logger log = logger::log("OrderingServiceImpl"));
+          bool is_async,
+          logger::LoggerPtr log);
 
       /**
        * Process transaction(s) received from network
@@ -136,7 +136,7 @@ namespace iroha {
        */
       size_t proposal_height_;
 
-      logger::Logger log_;
+      logger::LoggerPtr log_;
     };
   }  // namespace ordering
 }  // namespace iroha

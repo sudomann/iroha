@@ -8,6 +8,7 @@
 #include "backend/protobuf/proposal.hpp"
 #include "backend/protobuf/transaction.hpp"
 #include "interfaces/common_objects/transaction_sequence_common.hpp"
+#include "logger/logger.hpp"
 #include "network/impl/grpc_channel_builder.hpp"
 
 using namespace iroha;
@@ -22,9 +23,9 @@ grpc::Status OrderingServiceTransportGrpc::onBatch(
     ::grpc::ServerContext *context,
     const protocol::TxList *request,
     ::google::protobuf::Empty *response) {
-  async_call_->log_->info("OrderingServiceTransportGrpc::onBatch");
+  log_->info("OrderingServiceTransportGrpc::onBatch");
   if (subscriber_.expired()) {
-    async_call_->log_->error("No subscriber");
+    log_->error("No subscriber");
   } else {
     auto txs =
         std::vector<std::shared_ptr<shared_model::interface::Transaction>>(
@@ -46,7 +47,7 @@ grpc::Status OrderingServiceTransportGrpc::onBatch(
           subscriber_.lock()->onBatch(std::move(batch.value));
         },
         [this](const iroha::expected::Error<std::string> &error) {
-          async_call_->log_->error(
+          log_->error(
               "Could not create batch from received transaction list: {}",
               error.error);
         });
@@ -57,7 +58,7 @@ grpc::Status OrderingServiceTransportGrpc::onBatch(
 void OrderingServiceTransportGrpc::publishProposal(
     std::unique_ptr<shared_model::interface::Proposal> proposal,
     const std::vector<std::string> &peers) {
-  async_call_->log_->info("OrderingServiceTransportGrpc::publishProposal");
+  log_->info("OrderingServiceTransportGrpc::publishProposal");
   std::unordered_map<
       std::string,
       std::unique_ptr<proto::OrderingGateTransportGrpc::StubInterface>>
@@ -69,7 +70,7 @@ void OrderingServiceTransportGrpc::publishProposal(
 
   for (const auto &peer : peers_map) {
     auto proto = static_cast<shared_model::proto::Proposal *>(proposal.get());
-    async_call_->log_->debug("Publishing proposal: '{}'",
+    log_->debug("Publishing proposal: '{}'",
                              proto->getTransport().DebugString());
 
     auto transport = proto->getTransport();
@@ -83,6 +84,8 @@ OrderingServiceTransportGrpc::OrderingServiceTransportGrpc(
     std::shared_ptr<shared_model::interface::TransactionBatchFactory>
         transaction_batch_factory,
     std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>
-        async_call)
+        async_call,
+    logger::LoggerPtr log)
     : async_call_(std::move(async_call)),
-      batch_factory_(std::move(transaction_batch_factory)) {}
+      batch_factory_(std::move(transaction_batch_factory)),
+      log_(std::move(log)) {}

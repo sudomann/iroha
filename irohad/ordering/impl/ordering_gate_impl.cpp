@@ -11,6 +11,7 @@
 #include "interfaces/iroha_internal/block.hpp"
 #include "interfaces/iroha_internal/proposal.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
+#include "logger/logger.hpp"
 #include "ordering/impl/on_demand_common.hpp"
 
 namespace iroha {
@@ -26,7 +27,7 @@ namespace iroha {
         std::shared_ptr<iroha::network::OrderingGateTransport> transport,
         shared_model::interface::types::HeightType initial_height,
         bool run_async,
-        logger::Logger log)
+        logger::LoggerPtr log)
         : transport_(std::move(transport)),
           last_block_height_(initial_height),
           log_(std::move(log)),

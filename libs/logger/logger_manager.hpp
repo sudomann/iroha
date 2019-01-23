@@ -24,7 +24,9 @@ namespace logger {
    */
   class LoggerManagerTree {
    public:
-    LoggerManagerTree(ConstLoggerConfigPtr config);
+    explicit LoggerManagerTree(ConstLoggerConfigPtr config);
+
+    explicit LoggerManagerTree(LoggerConfig config);
 
     /**
      * Register a child configuration. The new child's configuration parameters

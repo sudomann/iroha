@@ -14,6 +14,7 @@
 #include <boost/range/adaptor/transformed.hpp>
 #include "common/result.hpp"
 #include "interfaces/iroha_internal/batch_meta.hpp"
+#include "logger/logger.hpp"
 #include "validation/utils.hpp"
 
 namespace iroha {
@@ -54,7 +55,7 @@ namespace iroha {
         const shared_model::interface::types::TransactionsCollectionType &txs,
         ametsuchi::TemporaryWsv &temporary_wsv,
         validation::TransactionsErrors &transactions_errors_log,
-        const logger::Logger &log,
+        const logger::LoggerPtr & /*log*/,
         const shared_model::interface::TransactionBatchParser &batch_parser) {
       std::vector<bool> validation_results;
       validation_results.reserve(boost::size(txs));
@@ -100,7 +101,7 @@ namespace iroha {
         std::unique_ptr<shared_model::interface::UnsafeProposalFactory> factory,
         std::shared_ptr<shared_model::interface::TransactionBatchParser>
             batch_parser,
-        logger::Logger log)
+        logger::LoggerPtr log)
         : factory_(std::move(factory)),
           batch_parser_(std::move(batch_parser)),
           log_(std::move(log)) {}
