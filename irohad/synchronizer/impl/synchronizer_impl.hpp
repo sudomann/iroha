@@ -74,3 +74,5 @@ namespace iroha {
 }  // namespace iroha
 
 #endif  // IROHA_SYNCHRONIZER_IMPL_HPP
+
+// синхронизатор -> ordering gate -> simulator -> consensus gate

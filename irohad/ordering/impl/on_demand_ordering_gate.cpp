@@ -30,17 +30,20 @@ OnDemandOrderingGate::OnDemandOrderingGate(
         // exclusive lock
         std::lock_guard<std::shared_timed_mutex> lock(mutex_);
 
+        std::shared_ptr<LedgerState> ledger_state;
         visit_in_place(event,
-                       [this](const BlockEvent &block_event) {
+                       [this, &ledger_state](const BlockEvent &block_event) {
                          // block committed, increment block round
                          log_->debug("BlockEvent. {}", block_event.round);
                          current_round_ = block_event.round;
                          cache_->remove(block_event.hashes);
+                         ledger_state = block_event.ledger_state;
                        },
-                       [this](const EmptyEvent &empty_event) {
+                       [this, &ledger_state](const EmptyEvent &empty_event) {
                          // no blocks committed, increment reject round
                          log_->debug("EmptyEvent");
                          current_round_ = empty_event.round;
+                         ledger_state = empty_event.ledger_state;
                        });
         log_->debug("Current: {}", current_round_);
 
@@ -61,8 +64,8 @@ OnDemandOrderingGate::OnDemandOrderingGate(
         auto proposal = this->processProposalRequest(
             network_client_->onRequestProposal(current_round_));
         // vote for the object received from the network
-        proposal_notifier_.get_subscriber().on_next(
-            network::OrderingEvent{proposal, current_round_});
+        proposal_notifier_.get_subscriber().on_next(network::OrderingEvent{
+            proposal, current_round_, std::move(ledger_state)});
       })),
       cache_(std::move(cache)),
       proposal_factory_(std::move(factory)),

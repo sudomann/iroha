@@ -40,6 +40,7 @@ namespace iroha {
         consensus::Round round;
         /// hashes of processed transactions
         cache::OrderingGateCache::HashesSetType hashes;
+        std::shared_ptr<LedgerState> ledger_state;
       };
 
       /**
@@ -48,6 +49,7 @@ namespace iroha {
       struct EmptyEvent {
         /// next round number
         consensus::Round round;
+        std::shared_ptr<LedgerState> ledger_state;
       };
 
       using BlockRoundEventType = boost::variant<BlockEvent, EmptyEvent>;
@@ -104,6 +106,8 @@ namespace iroha {
       rxcpp::subjects::subject<network::OrderingEvent> proposal_notifier_;
       mutable std::shared_timed_mutex mutex_;
     };
+
+//    std::shared_ptr<LedgerState>
 
   }  // namespace ordering
 }  // namespace iroha

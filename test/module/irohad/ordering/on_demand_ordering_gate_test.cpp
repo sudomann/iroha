@@ -89,6 +89,10 @@ TEST_F(OnDemandOrderingGateTest, propagateBatch) {
  * @then new proposal round based on the received height is initiated
  */
 TEST_F(OnDemandOrderingGateTest, BlockEvent) {
+  auto peer = makePeer("127.0.0.1", shared_model::crypto::PublicKey("111"));
+  auto ledger_peers = std::make_shared<PeerList>(PeerList{peer});
+  auto ledger_state = std::make_shared<LedgerState>(ledger_peers);
+
   auto mproposal = std::make_unique<MockProposal>();
   auto proposal = mproposal.get();
   boost::optional<OdOsNotification::ProposalType> oproposal(
@@ -111,13 +115,17 @@ TEST_F(OnDemandOrderingGateTest, BlockEvent) {
   ON_CALL(*factory_proposal, transactions())
       .WillByDefault(Return(txs | boost::adaptors::indirected));
 
+  auto block_event = OnDemandOrderingGate::BlockEvent{round, {}, ledger_state};
+
   auto gate_wrapper =
       make_test_subscriber<CallExact>(ordering_gate->onProposal(), 1);
   gate_wrapper.subscribe([&](auto val) {
-    ASSERT_EQ(factory_proposal, getProposalUnsafe(val).get());
+    EXPECT_EQ(factory_proposal, getProposalUnsafe(val).get());
+    EXPECT_EQ(*val.ledger_state->ledger_peers,
+              *block_event.ledger_state->ledger_peers);
   });
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{round, {}});
+  rounds.get_subscriber().on_next(block_event);
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
