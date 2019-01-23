@@ -262,7 +262,9 @@ class Irohad {
 
   std::shared_ptr<iroha::network::MstTransport> mst_transport;
 
-  logger::LoggerPtr log_;
+  logger::LoggerManagerTreePtr log_manager_;  ///< application root log manager
+
+  logger::LoggerPtr log_;  ///< log for local messages
 
  public:
   std::shared_ptr<iroha::ametsuchi::Storage> storage;
