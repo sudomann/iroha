@@ -6,6 +6,8 @@
 #ifndef IROHA_SPDLOG_LOGGER_MANAGER_HPP
 #define IROHA_SPDLOG_LOGGER_MANAGER_HPP
 
+#include "logger/logger_manager_fwd.hpp"
+
 #include <memory>
 #include <mutex>
 #include <string>
@@ -15,10 +17,6 @@
 #include "logger/logger_spdlog.hpp"
 
 namespace logger {
-
-  class LoggerManagerTree;
-
-  using LoggerManagerTreePtr = std::shared_ptr<LoggerManagerTree>;
 
   /**
    * A node of logger managers tree. It stores the configuration needed to

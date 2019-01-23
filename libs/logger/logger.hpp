@@ -6,6 +6,8 @@
 #ifndef IROHA_LOGGER_LOGGER_HPP
 #define IROHA_LOGGER_LOGGER_HPP
 
+#include "logger/logger_fwd.hpp"
+
 #include <memory>
 #include <numeric>  // for std::accumulate
 #include <string>
@@ -20,10 +22,7 @@ auto operator<<(StreamType &os, const T &object)
 
 namespace logger {
 
-  class Logger;
   enum class LogLevel;
-
-  using LoggerPtr = std::shared_ptr<Logger>;
 
   extern const LogLevel kDefaultLogLevel;
 
