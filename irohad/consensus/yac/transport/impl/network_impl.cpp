@@ -23,8 +23,10 @@ namespace iroha {
 
       NetworkImpl::NetworkImpl(
           std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>
-              async_call)
-          : async_call_(async_call) {}
+              async_call,
+          std::function<std::unique_ptr<proto::Yac::StubInterface>(
+              const shared_model::interface::Peer &)> client_creator)
+          : async_call_(async_call), client_creator_(client_creator) {}
 
       void NetworkImpl::subscribe(
           std::shared_ptr<YacNetworkNotifications> handler) {
@@ -75,8 +77,7 @@ namespace iroha {
       void NetworkImpl::createPeerConnection(
           const shared_model::interface::Peer &peer) {
         if (peers_.count(peer.address()) == 0) {
-          peers_[peer.address()] =
-              network::createClient<proto::Yac>(peer.address());
+          peers_[peer.address()] = client_creator_(peer);
         }
       }
 

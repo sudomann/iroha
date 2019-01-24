@@ -8,10 +8,15 @@
 #include <grpc++/grpc++.h>
 
 #include "consensus/yac/transport/impl/network_impl.hpp"
+#include "consensus/yac/transport/yac_pb_converters.hpp"
+#include "framework/mock_stream.h"
+#include "network/impl/grpc_channel_builder.hpp"
+#include "yac_mock.grpc.pb.h"
 
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::InvokeWithoutArgs;
+using ::testing::Return;
 using ::testing::SaveArg;
 
 namespace iroha {
@@ -25,7 +30,24 @@ namespace iroha {
           notifications = std::make_shared<MockYacNetworkNotifications>();
           async_call = std::make_shared<
               network::AsyncGrpcClient<google::protobuf::Empty>>();
-          network = std::make_shared<NetworkImpl>(async_call);
+          // Custom deleter is necessary since it is necessary to construct
+          // unique_ptr in client_creator in there is not possible to make empty
+          // destructor there
+          stub =
+              std::unique_ptr<iroha::consensus::yac::proto::MockYacStub,
+                              void (*)(
+                                  iroha::consensus::yac::proto::MockYacStub *)>(
+                  new iroha::consensus::yac::proto::MockYacStub(),
+                  [](iroha::consensus::yac::proto::MockYacStub *ptr) {});
+          std::function<std::unique_ptr<proto::Yac::StubInterface>(
+              const shared_model::interface::Peer &)>
+              client_creator([this](const shared_model::interface::Peer &peer) {
+                // stub from the YacNetworkTest will be destroyed in destructor
+                // of NetworkImpl
+                return std::unique_ptr<
+                    iroha::consensus::yac::proto::MockYacStub>(stub.get());
+              });
+          network = std::make_shared<NetworkImpl>(async_call, client_creator);
 
           message.hash.vote_hashes.proposal_hash = "proposal";
           message.hash.vote_hashes.block_hash = "block";
@@ -36,20 +58,8 @@ namespace iroha {
           message.signature = createSig("");
           network->subscribe(notifications);
 
-          grpc::ServerBuilder builder;
           int port = 0;
-          builder.AddListeningPort(
-              default_address, grpc::InsecureServerCredentials(), &port);
-          builder.RegisterService(network.get());
-          server = builder.BuildAndStart();
-          ASSERT_TRUE(server);
-          ASSERT_NE(port, 0);
-
           peer = mk_peer(std::string(default_ip) + ":" + std::to_string(port));
-        }
-
-        void TearDown() override {
-          server->Shutdown();
         }
 
         std::shared_ptr<MockYacNetworkNotifications> notifications;
@@ -58,10 +68,9 @@ namespace iroha {
         std::shared_ptr<NetworkImpl> network;
         std::shared_ptr<shared_model::interface::Peer> peer;
         VoteMessage message;
-        std::unique_ptr<grpc::Server> server;
-        std::mutex mtx;
-        std::condition_variable cv;
-        shared_model::crypto::PublicKey pubkey = shared_model::crypto::PublicKey{""};
+        shared_model::crypto::PublicKey pubkey =
+            shared_model::crypto::PublicKey{""};
+        std::shared_ptr<iroha::consensus::yac::proto::MockYacStub> stub;
       };
 
       /**
@@ -70,25 +79,45 @@ namespace iroha {
        * @then vote handled
        */
       TEST_F(YacNetworkTest, MessageHandledWhenMessageSent) {
-        bool processed = false;
-
-        std::vector<VoteMessage> state;
-        EXPECT_CALL(*notifications, onState(_))
-            .Times(1)
-            .WillRepeatedly(DoAll(SaveArg<0>(&state), InvokeWithoutArgs([&] {
-                                    std::lock_guard<std::mutex> lock(mtx);
-                                    processed = true;
-                                    cv.notify_all();
-                                  })));
+        proto::State request;
+        auto r = std::make_unique<grpc::testing::MockClientAsyncResponseReader<
+            google::protobuf::Empty>>();
+        EXPECT_CALL(*stub, AsyncSendStateRaw(_, _, _))
+            .WillOnce(DoAll(SaveArg<1>(&request), Return(r.get())));
 
         network->sendState(*peer, {message});
 
-        // wait for response reader thread
-        std::unique_lock<std::mutex> lk(mtx);
-        cv.wait(lk, [&] { return processed; });
+        ASSERT_EQ(request.votes_size(), 1);
+      }
 
-        ASSERT_EQ(1, state.size());
-        ASSERT_EQ(message, state.front());
+      /**
+       * @given initialized network
+       * @when send request with one vote
+       * @then status OK
+       */
+      TEST_F(YacNetworkTest, SendMessage) {
+        proto::State request;
+        grpc::ServerContext context;
+
+        for (const auto &vote : {message}) {
+          auto pb_vote = request.add_votes();
+          *pb_vote = PbConverters::serializeVote(vote);
+        }
+
+        auto response = network->SendState(&context, &request, nullptr);
+        ASSERT_EQ(response.error_code(), grpc::StatusCode::OK);
+      }
+
+      /**
+       * @given initialized network
+       * @when send request with no votes
+       * @then status CANCELLED
+       */
+      TEST_F(YacNetworkTest, SendMessageEmptyKeys) {
+        proto::State request;
+        grpc::ServerContext context;
+        auto response = network->SendState(&context, &request, nullptr);
+        ASSERT_EQ(response.error_code(), grpc::StatusCode::CANCELLED);
       }
     }  // namespace yac
   }    // namespace consensus

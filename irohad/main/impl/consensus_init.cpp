@@ -23,6 +23,7 @@
 #include "consensus/yac/impl/yac_hash_provider_impl.hpp"
 #include "consensus/yac/storage/yac_proposal_storage.hpp"
 #include "consensus/yac/transport/impl/network_impl.hpp"
+#include "network/impl/grpc_channel_builder.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -37,7 +38,10 @@ namespace iroha {
           std::shared_ptr<
               iroha::network::AsyncGrpcClient<google::protobuf::Empty>>
               async_call) {
-        consensus_network = std::make_shared<NetworkImpl>(async_call);
+        consensus_network = std::make_shared<NetworkImpl>(
+            async_call, [](const shared_model::interface::Peer &peer) {
+              return network::createClient<proto::Yac>(peer.address());
+            });
         return consensus_network;
       }
 
