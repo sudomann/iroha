@@ -23,6 +23,7 @@
 #include "consensus/yac/impl/yac_hash_provider_impl.hpp"
 #include "consensus/yac/storage/yac_proposal_storage.hpp"
 #include "consensus/yac/transport/impl/network_impl.hpp"
+#include "common/bind.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -116,8 +117,10 @@ namespace iroha {
           std::shared_ptr<shared_model::interface::CommonObjectsFactory>
               common_objects_factory) {
         auto peer_orderer = createPeerOrderer(peer_query_factory);
+        auto peers = peer_query_factory->createPeerQuery() |
+            [](auto &&peer_query) { return peer_query->getLedgerPeers(); };
 
-        auto yac = createYac(peer_orderer->getInitialOrdering().value(),
+        auto yac = createYac(*ClusterOrdering::create(peers.value()),
                              keypair,
                              vote_delay_milliseconds,
                              std::move(async_call),

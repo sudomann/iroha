@@ -19,12 +19,6 @@ namespace iroha {
           std::shared_ptr<ametsuchi::PeerQueryFactory> peer_query_factory)
           : peer_query_factory_(peer_query_factory) {}
 
-      boost::optional<ClusterOrdering> PeerOrdererImpl::getInitialOrdering() {
-        return peer_query_factory_->createPeerQuery() |
-            [](const auto &query) { return query->getLedgerPeers(); } |
-            [](const auto &peers) { return ClusterOrdering::create(peers); };
-      }
-
       boost::optional<ClusterOrdering> PeerOrdererImpl::getOrdering(
           const YacHash &hash,
           std::vector<std::shared_ptr<shared_model::interface::Peer>> peers) {

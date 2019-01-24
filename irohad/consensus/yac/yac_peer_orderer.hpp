@@ -21,13 +21,6 @@ namespace iroha {
       class YacPeerOrderer {
        public:
         /**
-         * Provide initial order for voting, useful when consensus initialized,
-         * bot not voted before.
-         * @return ordering, like in ledger
-         */
-        virtual boost::optional<ClusterOrdering> getInitialOrdering() = 0;
-
-        /**
          * Provide order of peers based on hash and initial order of peers
          * @param hash - hash-object that used as seed of ordering shuffle
          * @return shuffled cluster order

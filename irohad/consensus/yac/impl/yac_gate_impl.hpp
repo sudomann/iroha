@@ -66,6 +66,7 @@ namespace iroha {
         boost::optional<std::shared_ptr<shared_model::interface::Block>>
             current_block_;
         YacHash current_hash_;
+        std::shared_ptr<LedgerState> current_ledger_state_;
       };
 
     }  // namespace yac

@@ -558,11 +558,18 @@ Irohad::RunResult Irohad::run() {
                 std::shared_ptr<shared_model::interface::Block>>>(&block_var)
                              ->value;
 
+            auto peers = storage->createPeerQuery() |
+                [](auto &&peer_query) { return peer_query->getLedgerPeers(); };
+
+            auto initial_ledger_state = std::make_shared<LedgerState>(
+                std::make_unique<PeerList>(peers.value()));
+
             pcs->on_commit()
                 .start_with(synchronizer::SynchronizationEvent{
                     rxcpp::observable<>::just(block),
                     SynchronizationOutcomeType::kCommit,
-                    {block->height(), ordering::kFirstRejectRound}})
+                    {block->height(), ordering::kFirstRejectRound},
+                    initial_ledger_state})
                 .subscribe(ordering_init.notifier.get_subscriber());
             return {};
           },

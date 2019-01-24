@@ -69,19 +69,6 @@ class YacPeerOrdererTest : public ::testing::Test {
   PeerOrdererImpl orderer;
 };
 
-TEST_F(YacPeerOrdererTest, PeerOrdererInitialOrderWhenInvokeNormalCase) {
-  EXPECT_CALL(*wsv, getLedgerPeers()).WillOnce(Return(s_peers));
-  auto order = orderer.getInitialOrdering();
-
-  ASSERT_EQ(order.value().getPeers(), s_peers);
-}
-
-TEST_F(YacPeerOrdererTest, PeerOrdererInitialOrderWhenInvokeFailCase) {
-  EXPECT_CALL(*wsv, getLedgerPeers()).WillOnce(Return(boost::none));
-  auto order = orderer.getInitialOrdering();
-  ASSERT_EQ(order, boost::none);
-}
-
 TEST_F(YacPeerOrdererTest, PeerOrdererOrderingWhenInvokeNormalCase) {
   auto order = orderer.getOrdering(YacHash(), s_peers);
   ASSERT_EQ(order.value().getPeers().size(), peers.size());

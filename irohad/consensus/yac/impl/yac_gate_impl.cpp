@@ -37,7 +37,10 @@ namespace iroha {
             log_(std::move(log)),
             current_hash_() {
         block_creator_->onBlock().subscribe(
-            [this](const auto &event) { this->vote(event); });
+            [this](const auto &event) {
+              current_ledger_state_ = event.ledger_state;
+              this->vote(event);
+            });
       }
 
       void YacGateImpl::vote(const simulator::BlockCreatorEvent &event) {
@@ -113,8 +116,8 @@ namespace iroha {
           log_->info("consensus: commit top block: height {}, hash {}",
                      block->height(),
                      block->hash().hex());
-          return rxcpp::observable<>::just<GateObject>(
-              PairValid{block, current_hash_.vote_round});
+          return rxcpp::observable<>::just<GateObject>(PairValid{
+              block, current_hash_.vote_round, current_ledger_state_});
         }
 
         current_hash_ = hash;
@@ -124,7 +127,7 @@ namespace iroha {
           log_->info("Consensus skipped round, voted for nothing");
           current_block_ = boost::none;
           return rxcpp::observable<>::just<GateObject>(
-              AgreementOnNone{current_hash_.vote_round});
+              AgreementOnNone{current_hash_.vote_round, current_ledger_state_});
         }
 
         log_->info("Voted for another block, waiting for sync");
@@ -138,7 +141,8 @@ namespace iroha {
         return rxcpp::observable<>::just<GateObject>(
             VoteOther{std::move(public_keys),
                       std::move(model_hash),
-                      current_hash_.vote_round});
+                      current_hash_.vote_round,
+                      current_ledger_state_});
       }
 
       rxcpp::observable<YacGateImpl::GateObject> YacGateImpl::handleReject(
@@ -162,11 +166,11 @@ namespace iroha {
         if (not has_same_proposals) {
           log_->info("Proposal reject since all hashes are different");
           return rxcpp::observable<>::just<GateObject>(
-              ProposalReject{current_hash_.vote_round});
+              ProposalReject{current_hash_.vote_round, current_ledger_state_});
         }
         log_->info("Block reject since proposal hashes match");
         return rxcpp::observable<>::just<GateObject>(
-            BlockReject{current_hash_.vote_round});
+            BlockReject{current_hash_.vote_round, current_ledger_state_});
       }
     }  // namespace yac
   }    // namespace consensus

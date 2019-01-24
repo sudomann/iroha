@@ -11,6 +11,7 @@
 #include "cryptography/hash.hpp"
 #include "cryptography/public_key.hpp"
 #include "interfaces/common_objects/types.hpp"
+#include "ametsuchi/ledger_state.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -25,6 +26,7 @@ namespace iroha {
     struct PairValid {
       std::shared_ptr<shared_model::interface::Block> block;
       consensus::Round round;
+      std::shared_ptr<LedgerState> ledger_state;
     };
 
     /// Network votes for another pair and round
@@ -32,21 +34,25 @@ namespace iroha {
       shared_model::interface::types::PublicKeyCollectionType public_keys;
       shared_model::interface::types::HashType hash;
       consensus::Round round;
+      std::shared_ptr<LedgerState> ledger_state;
     };
 
     /// Reject on proposal
     struct ProposalReject {
       consensus::Round round;
+      std::shared_ptr<LedgerState> ledger_state;
     };
 
     /// Reject on block
     struct BlockReject {
       consensus::Round round;
+      std::shared_ptr<LedgerState> ledger_state;
     };
 
     /// Agreement on <None, None>
     struct AgreementOnNone {
       consensus::Round round;
+      std::shared_ptr<LedgerState> ledger_state;
     };
 
     using GateObject = boost::variant<PairValid,

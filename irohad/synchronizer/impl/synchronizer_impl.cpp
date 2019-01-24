@@ -48,7 +48,8 @@ namespace iroha {
                 rxcpp::observable<>::empty<
                     std::shared_ptr<shared_model::interface::Block>>(),
                 SynchronizationOutcomeType::kReject,
-                msg.round});
+                msg.round,
+                msg.ledger_state});
           },
           [this](const consensus::BlockReject &msg) {
             // TODO: nickaleks IR-147 18.01.19 add peers
@@ -57,7 +58,8 @@ namespace iroha {
                 rxcpp::observable<>::empty<
                     std::shared_ptr<shared_model::interface::Block>>(),
                 SynchronizationOutcomeType::kReject,
-                msg.round});
+                msg.round,
+                msg.ledger_state});
           },
           [this](const consensus::AgreementOnNone &msg) {
             // TODO: nickaleks IR-147 18.01.19 add peers
@@ -66,7 +68,8 @@ namespace iroha {
                 rxcpp::observable<>::empty<
                     std::shared_ptr<shared_model::interface::Block>>(),
                 SynchronizationOutcomeType::kNothing,
-                msg.round});
+                msg.round,
+                msg.ledger_state});
           });
     }
 

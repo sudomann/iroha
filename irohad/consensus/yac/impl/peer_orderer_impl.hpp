@@ -28,8 +28,6 @@ namespace iroha {
         explicit PeerOrdererImpl(
             std::shared_ptr<ametsuchi::PeerQueryFactory> peer_query_factory);
 
-        boost::optional<ClusterOrdering> getInitialOrdering() override;
-
         boost::optional<ClusterOrdering> getOrdering(
             const YacHash &hash,
             std::vector<std::shared_ptr<shared_model::interface::Peer>> peers)
