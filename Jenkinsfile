@@ -18,7 +18,7 @@ properties([parameters([
   choice(choices: 'Release\nDebug', description: 'Android bindings build type', name: 'ABBuildType'),
   choice(choices: 'arm64-v8a\narmeabi-v7a\narmeabi\nx86_64\nx86', description: 'Android bindings platform', name: 'ABPlatform'),
   booleanParam(defaultValue: false, description: 'Build docs', name: 'Doxygen'),
-  booleanParam(defaultValue: true, description: 'Sanitize address;leak', name: 'sanitize'),
+  booleanParam(defaultValue: false, description: 'Sanitize address;leak', name: 'sanitize'),
   booleanParam(defaultValue: false, description: 'Build fuzzing, but do not run tests', name: 'fuzzing'),
   booleanParam(defaultValue: true, description: 'Collect coredumps', name: 'coredump'),
   booleanParam(defaultValue: true, description: 'Draw plot', name: 'plot'),
