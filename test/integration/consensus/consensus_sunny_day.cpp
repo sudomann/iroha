@@ -12,6 +12,7 @@
 #include "framework/test_subscriber.hpp"
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
 #include "module/shared_model/interface_mocks.hpp"
+#include "network/impl/grpc_channel_builder.hpp"
 
 using ::testing::_;
 using ::testing::An;
@@ -80,7 +81,10 @@ class ConsensusSunnyDayTest : public ::testing::Test {
   void SetUp() override {
     auto async_call = std::make_shared<
         iroha::network::AsyncGrpcClient<google::protobuf::Empty>>();
-    network = std::make_shared<NetworkImpl>(async_call);
+    network = std::make_shared<NetworkImpl>(
+        async_call, [](const shared_model::interface::Peer &peer) {
+          return iroha::network::createClient<proto::Yac>(peer.address());
+        });
     crypto = std::make_shared<FixedCryptoProvider>(std::to_string(my_num));
     timer = std::make_shared<TimerImpl>([this] {
       // static factory with a single thread
