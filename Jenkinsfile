@@ -68,10 +68,7 @@ pipeline {
     }
     stage('Test plot') {
       when {
-        allOf {
-          expression { params.plot == 'true' }
-          expression { return params.iroha }
-        }
+        expression { params.plot == 'true' }
       }
       steps {
         script {
