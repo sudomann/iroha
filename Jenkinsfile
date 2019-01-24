@@ -67,9 +67,6 @@ pipeline {
       }
     }
     stage('Test plot') {
-      when {
-        expression { params.plot == 'true' }
-      }
       steps {
         script {
           sh("python analyze.py result.txt")
