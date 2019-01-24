@@ -13,6 +13,11 @@ def doDebugBuild(coverageEnabled=false) {
   // this is the case for the FIRST build only.
   // So just set this to same value as default.
   // This is a known bug. See https://issues.jenkins-ci.org/browse/JENKINS-41929
+
+
+  sh("python analyze.py result.txt")
+  plot csvFileName: 'plot-3d136de2-a268-4abc-80a1-9f31db39b92d.csv', csvSeries: [[displayTableFlag: true, exclusionValues: '', file: 'result.csv', inclusionFlag: 'OFF', url: '']], group: 'iroha_build_time_graph', numBuilds: '10', style: 'line', title: 'Build time', yaxis: 'Time, sec'
+  
   if (sanitizeEnabled == null){
     sanitizeEnabled = true
   }

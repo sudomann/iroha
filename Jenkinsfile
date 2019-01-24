@@ -66,14 +66,6 @@ pipeline {
         }
       }
     }
-    stage('Test plot') {
-      steps {
-        script {
-          sh("python analyze.py result.txt")
-          plot csvFileName: 'plot-3d136de2-a268-4abc-80a1-9f31db39b92d.csv', csvSeries: [[displayTableFlag: true, exclusionValues: '', file: 'result.csv', inclusionFlag: 'OFF', url: '']], group: 'iroha_build_time_graph', numBuilds: '10', style: 'line', title: 'Build time', yaxis: 'Time, sec'
-        }
-      }
-    }
     stage('Build Debug') {
       when {
         allOf {
