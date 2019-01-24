@@ -25,8 +25,8 @@ def linuxPostStep() {
       }
     }
     finally {
-      def cleanup = load ".jenkinsci/docker-cleanup.groovy"
-      cleanup.doDockerCleanup()
+      // def cleanup = load ".jenkinsci/docker-cleanup.groovy"
+      // cleanup.doDockerCleanup()
       cleanWs()
     }
   }
