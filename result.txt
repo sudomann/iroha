@@ -64,7 +64,6 @@ Scanning dependencies of target block_creator_common
 0.12	1.42
 [  4%] Building CXX object schema/CMakeFiles/yac_grpc.dir/yac.grpc.pb.o
 0.13	1.36
-0.10	0.71
 [  4%] Building CXX object shared_model/schema/CMakeFiles/schema.dir/__/__/schema/transaction.pb.o
 [  4%] Linking CXX static library libordering_gate_common.a
 [  4%] Built target ordering_gate_common
@@ -83,7 +82,6 @@ g++ -DBOOST_NO_RTTI -I/var/jenkins/workspace/r_feature_iroha_build_time_graph/ir
 [  5%] Built target logger
 [  5%] Building CXX object shared_model/schema/CMakeFiles/schema.dir/__/__/schema/commands.pb.o
 0.12	1.44
-0.03	0.25
 [  5%] Linking CXX static library libgate_object.a
 [  6%] Linking CXX static library libcli-flags_validators.a
 [  6%] Built target cli-flags_validators
