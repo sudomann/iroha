@@ -21,11 +21,11 @@ def doDebugBuild(coverageEnabled=false) {
   def plots = []
   def files = sh(script: 'ls reports/*.csv', returnStdout: true).trim() //findFiles(glob: 'reports/*.csv')
   for(String el : files.split("\\r?\\n")) {
-    plots << [displayTableFlag: true, exclusionValues: '', file: el, inclusionFlag: 'OFF', url: '']
+    plots << [displayTableFlag: true, exclusionValues: '', file: el, inclusionFlag: 'OFF']
   }
   println plots
   plot csvFileName: 'plot-3d136de2-a268-4abc-80a1-9f31db39b92d.csv', 
-    csvSeries: [plots], 
+    csvSeries: plots, 
     group: 'iroha_build_time_graph', 
     numBuilds: '1', 
     style: 'line', 
