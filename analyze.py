@@ -12,7 +12,7 @@ if __name__ == "__main__":
         lines = f.readlines()
 
     i = 0
-    units = []
+    units = {}
     while i < len(lines):
         if "Building" in lines[i] or "Linking CXX executable" in lines[i]:
             unit = {}
@@ -24,18 +24,24 @@ if __name__ == "__main__":
                 # unit["sys_time"] = float(timeline[0])
                 # unit["user_time"] = float(timeline[1])
                 unit["total"] =  round(float(timeline[0]) + float(timeline[1]), 2)
+                units[unit["work_type"]] = unit["total"]
             except IndexError:
                 break
             except Exception:
                 continue
-            units.append(unit)
+            # units.append(unit)
 
         i += 1
     csv_filename = args.log_file.split(".")[0] + ".csv"
     with open(csv_filename, 'w') as csvfile:
-        fieldnames = ['work_type', 'total']
+        fieldnames = units.keys()
+        fieldvalues = units.values()
+        print(fieldvalues)
+        # fieldnames = ['work_type', 'total']
+        # units
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-
-        for u in units:
-            writer.writerow(u)
+        
+        writer.writerow(units)
+        # for u in units:
+        #     writer.writerow(u)
