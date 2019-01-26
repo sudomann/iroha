@@ -23,6 +23,7 @@ def doDebugBuild(coverageEnabled=false) {
   for(String el : files.split("\\r?\\n")) {
     plots << [displayTableFlag: true, exclusionValues: '', file: el, inclusionFlag: 'OFF', url: '']
   }
+  println plots
   plot csvFileName: 'plot-3d136de2-a268-4abc-80a1-9f31db39b92d.csv', 
     csvSeries: [plots], 
     group: 'iroha_build_time_graph', 
