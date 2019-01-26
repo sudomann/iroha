@@ -21,7 +21,7 @@ def doDebugBuild(coverageEnabled=false) {
       [displayTableFlag: true, exclusionValues: '', file: 'result.csv', inclusionFlag: 'OFF', url: '']
     ], 
     group: 'iroha_build_time_graph', 
-    numBuilds: '3', 
+    numBuilds: '1', 
     style: 'line', 
     width: 40000, 
     height: 30000,
