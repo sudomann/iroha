@@ -18,12 +18,12 @@ if __name__ == "__main__":
             unit = {}
             try:
                 unit["work_type"] = "build" if "Building" in lines[i] else "linking"
-                unit["target"] = lines[i].split(" ")[-1].rstrip()
+                unit["work_type"] += ":" + lines[i].split(" ")[-1].rstrip()
                 i += 2
                 timeline = lines[i].rstrip().split("\t")
-                unit["sys_time"] = float(timeline[0])
-                unit["user_time"] = float(timeline[1])
-                unit["total"] =  round(unit["sys_time"] + unit["user_time"], 2)
+                # unit["sys_time"] = float(timeline[0])
+                # unit["user_time"] = float(timeline[1])
+                unit["total"] =  round(float(timeline[0]) + float(timeline[1]), 2)
             except IndexError:
                 break
             except Exception:
@@ -33,9 +33,9 @@ if __name__ == "__main__":
         i += 1
     csv_filename = args.log_file.split(".")[0] + ".csv"
     with open(csv_filename, 'w') as csvfile:
-        fieldnames = ['target', 'sys_time', 'user_time', 'total', 'work_type']
+        fieldnames = ['work_type', 'total']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
+        # writer.writeheader()
 
         for u in units:
             writer.writerow(u)
