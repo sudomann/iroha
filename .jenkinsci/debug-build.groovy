@@ -18,13 +18,13 @@ def doDebugBuild(coverageEnabled=false) {
   sh("python analyze.py result.txt")
   plot csvFileName: 'plot-3d136de2-a268-4abc-80a1-9f31db39b92d.csv', 
     csvSeries: [
-      [displayTableFlag: true, exclusionValues: '', file: 'result.csv', inclusionFlag: 'INCLUDE_BY_COLUMN', url: '']
+      [displayTableFlag: true, exclusionValues: '', file: 'result.csv', inclusionFlag: 'OFF', url: '']
     ], 
     group: 'iroha_build_time_graph', 
-    numBuilds: '10', 
+    numBuilds: '3', 
     style: 'line', 
-    title: 'Build time', 
-    useDescr: true, 
+    title: 'Build time',
+    useDescr: true,
     yaxis: 'Time, sec'
 }
 

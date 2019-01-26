@@ -35,7 +35,7 @@ if __name__ == "__main__":
     with open(csv_filename, 'w') as csvfile:
         fieldnames = ['work_type', 'total']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        # writer.writeheader()
+        writer.writeheader()
 
         for u in units:
             writer.writerow(u)
