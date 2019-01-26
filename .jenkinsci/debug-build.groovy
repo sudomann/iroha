@@ -24,7 +24,7 @@ def doDebugBuild(coverageEnabled=false) {
     numBuilds: '3', 
     style: 'line', 
     width: 4000, 
-    width: 3000,
+    height: 3000,
     title: 'Build time',
     useDescr: true,
     yaxis: 'Time, sec'
