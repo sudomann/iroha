@@ -65,4 +65,36 @@ Scanning dependencies of target block_creator_common
 [  4%] Building CXX object schema/CMakeFiles/yac_grpc.dir/yac.grpc.pb.o
 0.13	1.36
 0.10	0.71
-
+[  4%] Building CXX object shared_model/schema/CMakeFiles/schema.dir/__/__/schema/transaction.pb.o
+[  4%] Linking CXX static library libordering_gate_common.a
+[  4%] Built target ordering_gate_common
+Scanning dependencies of target cli-flags_validators
+[  4%] Building CXX object iroha-cli/CMakeFiles/cli-flags_validators.dir/validators.o
+0.10	0.77
+[  4%] Linking CXX static library libverified_proposal_creator_common.a
+[  4%] Built target verified_proposal_creator_common
+Scanning dependencies of target integration_framework_config_helper
+g++ -DBOOST_NO_RTTI -I/var/jenkins/workspace/r_feature_iroha_build_time_graph/irohad -I/var/jenkins/workspace/r_feature_iroha_build_time_graph/libs -I/var/jenkins/workspace/r_feature_iroha_build_time_graph/shared_model -isystem /usr/local/include -std=c++14 -Wall -fdiagnostics-color=always -g -Wextra -Wno-unused-parameter -Wno-deprecated-declarations -O0 -fPIC -o CMakeFiles/block_creator_common.dir/block_creator_common.o -c /var/jenkins/workspace/r_feature_iroha_build_time_graph/irohad/simulator/block_creator_common.cpp
+[  5%] Building CXX object test/framework/CMakeFiles/integration_framework_config_helper.dir/config_helper.o
+g++ -DBOOST_NO_RTTI -I/var/jenkins/workspace/r_feature_iroha_build_time_graph/irohad -I/var/jenkins/workspace/r_feature_iroha_build_time_graph/libs -I/var/jenkins/workspace/r_feature_iroha_build_time_graph/shared_model -isystem /usr/local/include -std=c++14 -Wall -fdiagnostics-color=always -g -Wextra -Wno-unused-parameter -Wno-deprecated-declarations -O0 -fPIC -o CMakeFiles/cli-flags_validators.dir/validators.o -c /var/jenkins/workspace/r_feature_iroha_build_time_graph/iroha-cli/validators.cpp
+g++ -DBOOST_NO_RTTI -I/var/jenkins/workspace/r_feature_iroha_build_time_graph/irohad -I/var/jenkins/workspace/r_feature_iroha_build_time_graph/libs -I/var/jenkins/workspace/r_feature_iroha_build_time_graph/shared_model -I/var/jenkins/workspace/r_feature_iroha_build_time_graph/test -std=c++14 -Wall -fdiagnostics-color=always -g -Wextra -Wno-unused-parameter -Wno-deprecated-declarations -O0 -fPIC -o CMakeFiles/integration_framework_config_helper.dir/config_helper.o -c /var/jenkins/workspace/r_feature_iroha_build_time_graph/test/framework/config_helper.cpp
+0.29	2.96
+[  5%] Linking CXX static library liblogger.a
+[  5%] Built target logger
+[  5%] Building CXX object shared_model/schema/CMakeFiles/schema.dir/__/__/schema/commands.pb.o
+0.12	1.44
+0.03	0.25
+[  5%] Linking CXX static library libgate_object.a
+[  6%] Linking CXX static library libcli-flags_validators.a
+[  6%] Built target cli-flags_validators
+0.02	0.22
+[  6%] Built target gate_object
+[  6%] Linking CXX static library libintegration_framework_config_helper.a
+Scanning dependencies of target logger_test
+[  6%] Built target integration_framework_config_helper
+Scanning dependencies of target common_test_constants
+[  6%] Building CXX object test/module/irohad/logger/CMakeFiles/logger_test.dir/logger_test.o
+Scanning dependencies of target blob_converter_test
+[  6%] Building CXX object test/framework/CMakeFiles/common_test_constants.dir/common_constants.o
+[  6%] Building CXX object test/module/irohad/common/CMakeFiles/blob_converter_test.dir/blob_converter_test.o
+0.17	0.70
