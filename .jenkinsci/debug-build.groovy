@@ -23,8 +23,8 @@ def doDebugBuild(coverageEnabled=false) {
     group: 'iroha_build_time_graph', 
     numBuilds: '3', 
     style: 'line', 
-    width: 4000, 
-    height: 3000,
+    width: '4000', 
+    height: '3000',
     title: 'Build time',
     useDescr: true,
     yaxis: 'Time, sec'
