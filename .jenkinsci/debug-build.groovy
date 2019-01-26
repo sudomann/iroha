@@ -19,7 +19,7 @@ def doDebugBuild(coverageEnabled=false) {
 
 
   def plots = []
-  def files = findFiles(glob: 'results/*.csv')
+  def files = sh(script: 'ls reports/*.csv', returnStdout: true).trim() //findFiles(glob: 'reports/*.csv')
   for(String el : files.split("\\r?\\n")) {
     plots.append([displayTableFlag: true, exclusionValues: '', file: el, inclusionFlag: 'OFF', url: ''])
     println ">>>${ele}<<<"     
