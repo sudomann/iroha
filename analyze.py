@@ -1,5 +1,6 @@
 import argparse
 import csv
+import os
 
 parser = argparse.ArgumentParser(description='Process time output for compiler')
 
@@ -21,27 +22,26 @@ if __name__ == "__main__":
                 unit["work_type"] += ":" + lines[i].split(" ")[-1].rstrip()
                 i += 2
                 timeline = lines[i].rstrip().split("\t")
-                # unit["sys_time"] = float(timeline[0])
-                # unit["user_time"] = float(timeline[1])
                 unit["total"] =  round(float(timeline[0]) + float(timeline[1]), 2)
                 units[unit["work_type"]] = unit["total"]
+                with open('reports/' + os.path.basename(lines[i-2].split(" ")[-1].rstrip()) + '.csv', 'w') as csvfile:
+                    fieldnames = unit.keys()
+                    fieldvalues = unit.values()
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                    writer.writeheader()
+                    writer.writerow(unit)
             except IndexError:
                 break
             except Exception:
                 continue
-            # units.append(unit)
 
         i += 1
-    csv_filename = args.log_file.split(".")[0] + ".csv"
-    with open(csv_filename, 'w') as csvfile:
-        fieldnames = units.keys()
-        fieldvalues = units.values()
-        print(fieldvalues)
-        # fieldnames = ['work_type', 'total']
-        # units
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
+    # csv_filename = args.log_file.split(".")[0] + ".csv"
+    # with open(csv_filename, 'w') as csvfile:
+    #     fieldnames = units.keys()
+    #     fieldvalues = units.values()
+    #     print(fieldvalues)
+    #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+    #     writer.writeheader()
         
-        writer.writerow(units)
-        # for u in units:
-        #     writer.writerow(u)
+    #     writer.writerow(units)

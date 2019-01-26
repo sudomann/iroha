@@ -16,15 +16,23 @@ def doDebugBuild(coverageEnabled=false) {
 
 
   sh("python analyze.py result.txt")
+
+
+  def plots = []
+  def files = findFiles(glob: 'results/*.csv')
+  for(String el : files.split("\\r?\\n")) {
+    plots.append([displayTableFlag: true, exclusionValues: '', file: el, inclusionFlag: 'OFF', url: ''])
+    println ">>>${ele}<<<"     
+  }
   plot csvFileName: 'plot-3d136de2-a268-4abc-80a1-9f31db39b92d.csv', 
-    csvSeries: [
-      [displayTableFlag: true, exclusionValues: '', file: 'result.csv', inclusionFlag: 'OFF', url: '']
-    ], 
+    csvSeries: [plots], 
     group: 'iroha_build_time_graph', 
     numBuilds: '1', 
     style: 'line', 
     width: 4000,
     height: 3000,
+    yaxisMinimum: 0,
+    yaxisMaximum: 10,
     hasLegend: false,
     title: 'Build time',
     useDescr: false,
