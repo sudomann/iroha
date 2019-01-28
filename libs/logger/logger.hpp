@@ -20,6 +20,9 @@ auto operator<<(StreamType &os, const T &object)
   return os << object.toString();
 }
 
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+
 namespace logger {
 
   enum class LogLevel;
@@ -79,7 +82,7 @@ namespace logger {
               const std::string &format,
               const Args &... args) const {
        if (shouldLog(level)) {
-         logInternal(level, format); // TODO perform the actual formatting here
+         logInternal(level, fmt::format(format, args...));
        }
      }
 
