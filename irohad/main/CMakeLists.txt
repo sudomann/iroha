@@ -70,8 +70,9 @@ target_link_libraries(irohad
 
 add_library(iroha_conf_loader iroha_conf_loader.cpp)
 target_link_libraries(iroha_conf_loader
-  iroha_conf_literals
-  logger_manager)
+    iroha_conf_literals
+    logger_manager
+)
 
 add_library(iroha_conf_literals iroha_conf_literals.cpp)
 target_include_directories(iroha_conf_literals PUBLIC ${fmt_INCLUDE_DIR})
