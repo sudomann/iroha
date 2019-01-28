@@ -26,9 +26,9 @@ namespace iroha {
 
    public:
     // ----------------------------| interface API |----------------------------
-    explicit MstStorageStateImpl(const CompleterType &completer,
-                                 logger::LoggerPtr mst_state_logger,
-                                 logger::LoggerPtr log);
+    MstStorageStateImpl(const CompleterType &completer,
+                        logger::LoggerPtr mst_state_logger,
+                        logger::LoggerPtr log);
 
     auto applyImpl(const shared_model::crypto::PublicKey &target_peer_key,
                    const MstState &new_state)

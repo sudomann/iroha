@@ -21,7 +21,7 @@ namespace iroha {
    * @param dir - target folder
    * @param log - a log for local messages
    */
-  void remove_dir_contents(const std::string &dump_dir,
+  void remove_dir_contents(const std::string &dir,
                            const logger::LoggerPtr &log);
 }  // namespace iroha
 #endif  // IROHA_FILES_HPP
