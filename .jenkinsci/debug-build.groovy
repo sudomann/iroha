@@ -16,7 +16,7 @@ def doDebugBuild(coverageEnabled=false) {
 
 
   sh("python analyze.py result.txt")
-  zip archive: true, dir: '', glob: 'result.txt', zipFile: 'results.zip'
+  zip archive: true, dir: '', glob: 'result.csv', zipFile: 'results.zip'
   archiveArtifacts artifacts: '*.zip'
 //   def plots = []
 //   def files = sh(script: 'ls reports/*.csv', returnStdout: true).trim() //findFiles(glob: 'reports/*.csv')
