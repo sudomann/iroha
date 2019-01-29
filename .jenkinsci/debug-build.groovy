@@ -15,42 +15,11 @@ def doDebugBuild(coverageEnabled=false) {
   // This is a known bug. See https://issues.jenkins-ci.org/browse/JENKINS-41929
 
 
-  sh("python analyze.py result.txt")
-  zip archive: true, dir: '', glob: 'result.csv', zipFile: 'results.zip'
-  archiveArtifacts artifacts: '*.zip'
-//   def plots = []
-//   def files = sh(script: 'ls reports/*.csv', returnStdout: true).trim() //findFiles(glob: 'reports/*.csv')
-//   for(String el : files.split("\\r?\\n")) {
-//     // plots << [displayTableFїlag: true, exclusionValues: '', file: el, inclusionFlag: 'OFF']
-//   plot csvFileName: 'plot-3d136de2-a268-4abc-80a1-9f31db39b92d.csv', 
-//     csvSeries: plots, 
-//     group: 'iroha_build_time_graph', 
-//     numBuilds: '1', 
-//     style: 'line', 
-//     width: 4000,
-//     height: 3000,
-//     yaxisMinimum: '0',
-//     yaxisMaximum: '10',
-//     hasLegend: false,
-//     title: (Math.abs( new Random().nextInt() % (99 - 40) ) + 40).toString(), 
-//     useDescr: false,
-//     yaxis: 'Time, sec'
-// }
+  sh("python .jenkinsci/helpers/analyzeBuildTime.py buildTimeResult.txt")
+  zip archive: true, dir: '', glob: 'buildTimeResult.csv', zipFile: 'buildTimeMeasurement.zip'
+  archiveArtifacts artifacts: 'buildTimeMeasurement.zip'
+
   }
 //   println plots
-//   plot csvFileName: 'plot-3d136de2-a268-4abc-80a1-9f31db39b92d.csv', 
-//     csvSeries: plots, 
-//     group: 'iroha_build_time_graph', 
-//     numBuilds: '1', 
-//     style: 'line', 
-//     width: 4000,
-//     height: 3000,
-//     yaxisMinimum: '0',
-//     yaxisMaximum: '10',
-//     hasLegend: false,
-//     title: 'Build time',
-//     useDescr: false,
-//     yaxis: 'Time, sec'
-// }
 
 return this
