@@ -25,6 +25,7 @@ namespace iroha {
 
       class PeerOrdererImpl : public YacPeerOrderer {
        public:
+        // TODO 30.01.2019 lebdron: IR-262 Remove PeerQueryFactory
         explicit PeerOrdererImpl(
             std::shared_ptr<ametsuchi::PeerQueryFactory> peer_query_factory);
 

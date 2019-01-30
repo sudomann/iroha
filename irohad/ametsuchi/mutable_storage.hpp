@@ -36,10 +36,11 @@ namespace iroha {
        *  - PeerQuery - interface for ledger peers list retrieval
        *  - HashType - hash of top block in blockchain
        */
-      using MutableStoragePredicate =
-          std::function<bool(const shared_model::interface::Block &,
-                             PeerQuery &,
-                             const shared_model::interface::types::HashType &)>;
+      using MutableStoragePredicate = std::function<bool(
+          const shared_model::interface::Block &,
+          // TODO 30.01.2019 lebdron: IR-265 Remove PeerQueryFactory
+          PeerQuery &,
+          const shared_model::interface::types::HashType &)>;
 
       /**
        * Applies block without additional validation function

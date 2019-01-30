@@ -62,6 +62,7 @@ namespace iroha {
        */
       bool validateBlock(
           const shared_model::interface::Block &block,
+          // TODO 30.01.2019 lebdron: IR-265 Remove PeerQueryFactory
           ametsuchi::PeerQuery &queries,
           const shared_model::interface::types::HashType &top_hash) const;
 

@@ -45,6 +45,7 @@ namespace iroha {
         // ----------| Yac dependencies |----------
 
         auto createPeerOrderer(
+            // TODO 30.01.2019 lebdron: IR-262 Remove PeerQueryFactory
             std::shared_ptr<ametsuchi::PeerQueryFactory> peer_query_factory);
 
         auto createNetwork(std::shared_ptr<iroha::network::AsyncGrpcClient<
