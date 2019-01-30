@@ -22,6 +22,7 @@ def linuxPostStep() {
       sh("python .jenkinsci/helpers/analyzeBuildTime.py buildTimeResult.txt")
       zip archive: true, dir: '', glob: 'buildTimeResult.csv', zipFile: 'buildTimeMeasurement.zip'
       archiveArtifacts artifacts: 'buildTimeMeasurement.zip'
+      archiveArtifacts artifacts: 'buildTimeResult.txt'
       
       if (currentBuild.currentResult == "SUCCESS" && GIT_LOCAL_BRANCH ==~ /(master|develop)/) {
         def artifacts = load ".jenkinsci/artifacts.groovy"
