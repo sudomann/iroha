@@ -1,6 +1,8 @@
 #!/usr/bin/env groovy
 
 def doDebugBuild(coverageEnabled=false) {
+  copyArtifacts(projectName: 'iroha/iroha-hyperledger/develop');
+  sh "ls -al"
   def dPullOrBuild = load ".jenkinsci/docker-pull-or-build.groovy"
   def manifest = load ".jenkinsci/docker-manifest.groovy"
   def pCommit = load ".jenkinsci/previous-commit.groovy"
@@ -95,7 +97,7 @@ def doDebugBuild(coverageEnabled=false) {
         -DIROHA_VERSION=${env.IROHA_VERSION} \
         ${cmakeOptions}
     """
-    sh "cmake --build build -- -j${parallelism} | tee -a buildTimeResult.txt"
+    sh "cmake --build build -- -j${parallelism} | sponge buildTimeResult.txt"
     sh "ccache --show-stats"
     if ( coverageEnabled ) {
       sh "cmake --build build --target coverage.init.info"

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+import re
 import argparse
 import csv
 
@@ -10,31 +12,26 @@ if __name__ == "__main__":
     lines = []
     with open(args.log_file, "r") as f:
         lines = f.readlines()
-
     i = 0
     units = []
     while i < len(lines):
-        if "Building" in lines[i] or "Linking CXX executable" in lines[i]:
-            unit = {}
-            try:
-                unit["work_type"] = "build" if "Building" in lines[i] else "linking"
-                unit["target"] = lines[i].split(" ")[-1].rstrip()
-                if "g++" not in lines[i+1]: # skipping target without times (it will appear below)
-                    i += 1
-                    continue
-                i += 2
-                timeline = lines[i].rstrip().split("\t")
-                unit["sys_time"] = float(timeline[0])
-                unit["user_time"] = float(timeline[1])
-                unit["total"] =  round(unit["sys_time"] + unit["user_time"], 2)
-            except IndexError:
-                break
-            except Exception as ex:
-                i += 1
-                continue
+        unit = {}
+        if "g++" not in lines[i]:
+            i+=1
+            continue
+        try:
+            sys_time, user_time = lines[i+1].rstrip().split("\t")
+            unit['target'] = re.findall(r"-o (\S+) ", lines[i])[0]
+            unit['work_type'] = 'linking' if "-Wl" in lines[i] else "build"
+            unit['sys_time'] = float(sys_time)
+            unit['user_time'] = float(user_time)
+            unit['total'] = round(unit['sys_time'] + unit['user_time'], 2)
             units.append(unit)
+            i+=2
+        except:
+            i+=1
+            continue
 
-        i += 1
     csv_filename = args.log_file.split(".")[0] + ".csv"
     with open(csv_filename, 'w') as csvfile:
         fieldnames = ['target', 'sys_time', 'user_time', 'total', 'work_type']
