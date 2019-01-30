@@ -14,13 +14,15 @@
 #include "builders/protobuf/transaction.hpp"
 #include "datetime/time.hpp"
 #include "framework/test_subscriber.hpp"
-#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/ametsuchi/mock_block_query.hpp"
+#include "module/irohad/ametsuchi/mock_block_query_factory.hpp"
+#include "module/irohad/ametsuchi/mock_temporary_factory.hpp"
 #include "module/irohad/network/network_mocks.hpp"
-#include "module/irohad/validation/validation_mocks.hpp"
+#include "module/irohad/validation/mock_stateful_validator.hpp"
 #include "module/shared_model/builders/protobuf/proposal.hpp"
 #include "module/shared_model/builders/protobuf/test_block_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
-#include "module/shared_model/cryptography/crypto_model_signer_mock.hpp"
+#include "module/shared_model/cryptography/mock_abstract_crypto_model_signer.hpp"
 #include "module/shared_model/interface_mocks.hpp"
 #include "module/shared_model/validators/validators.hpp"
 
@@ -42,16 +44,15 @@ using wBlock = std::shared_ptr<shared_model::interface::Block>;
 
 class SimulatorTest : public ::testing::Test {
  public:
-  void SetUp() override {
-    shared_model::crypto::crypto_signer_expecter =
-        std::make_shared<shared_model::crypto::CryptoModelSignerExpecter>();
+  using CryptoSignerType = shared_model::crypto::MockAbstractCryptoModelSigner<
+      shared_model::interface::Block>;
 
+  void SetUp() override {
     validator = std::make_shared<MockStatefulValidator>();
     factory = std::make_shared<NiceMock<MockTemporaryFactory>>();
     query = std::make_shared<MockBlockQuery>();
     ordering_gate = std::make_shared<MockOrderingGate>();
-    crypto_signer = std::make_shared<shared_model::crypto::CryptoModelSigner<>>(
-        shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair());
+    crypto_signer = std::make_shared<CryptoSignerType>();
     block_query_factory = std::make_shared<MockBlockQueryFactory>();
     EXPECT_CALL(*block_query_factory, createBlockQuery())
         .WillRepeatedly(testing::Return(boost::make_optional(
@@ -77,10 +78,6 @@ class SimulatorTest : public ::testing::Test {
     ledger_state = std::make_shared<LedgerState>(ledger_peers);
   }
 
-  void TearDown() override {
-    shared_model::crypto::crypto_signer_expecter.reset();
-  }
-
   consensus::Round round;
 
   std::shared_ptr<MockStatefulValidator> validator;
@@ -88,7 +85,7 @@ class SimulatorTest : public ::testing::Test {
   std::shared_ptr<MockBlockQuery> query;
   std::shared_ptr<MockBlockQueryFactory> block_query_factory;
   std::shared_ptr<MockOrderingGate> ordering_gate;
-  std::shared_ptr<shared_model::crypto::CryptoModelSigner<>> crypto_signer;
+  std::shared_ptr<CryptoSignerType> crypto_signer;
   std::unique_ptr<shared_model::interface::UnsafeBlockFactory> block_factory;
   rxcpp::subjects::subject<OrderingEvent> ordering_events;
 
@@ -163,8 +160,7 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
         return std::move(validation_result);
       }));
 
-  EXPECT_CALL(*shared_model::crypto::crypto_signer_expecter,
-              sign(A<shared_model::interface::Block &>()))
+  EXPECT_CALL(*crypto_signer, sign(A<shared_model::interface::Block &>()))
       .Times(1);
 
   auto ordering_event =
@@ -207,8 +203,7 @@ TEST_F(SimulatorTest, FailWhenNoBlock) {
 
   EXPECT_CALL(*validator, validate(_, _)).Times(0);
 
-  EXPECT_CALL(*shared_model::crypto::crypto_signer_expecter,
-              sign(A<shared_model::interface::Block &>()))
+  EXPECT_CALL(*crypto_signer, sign(A<shared_model::interface::Block &>()))
       .Times(0);
 
   auto proposal_wrapper =
@@ -238,8 +233,7 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
 
   EXPECT_CALL(*validator, validate(_, _)).Times(0);
 
-  EXPECT_CALL(*shared_model::crypto::crypto_signer_expecter,
-              sign(A<shared_model::interface::Block &>()))
+  EXPECT_CALL(*crypto_signer, sign(A<shared_model::interface::Block &>()))
       .Times(0);
 
   auto proposal_wrapper =

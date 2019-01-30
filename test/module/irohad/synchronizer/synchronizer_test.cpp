@@ -9,7 +9,10 @@
 #include <boost/range/adaptor/transformed.hpp>
 #include "backend/protobuf/block.hpp"
 #include "framework/test_subscriber.hpp"
-#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/ametsuchi/mock_block_query.hpp"
+#include "module/irohad/ametsuchi/mock_block_query_factory.hpp"
+#include "module/irohad/ametsuchi/mock_mutable_factory.hpp"
+#include "module/irohad/ametsuchi/mock_mutable_storage.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
 #include "module/shared_model/builders/protobuf/block.hpp"
@@ -28,6 +31,17 @@ using ::testing::_;
 using ::testing::ByMove;
 using ::testing::DefaultValue;
 using ::testing::Return;
+
+/**
+ * Factory for mock mutable storage generation.
+ * This method provides technique,
+ * when required to return object wrapped in Result.
+ */
+expected::Result<std::unique_ptr<MutableStorage>, std::string>
+createMockMutableStorage() {
+  return expected::makeValue<std::unique_ptr<MutableStorage>>(
+      std::make_unique<MockMutableStorage>());
+}
 
 class SynchronizerTest : public ::testing::Test {
  public:
@@ -213,8 +227,8 @@ TEST_F(SynchronizerTest, ExactlyThreeRetrievals) {
       SetFactory(&createMockMutableStorage);
   EXPECT_CALL(*mutable_factory, createMutableStorage()).Times(1);
   EXPECT_CALL(*mutable_factory, commit_(_))
-      .WillOnce(Return(ByMove(
-          boost::make_optional(std::make_unique<LedgerState>(ledger_peers)))));
+      .WillOnce(Return(ByMove(boost::optional<std::unique_ptr<LedgerState>>(
+          std::make_unique<LedgerState>(ledger_peers)))));
   EXPECT_CALL(*chain_validator, validateAndApply(_, _))
       .WillOnce(Return(false))
       .WillOnce(testing::Invoke([](auto chain, auto &) {
@@ -248,8 +262,8 @@ TEST_F(SynchronizerTest, RetrieveBlockTwoFailures) {
       SetFactory(&createMockMutableStorage);
   EXPECT_CALL(*mutable_factory, createMutableStorage()).Times(1);
   EXPECT_CALL(*mutable_factory, commit_(_))
-      .WillOnce(Return(ByMove(
-          boost::make_optional(std::make_unique<LedgerState>(ledger_peers)))));
+      .WillOnce(Return(ByMove(boost::optional<std::unique_ptr<LedgerState>>(
+          std::make_unique<LedgerState>(ledger_peers)))));
   EXPECT_CALL(*block_loader, retrieveBlocks(_, _))
       .WillRepeatedly(Return(rxcpp::observable<>::just(commit_message)));
 
@@ -352,8 +366,8 @@ TEST_F(SynchronizerTest, NoneOutcome) {
  */
 TEST_F(SynchronizerTest, VotedForBlockCommitPrepared) {
   EXPECT_CALL(*mutable_factory, commitPrepared(_))
-      .WillOnce(Return(ByMove(
-          boost::make_optional(std::make_unique<LedgerState>(ledger_peers)))));
+      .WillOnce(Return(ByMove(boost::optional<std::unique_ptr<LedgerState>>(
+          std::make_unique<LedgerState>(ledger_peers)))));
 
   EXPECT_CALL(*mutable_factory, commit_(_)).Times(0);
 
