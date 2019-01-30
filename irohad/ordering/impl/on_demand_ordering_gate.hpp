@@ -107,8 +107,6 @@ namespace iroha {
       mutable std::shared_timed_mutex mutex_;
     };
 
-//    std::shared_ptr<LedgerState>
-
   }  // namespace ordering
 }  // namespace iroha
 

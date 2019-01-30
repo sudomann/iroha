@@ -92,9 +92,6 @@ TEST_F(YacPeerOrdererTest, FairnessTest) {
   double exp_val = 30;
   int times = comb * exp_val;
   std::unordered_map<std::string, int> histogram;
-  //  EXPECT_CALL(*wsv, getLedgerPeers())
-  //      .Times(times)
-  //      .WillRepeatedly(Return(s_peers));
 
   auto peers_set =
       transform(boost::counting_range(1, times + 1), [this](const auto &i) {
