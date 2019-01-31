@@ -79,6 +79,7 @@ class SynchronizerTest : public ::testing::Test {
 
     peer = makePeer("127.0.0.1", shared_model::crypto::PublicKey("111"));
     ledger_peers = std::make_shared<PeerList>(PeerList{peer});
+    ledger_state = std::make_shared<LedgerState>(ledger_peers);
   }
 
   std::shared_ptr<shared_model::interface::Block> makeCommit(
@@ -108,6 +109,7 @@ class SynchronizerTest : public ::testing::Test {
   shared_model::interface::types::HashType hash;
   std::shared_ptr<shared_model::interface::Peer> peer;
   std::shared_ptr<PeerList> ledger_peers;
+  std::shared_ptr<LedgerState> ledger_state;
 
   rxcpp::subjects::subject<ConsensusGate::GateObject> gate_outcome;
 
@@ -150,8 +152,8 @@ TEST_F(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
     ASSERT_TRUE(block_wrapper.validate());
   });
 
-  gate_outcome.get_subscriber().on_next(
-      consensus::PairValid{commit_message, consensus::Round{kHeight, 1}});
+  gate_outcome.get_subscriber().on_next(consensus::PairValid{
+      commit_message, consensus::Round{kHeight, 1}, ledger_state});
 
   ASSERT_TRUE(wrapper.validate());
 }
@@ -174,8 +176,8 @@ TEST_F(SynchronizerTest, ValidWhenBadStorage) {
       make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 0);
   wrapper.subscribe();
 
-  gate_outcome.get_subscriber().on_next(
-      consensus::PairValid{commit_message, consensus::Round{kHeight, 1}});
+  gate_outcome.get_subscriber().on_next(consensus::PairValid{
+      commit_message, consensus::Round{kHeight, 1}, ledger_state});
 
   ASSERT_TRUE(wrapper.validate());
 }
@@ -211,8 +213,8 @@ TEST_F(SynchronizerTest, ValidWhenValidChain) {
     ASSERT_TRUE(block_wrapper.validate());
   });
 
-  gate_outcome.get_subscriber().on_next(
-      consensus::VoteOther{public_keys, hash, consensus::Round{kHeight, 1}});
+  gate_outcome.get_subscriber().on_next(consensus::VoteOther{
+      public_keys, hash, consensus::Round{kHeight, 1}, ledger_state});
 
   ASSERT_TRUE(wrapper.validate());
 }
@@ -246,8 +248,8 @@ TEST_F(SynchronizerTest, ExactlyThreeRetrievals) {
       make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 1);
   wrapper.subscribe();
 
-  gate_outcome.get_subscriber().on_next(
-      consensus::VoteOther{public_keys, hash, consensus::Round{kHeight, 1}});
+  gate_outcome.get_subscriber().on_next(consensus::VoteOther{
+      public_keys, hash, consensus::Round{kHeight, 1}, ledger_state});
 
   ASSERT_TRUE(wrapper.validate());
 }
@@ -287,8 +289,8 @@ TEST_F(SynchronizerTest, RetrieveBlockTwoFailures) {
     ASSERT_TRUE(block_wrapper.validate());
   });
 
-  gate_outcome.get_subscriber().on_next(
-      consensus::VoteOther{public_keys, hash, consensus::Round{kHeight, 1}});
+  gate_outcome.get_subscriber().on_next(consensus::VoteOther{
+      public_keys, hash, consensus::Round{kHeight, 1}, ledger_state});
 
   ASSERT_TRUE(wrapper.validate());
 }
@@ -310,7 +312,7 @@ TEST_F(SynchronizerTest, ProposalRejectOutcome) {
   });
 
   gate_outcome.get_subscriber().on_next(
-      consensus::ProposalReject{consensus::Round{kHeight, 1}});
+      consensus::ProposalReject{consensus::Round{kHeight, 1}, ledger_state});
 
   ASSERT_TRUE(wrapper.validate());
 }
@@ -332,7 +334,7 @@ TEST_F(SynchronizerTest, BlockRejectOutcome) {
   });
 
   gate_outcome.get_subscriber().on_next(
-      consensus::BlockReject{consensus::Round{kHeight, 1}});
+      consensus::BlockReject{consensus::Round{kHeight, 1}, ledger_state});
 
   ASSERT_TRUE(wrapper.validate());
 }
@@ -354,7 +356,7 @@ TEST_F(SynchronizerTest, NoneOutcome) {
   });
 
   gate_outcome.get_subscriber().on_next(
-      consensus::AgreementOnNone{consensus::Round{kHeight, 1}});
+      consensus::AgreementOnNone{consensus::Round{kHeight, 1}, ledger_state});
 
   ASSERT_TRUE(wrapper.validate());
 }
@@ -385,8 +387,8 @@ TEST_F(SynchronizerTest, VotedForBlockCommitPrepared) {
     ASSERT_TRUE(block_wrapper.validate());
   });
 
-  gate_outcome.get_subscriber().on_next(
-      consensus::PairValid{commit_message, consensus::Round{kHeight, 1}});
+  gate_outcome.get_subscriber().on_next(consensus::PairValid{
+      commit_message, consensus::Round{kHeight, 1}, ledger_state});
 }
 
 /**
@@ -422,8 +424,8 @@ TEST_F(SynchronizerTest, VotedForOtherCommitPrepared) {
     ASSERT_TRUE(block_wrapper.validate());
   });
 
-  gate_outcome.get_subscriber().on_next(
-      consensus::VoteOther{public_keys, hash, consensus::Round{kHeight, 1}});
+  gate_outcome.get_subscriber().on_next(consensus::VoteOther{
+      public_keys, hash, consensus::Round{kHeight, 1}, ledger_state});
 }
 
 /**
@@ -462,8 +464,8 @@ TEST_F(SynchronizerTest, VotedForThisCommitPreparedFailure) {
     ASSERT_TRUE(block_wrapper.validate());
   });
 
-  gate_outcome.get_subscriber().on_next(
-      consensus::PairValid{commit_message, consensus::Round{kHeight, 1}});
+  gate_outcome.get_subscriber().on_next(consensus::PairValid{
+      commit_message, consensus::Round{kHeight, 1}, ledger_state});
 }
 
 /**
@@ -491,8 +493,8 @@ TEST_F(SynchronizerTest, CommitFailureVoteSameBlock) {
   auto wrapper =
       make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 0);
 
-  gate_outcome.get_subscriber().on_next(
-      consensus::PairValid{commit_message, consensus::Round{kHeight, 1}});
+  gate_outcome.get_subscriber().on_next(consensus::PairValid{
+      commit_message, consensus::Round{kHeight, 1}, ledger_state});
 
   ASSERT_TRUE(wrapper.validate());
 }
@@ -517,8 +519,8 @@ TEST_F(SynchronizerTest, CommitFailureVoteOther) {
   auto wrapper =
       make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 0);
 
-  gate_outcome.get_subscriber().on_next(
-      consensus::VoteOther{public_keys, hash, consensus::Round{kHeight, 1}});
+  gate_outcome.get_subscriber().on_next(consensus::VoteOther{
+      public_keys, hash, consensus::Round{kHeight, 1}, ledger_state});
 
   ASSERT_TRUE(wrapper.validate());
 }
