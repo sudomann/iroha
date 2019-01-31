@@ -1,8 +1,6 @@
 #!/usr/bin/env groovy
 
 def doDebugBuild(coverageEnabled=false) {
-  copyArtifacts(projectName: 'feature%2Firoha_build_time_graph', filter: 'buildTimeMeasurement.zip', target: 'buildTimeMeasurement');
-  sh "ls -al"
   def dPullOrBuild = load ".jenkinsci/docker-pull-or-build.groovy"
   def manifest = load ".jenkinsci/docker-manifest.groovy"
   def pCommit = load ".jenkinsci/previous-commit.groovy"
