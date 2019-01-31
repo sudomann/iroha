@@ -1,40 +1,55 @@
 #!/usr/bin/env python
-import re
-import argparse
 import csv
+from sys import argv
+from os import path
 
-parser = argparse.ArgumentParser(description='Process time output for compiler')
+F1, F2 = argv[1], argv[2] # base, compare
 
-parser.add_argument('log_file', type=str, help='input file')
+# time difference in seconds (multiply by -1 show difference - faster or lower)
+def diff_secs(a, b):
+    return round( (float(a) - float(b)) * -1 , 2)
 
-args = parser.parse_args()
-if __name__ == "__main__":
-    lines = []
-    with open(args.log_file, "r") as f:
-        lines = f.readlines()
-    i = 0
-    units = []
-    while i < len(lines):
-        unit = {}
-        if "g++" not in lines[i]:
-            i+=1
+# time difference in percents (multiply by -1 show difference - faster or lower)
+def diff_perc(a, b):
+    if float(a) == 0.0:
+        return 0.0
+    return round( (float(a) - float(b)) / float(a) * 100 * -1, 2)
+
+if __name__ == '__main__':
+    if not path.isfile(F1) or not path.isfile(F2):
+        print("Can't find files!")
+        exit(1)
+
+    with open(F1) as base, open(F2) as compare:
+        base_reader, comp_reader = csv.DictReader(base), csv.DictReader(compare)
+        b, c = { row['target']: row for row in base_reader }, { row['target']: row for row in comp_reader }
+    
+    if len(c) == 0:
+        print("No records found")
+        exit(1)
+
+    for target in c:
+        c[target].update( 
+            { 'user_time_diff': 0, 'sys_time_diff': 0, 'total_diff': 0, 
+              'user_time_perc': 0, 'sys_time_perc': 0, 'total_perc': 0 } 
+        )
+        if b[target] is None:
             continue
-        try:
-            sys_time, user_time = lines[i+1].rstrip().split("\t")
-            unit['target'] = re.findall(r"-o (\S+) ", lines[i])[0]
-            unit['work_type'] = 'linking' if "-Wl" in lines[i] else "build"
-            unit['sys_time'] = float(sys_time)
-            unit['user_time'] = float(user_time)
-            unit['total'] = round(unit['sys_time'] + unit['user_time'], 2)
-            units.append(unit)
-            i+=2
-        except:
-            i+=1
-            continue
+        c[target]['sys_time_diff']  = diff_secs(b[target]['sys_time'], c[target]['sys_time'])
+        c[target]['user_time_diff'] = diff_secs(b[target]['user_time'], c[target]['user_time'])
+        c[target]['total_diff']     = diff_secs(b[target]['total'],  c[target]['total'])
+        c[target]['sys_time_perc']  = diff_perc(b[target]['sys_time'], c[target]['sys_time'])
+        c[target]['user_time_perc'] = diff_perc(b[target]['user_time'], c[target]['user_time'])
+        c[target]['total_perc']     = diff_perc(b[target]['total'],  c[target]['total'])
 
-    csv_filename = args.log_file.split(".")[0] + ".csv"
-    with open(csv_filename, 'w') as csvfile:
-        fieldnames = ['target', 'sys_time', 'user_time', 'total', 'work_type']
+    with open ('diff.csv', 'w+') as csvfile:
+        fieldnames = ['target', 'work_type', 
+            'sys_time', 'user_time', 'total', 
+            'sys_time_diff', 'user_time_diff', 'total_diff', 
+            'sys_time_perc', 'user_time_perc', 'total_perc'
+        ]
+        # fieldnames = sorted(next(iter(c.iteritems()))[1].keys())
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(units)
+        for row in c:
+            writer.writerow(c[row])
