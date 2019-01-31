@@ -5,13 +5,15 @@
 
 #include "framework/integration_framework/fake_peer/proposal_storage.hpp"
 
+#include <atomic>
 #include <mutex>
 
 namespace integration_framework {
   namespace fake_peer {
 
-    ProposalStorage::ProposalStorage()
-        : default_provider_([](auto &) { return boost::none; }) {}
+    ProposalStorage::ProposalStorage() {
+      setDefaultProvider([](auto &) { return boost::none; });
+    }
 
     OrderingProposalRequestResult ProposalStorage::getProposal(
         const Round &round) const {
@@ -24,7 +26,7 @@ namespace integration_framework {
           return boost::none;
         }
       }
-      return default_provider_(round);
+      return getDefaultProposal(round);
     }
 
     ProposalStorage &ProposalStorage::storeProposal(
@@ -37,6 +39,24 @@ namespace integration_framework {
         it->second = proposal;
       }
       return *this;
+    }
+
+    ProposalStorage &ProposalStorage::setDefaultProvider(DefaultProvider provider) {
+      std::atomic_store_explicit(
+          &default_provider_,
+          std::make_shared<DefaultProvider>(std::move(provider)),
+          std::memory_order_release);
+      return *this;
+    }
+
+    OrderingProposalRequestResult ProposalStorage::getDefaultProposal(
+        const Round &round) const {
+      auto default_provider = std::atomic_load_explicit(
+          &default_provider_, std::memory_order_acquire);
+      if (default_provider) {
+        return default_provider->operator()(round);
+      }
+      return {};
     }
 
   }  // namespace fake_peer

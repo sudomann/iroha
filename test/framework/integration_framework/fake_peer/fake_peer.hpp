@@ -176,7 +176,8 @@ namespace integration_framework {
        * @return The proposal if it was received, or nullptr otherwise.
        */
       std::unique_ptr<shared_model::interface::Proposal> sendProposalRequest(
-          iroha::consensus::Round round, std::chrono::milliseconds timeout);
+          iroha::consensus::Round round,
+          std::chrono::milliseconds timeout) const;
 
      private:
       using MstTransport = iroha::network::MstTransportGrpc;
