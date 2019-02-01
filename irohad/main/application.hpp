@@ -263,8 +263,6 @@ class Irohad {
   std::shared_ptr<iroha::network::MstTransport> mst_transport;
 
   logger::LoggerManagerTreePtr log_manager_;  ///< application root log manager
-  logger::LoggerManagerTreePtr
-      validators_log_manager_;  ///< log manager for validators subsystem
 
   logger::LoggerPtr log_;  ///< log for local messages
 
