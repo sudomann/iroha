@@ -37,7 +37,7 @@ std::shared_ptr<BlockLoader> BlockLoaderInit::initBlockLoader(
     std::shared_ptr<PeerQueryFactory> peer_query_factory,
     std::shared_ptr<BlockQueryFactory> block_query_factory,
     std::shared_ptr<consensus::ConsensusResultCache> consensus_result_cache,
-    logger::LoggerManagerTreePtr loader_log_manager) {
+    const logger::LoggerManagerTreePtr &loader_log_manager) {
   service = createService(std::move(block_query_factory),
                           std::move(consensus_result_cache),
                           loader_log_manager);

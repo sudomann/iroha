@@ -75,7 +75,6 @@ Irohad::Irohad(const std::string &block_store_dir,
       opt_mst_gossip_params_(opt_mst_gossip_params),
       ordering_init(logger_manager->getLogger()),
       log_manager_(std::move(logger_manager)),
-      validators_log_manager_(log_manager_->getChild("Validators")),
       log_(log_manager_->getLogger()),
       keypair(keypair) {
   log_->info("created");
@@ -179,13 +178,14 @@ void Irohad::initBatchParser() {
 void Irohad::initValidators() {
   auto factory = std::make_unique<shared_model::proto::ProtoProposalFactory<
       shared_model::validation::DefaultProposalValidator>>();
+  auto validators_log_manager = log_manager_->getChild("Validators");
   stateful_validator = std::make_shared<StatefulValidatorImpl>(
       std::move(factory),
       batch_parser,
-      validators_log_manager_->getChild("Stateful")->getLogger());
+      validators_log_manager->getChild("Stateful")->getLogger());
   chain_validator = std::make_shared<ChainValidatorImpl>(
       std::make_shared<consensus::yac::SupermajorityCheckerImpl>(),
-      validators_log_manager_->getChild("Chain")->getLogger());
+      validators_log_manager->getChild("Chain")->getLogger());
 
   log_->info("[Init] => validators");
 }
@@ -342,7 +342,7 @@ void Irohad::initSimulator() {
       storage,
       crypto_signer_,
       std::move(block_factory),
-      validators_log_manager_->getChild("Simulator")->getLogger());
+      log_manager_->getChild("Simulator")->getLogger());
 
   log_->info("[Init] => init simulator");
 }

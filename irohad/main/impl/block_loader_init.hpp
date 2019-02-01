@@ -56,7 +56,7 @@ namespace iroha {
           std::shared_ptr<ametsuchi::PeerQueryFactory> peer_query_factory,
           std::shared_ptr<ametsuchi::BlockQueryFactory> block_query_factory,
           std::shared_ptr<consensus::ConsensusResultCache> block_cache,
-          logger::LoggerManagerTreePtr loader_log_manager);
+          const logger::LoggerManagerTreePtr &loader_log_manager);
 
       std::shared_ptr<BlockLoaderImpl> loader;
       std::shared_ptr<BlockLoaderService> service;
