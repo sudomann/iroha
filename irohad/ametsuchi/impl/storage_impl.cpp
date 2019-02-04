@@ -245,6 +245,7 @@ namespace iroha {
         auto &db = dbname.value();
         log_->info("Drop database {}", db);
         freeConnections();
+        // TODO mboldyrev 04.02.2019 IR-284 rework synchronization
         std::unique_lock<std::shared_timed_mutex> lock(drop_mutex);
         soci::session sql(*soci::factory_postgresql(),
                           postgres_options_.optionsStringWithoutDbName());
