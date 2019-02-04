@@ -243,9 +243,9 @@ namespace iroha {
 
       if (auto dbname = postgres_options_.dbname()) {
         auto &db = dbname.value();
-        std::unique_lock<std::shared_timed_mutex> lock(drop_mutex);
         log_->info("Drop database {}", db);
         freeConnections();
+        std::unique_lock<std::shared_timed_mutex> lock(drop_mutex);
         soci::session sql(*soci::factory_postgresql(),
                           postgres_options_.optionsStringWithoutDbName());
         // perform dropping
