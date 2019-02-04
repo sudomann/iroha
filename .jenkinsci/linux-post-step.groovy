@@ -25,9 +25,9 @@ def linuxPostStep() {
 
       copyArtifacts(projectName: 'feature%2Firoha_build_time_graph', filter: 'buildTimeMeasurement.zip', target: 'buildTimeMeasurement-develop');
       unzip zipFile: 'buildTimeMeasurement-develop/buildTimeMeasurement.zip', dir: 'buildTimeMeasurement-develop'
-      sh "./jenkinsci/helpers/analyzeBuildTime.py buildTimeMeasurement-develop/buildTimeResult.csv buildTimeResult.csv"
+      sh ".jenkinsci/helpers/analyzeBuildTime.py buildTimeMeasurement-develop/buildTimeResult.csv buildTimeResult.csv"
       archiveArtifacts artifacts: 'diff.zip'
-      
+
       if (currentBuild.currentResult == "SUCCESS" && GIT_LOCAL_BRANCH ==~ /(master|develop)/) {
         def artifacts = load ".jenkinsci/artifacts.groovy"
         def commit = env.GIT_COMMIT
@@ -37,8 +37,8 @@ def linuxPostStep() {
       }
     }
     finally {
-      // def cleanup = load ".jenkinsci/docker-cleanup.groovy"
-      // cleanup.doDockerCleanup()
+      def cleanup = load ".jenkinsci/docker-cleanup.groovy"
+      cleanup.doDockerCleanup()
       cleanWs()
     }
   }
