@@ -71,10 +71,17 @@ namespace iroha {
       void tryErase();
 
       /**
-       * @return packed proposal from the given round queue
-       * Note: method is not thread-safe
+       * Get transactions from the given batches queue. Does not break batches -
+       * continues getting all the transactions from the ongoing batch until the
+       * required amount is collected.
+       * @param requested_tx_amount - amount of transactions to get
+       * @param tx_batches_queue - the queue to get transactions from
+       * @return transactions
        */
-      ProposalType emitProposal(const consensus::Round &round);
+      static std::vector<std::shared_ptr<shared_model::interface::Transaction>>
+      getTransactions(
+          size_t requested_tx_amount,
+          tbb::concurrent_queue<TransactionBatchType> tx_batches_queue);
 
       /**
        * Check if batch was already processed by the peer
