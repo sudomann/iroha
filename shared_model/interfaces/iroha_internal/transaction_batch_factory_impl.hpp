@@ -18,7 +18,7 @@ namespace shared_model {
           FactoryResult<std::unique_ptr<TransactionBatch>>;
 
       FactoryImplResult createTransactionBatch(
-          const types::SharedTxsCollectionType &transactions) const override;
+          types::SharedTxsCollectionType transactions) const override;
 
       FactoryImplResult createTransactionBatch(
           std::shared_ptr<Transaction> transaction) const override;

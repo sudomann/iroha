@@ -35,7 +35,7 @@ namespace shared_model {
        */
       FactoryResult<std::unique_ptr<TransactionBatch>>
       virtual createTransactionBatch(
-          const types::SharedTxsCollectionType &transactions) const = 0;
+          types::SharedTxsCollectionType transactions) const = 0;
 
       /**
        * Creates transaction batch from single transaction

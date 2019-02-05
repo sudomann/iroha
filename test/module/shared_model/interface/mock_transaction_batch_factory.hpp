@@ -14,7 +14,7 @@ struct MockTransactionBatchFactory
   MOCK_CONST_METHOD1(
       createTransactionBatch,
       FactoryResult<std::unique_ptr<shared_model::interface::TransactionBatch>>(
-          const shared_model::interface::types::SharedTxsCollectionType &));
+          shared_model::interface::types::SharedTxsCollectionType));
 
   MOCK_CONST_METHOD1(
       createTransactionBatch,

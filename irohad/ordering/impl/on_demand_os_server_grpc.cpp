@@ -68,20 +68,21 @@ grpc::Status OnDemandOsServerGrpc::SendBatches(
                          request->round().reject_round()};
   auto transactions = deserializeTransactions(request);
 
-  auto batch_candidates = batch_parser_->parseBatches(transactions);
+  auto batch_candidates = batch_parser_->parseBatches(std::move(transactions));
 
   auto batches = std::accumulate(
       std::begin(batch_candidates),
       std::end(batch_candidates),
       OdOsNotification::CollectionType{},
-      [this](auto &acc, const auto &cand) {
-        batch_factory_->createTransactionBatch(cand).match(
-            [&](iroha::expected::Value<
-                std::unique_ptr<shared_model::interface::TransactionBatch>>
-                    &value) { acc.push_back(std::move(value).value); },
-            [&](iroha::expected::Error<std::string> &error) {
-              log_->warn("Batch deserialization failed: {}", error.error);
-            });
+      [this](auto &acc, auto cand) {
+        batch_factory_->createTransactionBatch(std::move(cand))
+            .match(
+                [&](iroha::expected::Value<
+                    std::unique_ptr<shared_model::interface::TransactionBatch>>
+                        &value) { acc.push_back(std::move(value).value); },
+                [&](iroha::expected::Error<std::string> &error) {
+                  log_->warn("Batch deserialization failed: {}", error.error);
+                });
         return acc;
       });
 
