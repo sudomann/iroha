@@ -18,7 +18,7 @@ The following is a short set of guidelines for contributing to Iroha.
 ##### [Styleguides](#styleguides-1)
 
 - [Git Style Guide](#git-style-guide)
-- [C++ Style Guide](#c++-style-guide)
+- [C++ Style Guide](#c-style-guide)
 - [Documentation Styleguide](#documentation-styleguide)
 
 ### [Contact Developers](#places-where-community-is-active)
@@ -68,7 +68,7 @@ Please post your question in [your favourite messenger](#places-where-community-
 
 ### Your First Code Contribution
 
-Read our [C++ Style Guide](#c++-style-guide) and start with beginner-friendly issues with JIRA label [`[good-first-issue]`](https://jira.hyperledger.org/issues/?jql=project%20%3D%20IR%20and%20labels%20%3D%20good-first-issue%20ORDER%20BY%20updated%20DESC) <- click here. Indicate somehow that you are working on this task: get in touch with maintainers team, community or simply assign this issue to yourself.
+Read our [C++ Style Guide](#c-style-guide) and start with beginner-friendly issues with JIRA label [`[good-first-issue]`](https://jira.hyperledger.org/issues/?jql=project%20%3D%20IR%20and%20labels%20%3D%20good-first-issue%20ORDER%20BY%20updated%20DESC) <- click here. Indicate somehow that you are working on this task: get in touch with maintainers team, community or simply assign this issue to yourself.
 
 ### Pull Requests
 
@@ -82,7 +82,7 @@ Read our [C++ Style Guide](#c++-style-guide) and start with beginner-friendly is
 
 - When you've finished work make sure that you've got all passing CI checks — after that **squash and merge** your pull request
 
-- Follow the [C++ Style Guide](#c++-style-guide)
+- Follow the [C++ Style Guide](#c-style-guide)
 
 - Follow the [Git Style Guide](#git-style-guide)
 
