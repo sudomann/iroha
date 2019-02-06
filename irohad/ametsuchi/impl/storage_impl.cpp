@@ -243,10 +243,9 @@ namespace iroha {
 
       if (auto dbname = postgres_options_.dbname()) {
         auto &db = dbname.value();
+        std::unique_lock<std::shared_timed_mutex> lock(drop_mutex);
         log_->info("Drop database {}", db);
         freeConnections();
-        // TODO mboldyrev 04.02.2019 IR-284 rework synchronization
-        std::unique_lock<std::shared_timed_mutex> lock(drop_mutex);
         soci::session sql(*soci::factory_postgresql(),
                           postgres_options_.optionsStringWithoutDbName());
         // perform dropping
@@ -407,13 +406,15 @@ namespace iroha {
       try {
         *(storage->sql_) << "COMMIT";
         storage->committed = true;
-        return createPeerQuery() |
-            [](const auto &peer_query) { return peer_query->getLedgerPeers(); }
-        | [](auto &&peers) {
-            return boost::optional<std::unique_ptr<LedgerState>>(
-                std::make_unique<LedgerState>(
-                    std::make_shared<PeerList>(std::move(peers))));
-          };
+        return PeerQueryWsv(std::make_shared<PostgresWsvQuery>(*(storage->sql_),
+                                                               factory_))
+                   .getLedgerPeers()
+            |
+            [](auto &&peers) {
+              return boost::optional<std::unique_ptr<LedgerState>>(
+                  std::make_unique<LedgerState>(
+                      std::make_shared<PeerList>(std::move(peers))));
+            };
       } catch (std::exception &e) {
         storage->committed = false;
         log_->warn("Mutable storage is not committed. Reason: {}", e.what());
@@ -445,25 +446,23 @@ namespace iroha {
         PostgresBlockIndex block_index(sql);
         block_index.index(block);
         block_is_prepared = false;
+        return PeerQueryWsv(std::make_shared<PostgresWsvQuery>(sql, factory_))
+                       .getLedgerPeers()
+                   | [this, &block](auto &&peers)
+                   -> boost::optional<std::unique_ptr<LedgerState>> {
+          if (this->storeBlock(block)) {
+            return boost::optional<std::unique_ptr<LedgerState>>(
+                std::make_unique<LedgerState>(
+                    std::make_shared<PeerList>(std::move(peers))));
+          }
+          return boost::none;
+        };
       } catch (const std::exception &e) {
         log_->warn("failed to apply prepared block {}: {}",
                    block.hash().hex(),
                    e.what());
         return boost::none;
       }
-      return createPeerQuery() |
-                 [](const auto &peer_query) {
-                   return peer_query->getLedgerPeers();
-                 }
-                 | [this, &block](auto &&peers)
-                 -> boost::optional<std::unique_ptr<LedgerState>> {
-        if (this->storeBlock(block)) {
-          return boost::optional<std::unique_ptr<LedgerState>>(
-              std::make_unique<LedgerState>(
-                  std::make_shared<PeerList>(std::move(peers))));
-        }
-        return boost::none;
-      };
     }
 
     std::shared_ptr<WsvQuery> StorageImpl::getWsvQuery() const {
