@@ -18,7 +18,7 @@ The following is a short set of guidelines for contributing to Iroha.
 ##### [Styleguides](#styleguides-1)
 
 - [Git Style Guide](#git-style-guide)
-- [C++ Style Guide](#c++-style-guide)
+- [C++ Style Guide](#c++-style-guide)
 - [Documentation Styleguide](#documentation-styleguide)
 
 ### [Contact Developers](#places-where-community-is-active)
@@ -33,6 +33,7 @@ The following is a short set of guidelines for contributing to Iroha.
 Bugs are tracked as [JIRA issues](https://jira.hyperledger.org/projects/IR/issues/IR-275?filter=allopenissues&orderby=issuetype+ASC%2C+priority+DESC%2C+updated+DESC) in Hyperledger Jira.
 
 To submit a bug, [create new issue](https://jira.hyperledger.org/secure/CreateIssue.jspa) and include these details:
+
 | Field                   | What to enter                                                    |
 | :---------------------- | ---------------------------------------------------------------- |
 | Project                 | Iroha (IR)                                                       |
