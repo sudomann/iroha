@@ -3,6 +3,7 @@
 ansible-playbook playbooks/iroha-k8s/main.yml
 
 ```
+* Tested to work on Google Kubernetes Engine
 
 
 # To destroy the k8s environment created by iroha:
