@@ -1,14 +1,13 @@
 #!/usr/env/python3
 
-from builtins import chr
+import builtins
 from past.utils import old_div
-import sys
+import sys, os
 if sys.version_info < (3, 6):
     from sha3 import sha3_512 as SHA3512
 else:
     import hashlib
 
-import sys, os
 
 python_version = sys.version_info.major
 b = 256
