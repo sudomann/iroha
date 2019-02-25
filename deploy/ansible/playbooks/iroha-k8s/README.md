@@ -26,12 +26,3 @@ e.g. based on default config
 kubectl delete namespace iroha-network
 kubectl delete service iroha-peer
 ```
-
-Convenient way to restart all pods in a deployment/statefulset
-
-> *grahamdumpleton* in k8s community slack:
-  "Update an annotation in the pod template spec part":
-```
-$ kubectl patch statefulset/iroha-peer --patch \
-   "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"last-restart\":\"`date +'%s'`\"}}}}}"
-```
