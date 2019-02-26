@@ -5,6 +5,7 @@ metadata:
   name: {{ iroha_pod_basename }}
   labels:
     app: iroha
+    max-supported-replicas: "{{ iroha_replicas }}"
   namespace: {{ iroha_namespace }}
 spec:
   serviceName: {{ iroha_governing_service_domain_name }}
@@ -42,7 +43,7 @@ spec:
           mountPath: /opt/iroha_data
       containers:
       - name: postgres
-        image: postgres:9.5
+        image: {{ postgres_image_tag }}
         imagePullPolicy: Always
         command: ["docker-entrypoint.sh"]
         args: ["postgres", "-c", "max_prepared_transactions=100"]
@@ -68,7 +69,7 @@ spec:
         - name: pg-data
           mountPath: /var/lib/postgresql/data
       - name: iroha
-        image: {{ iroha_image }}
+        image: {{ iroha_image_tag }}
         imagePullPolicy: Always
         ports:
         - containerPort: {{ iroha_internal_port }}

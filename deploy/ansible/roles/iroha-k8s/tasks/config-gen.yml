@@ -54,7 +54,7 @@
     src: iroha-k8s.yml.j2
     dest: "{{ role_path }}/files/iroha-k8s.yml"
 
-- name: Create configmap
+- name: Generate configmap config file
   shell: >
     kubectl create configmap  --dry-run {{ iroha_configmap_name }} \
                               --from-file=conf/ \
