@@ -1,5 +1,7 @@
 # To use:
+
 ```
+pip3 install sha3, future
 ansible-playbook playbooks/iroha-k8s/main.yml
 
 ```
